@@ -2,7 +2,6 @@ from enum import Enum
 import json
 
 
-
 class LoginResponseEnum(Enum):
     ERROR = 0
     SUCCESS = 1
@@ -23,9 +22,9 @@ class RequestType:
 
 class ClientLoginRequest:
     def __init__(self, data: dict):
-        self.username = data['username']
-        self.password = data['password']
-        self.version = data['version']
+        self.username: str = data['username']
+        self.password: str = data['password']
+        self.version: str = data['version']
 
 
 class ServerLoginResponse:

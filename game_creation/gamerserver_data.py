@@ -1,9 +1,11 @@
 import sqlite3
 from configuration_protocol import ServerConfig
+
+
 class DBManager:
 
     def __init__(self):
-
+        pass
         '''
         connection = sqlite3.connect('data/game_server_db.db')
         cursor = connection.cursor()
@@ -22,11 +24,19 @@ class DBManager:
         connection.close()
         return result
 
-    def get_connection(self):
+    @staticmethod
+    def get_connection():
         return sqlite3.connect(ServerConfig.db_path())
 
 
 if __name__ == '__main__':
     x = DBManager()
-    result = x.get_user('Alex')
-    print(result)
+    r = x.get_user('Alex')
+    tester_tuple_list = [('john', 'bomb'), ('fomb', 'lomb')]
+    print(r)
+    f, g = zip(*r)
+    print(*f)
+    print(*g)
+    a, b = zip(*tester_tuple_list)
+    print(*a)
+    print(*b)

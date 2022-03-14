@@ -14,3 +14,7 @@ class ServerConfig:
     @staticmethod
     def decode_format():
         return 'utf-8'
+
+    @staticmethod
+    def version_number():
+        return '1.0'
