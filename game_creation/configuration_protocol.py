@@ -6,6 +6,7 @@ class ServerConfig:
     @staticmethod
     def keep_alive():
         return 20
+
     @staticmethod
     def db_path():
         return 'data/game_server_db.db'
