@@ -11,10 +11,5 @@ class ServerConfig:
     def db_path():
         return 'data/game_server_db.db'
 
-    @staticmethod
-    def decode_format():
-        return 'utf-8'
 
-    @staticmethod
-    def version_number():
-        return '1.0'
+

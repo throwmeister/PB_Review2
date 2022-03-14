@@ -7,9 +7,8 @@ import shared_directory.data_format as form
 import message_handler as handler
 
 
-
 class MainServer(Protocol):
-    format = ServerConfig.decode_format()
+    format = form.decode_format()
 
     def connectionMade(self):
         pass
@@ -18,8 +17,9 @@ class MainServer(Protocol):
         d = data.decode(self.format)
         header = form.RequestType(d)
         match header.request_type:
-            case form.HeaderEnum.LOGIN_REQUEST:
-                handler.handle_login_requests(header.data)
+            case form.RequestTypeEnum.LOGIN_REQUEST:
+                data = handler.handle_login_requests(header.data)
+                self.transport.write(data.encode(self.format))
             case _:
                 pass
 
