@@ -11,9 +11,9 @@ class Session:
     def __init__(self, name):
         self._username = name
         self._last_activity = None
-        self._sessionID = self._createID()
+        self._session_id = self._createID()
         self._last_activity_time = self.current_time()
-        self.sessions[self._sessionID] = self
+        self.sessions[self._session_id] = self
 
     def _createID(self):
         # Generate session ID - must have it as a string as you can't serialise a uuid value
@@ -30,9 +30,12 @@ class Session:
     def activity(self):
         return self._last_activity
 
+    def update_activity(self):
+        self._last_activity = self.current_time()
+
     @property
     def ID(self):
-        return self._sessionID
+        return self._session_id
 
     @property
     def player_name(self):
@@ -56,16 +59,25 @@ class Session:
     def validate_session(cls, session_id):
         if session_id in cls.sessions:
             this_session: Session = cls.sessions[session_id]
-            this_session._last_activity_time = this_session.current_time()
+            this_session.update_activity()
             return True
         else:
             return False
 
+    @classmethod
+    def delete_session(cls, session_id):
+        this_session: Session = cls.sessions[session_id]
+        print(this_session)
+        this_session.remove_session()
+
     def remove_session(self):
-        del self.sessions[self._sessionID]
+        del self.sessions[self._session_id]
 
 
 def create_session(username):
+    # Logic - if somehow the user crashes and the session is not cleared, there will be only one outstanding session
+    # Therefore, there is no need to search for more than one existing session because it will not allow more than 1 to
+    # Run at one time
     existing_session = Session.get_session(username)
     if existing_session:
         if existing_session.activity_time < 60:
@@ -73,9 +85,7 @@ def create_session(username):
             return None
         else:
             existing_session.remove_session()
-            return Session(username)
-    else:
-        return Session(username)
+    return Session(username)
 
 
 if __name__ == '__main__':

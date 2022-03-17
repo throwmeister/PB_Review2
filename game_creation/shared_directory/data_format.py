@@ -12,11 +12,13 @@ class ClientRequestTypeEnum(str, Enum):
     UNKNOWN = 0
     KEEP_ALIVE = 404
     LOGIN_REQUEST = 1
+    LOGOUT_REQUEST = 2
 
 
 class ServerRequestTypeEnum(str, Enum):
     UNKNOWN = 0
     LOGIN_RESPONSE = 1
+    INVALID_SESSION = 2
 
 
 class ClientRequestHeader:
@@ -40,7 +42,7 @@ class ServerRequestHeader:
             self.data = f['data']
         else:
             self.request_type = ServerRequestTypeEnum.UNKNOWN
-            self.data = None
+            self.data = ''
 
 
 class ClientLoginRequest:
@@ -55,8 +57,15 @@ class ClientLoginRequest:
             self.version = ''
 
 
-class ServerLoginResponse:
+class ClientLogoutRequest:
+    def __init__(self, data=None):
+        if data:
+            self.username: str = data['username']
+        else:
+            self.username = ''
 
+
+class ServerLoginResponse:
     def __init__(self, data=None):
         if data:
             self.username = data['username']
