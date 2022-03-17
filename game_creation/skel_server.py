@@ -1,10 +1,9 @@
 from twisted.internet import reactor, endpoints
 from twisted.internet.protocol import ServerFactory, Protocol
-from session import Session
-import json
 from configuration_protocol import ServerConfig
 import shared_directory.data_format as form
-import message_handler as handler
+import s_message_handler as handler
+import session
 
 
 class MainServer(Protocol):
@@ -15,17 +14,16 @@ class MainServer(Protocol):
 
     def dataReceived(self, data: bytes):
         d = data.decode(self.format)
-        header = form.RequestType(d)
-        match header.request_type:
-            case form.RequestTypeEnum.LOGIN_REQUEST:
-                data = handler.handle_login_requests(header.data)
-                self.transport.write(data.encode(self.format))
-            case _:
-                pass
-
-
-    def create_session(self, name):
-        Session(name)
+        messages = form.ClientRequestHeader(d)
+        if messages.request_type == form.ClientRequestTypeEnum.LOGIN_REQUEST:
+            data = handler.handle_login_requests(messages.data)
+            self.transport.write(data.encode(self.format))
+        elif session.Session.validate_session(messages.session_id):
+            match messages.request_type:
+                case _:
+                    pass
+        else:
+            print('Invalid session')
 
 
 class ServerProtocol(ServerFactory):

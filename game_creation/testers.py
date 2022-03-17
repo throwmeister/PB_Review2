@@ -19,3 +19,8 @@ class ServerLoginResponse:
 
 x = ServerLoginResponse()
 print(x.__dict__)
+
+x = {'username': 'alex'}
+print(x.values())
+for s in x.values():
+    print(s)

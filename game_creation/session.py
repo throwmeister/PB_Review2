@@ -5,18 +5,19 @@ import uuid
 
 
 class Session:
-    sessions = []
+    sessions = {}
+    #
 
     def __init__(self, name):
         self._username = name
         self._last_activity = None
         self._sessionID = self._createID()
         self._last_activity_time = self.current_time()
-        self.sessions.append(self)
+        self.sessions[self._sessionID] = self
 
     def _createID(self):
-        # Generate session ID
-        return uuid.uuid4()
+        # Generate session ID - must have it as a string as you can't serialise a uuid value
+        return str(uuid.uuid4())
 
     def current_time(self):
         time_secs = datetime.now(timezone.utc).timestamp()
@@ -45,11 +46,36 @@ class Session:
 
     @classmethod
     def get_session(cls, username):
-        for session in cls.sessions:
+        for session in cls.sessions.values():
             if username == session.player_name:
                 return session
             else:
                 return None
+
+    @classmethod
+    def validate_session(cls, session_id):
+        if session_id in cls.sessions:
+            this_session: Session = cls.sessions[session_id]
+            this_session._last_activity_time = this_session.current_time()
+            return True
+        else:
+            return False
+
+    def remove_session(self):
+        del self.sessions[self._sessionID]
+
+
+def create_session(username):
+    existing_session = Session.get_session(username)
+    if existing_session:
+        if existing_session.activity_time < 60:
+            # Active session already exists
+            return None
+        else:
+            existing_session.remove_session()
+            return Session(username)
+    else:
+        return Session(username)
 
 
 if __name__ == '__main__':
@@ -57,9 +83,8 @@ if __name__ == '__main__':
     f = Session('john')
     getting = x.activity_time
     time.sleep(3)
-
-
     print(Session.sessions)
-    c = Session.session_exists('john')
+    c = Session.get_session('alex')
+    print(c.activity_time)
 
 

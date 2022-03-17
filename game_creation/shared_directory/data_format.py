@@ -3,24 +3,43 @@ import json
 
 
 class LoginResponseEnum(str, Enum):
-    ERROR = 0
+    UNKNOWN_ERROR = 0
     SUCCESS = 1
+    ERROR = 2
 
 
-class RequestTypeEnum(str, Enum):
+class ClientRequestTypeEnum(str, Enum):
     UNKNOWN = 0
+    KEEP_ALIVE = 404
     LOGIN_REQUEST = 1
-    LOGIN_RESPONSE = 2
 
 
-class RequestType:
+class ServerRequestTypeEnum(str, Enum):
+    UNKNOWN = 0
+    LOGIN_RESPONSE = 1
+
+
+class ClientRequestHeader:
+    def __init__(self, instructions=None):
+        if instructions:
+            f = json.loads(instructions)
+            self.request_type = f['request_type']
+            self.session_id = f['session_id']
+            self.data = f['data']
+        else:
+            self.request_type = ClientRequestTypeEnum.UNKNOWN
+            self.session_id = ''
+            self.data = None
+
+
+class ServerRequestHeader:
     def __init__(self, instructions=None):
         if instructions:
             f = json.loads(instructions)
             self.request_type = f['request_type']
             self.data = f['data']
         else:
-            self.request_type = RequestTypeEnum.UNKNOWN
+            self.request_type = ServerRequestTypeEnum.UNKNOWN
             self.data = None
 
 
@@ -47,7 +66,7 @@ class ServerLoginResponse:
             self.session_id = data['session_id']
         else:
             self.username = ''
-            self.response_code = LoginResponseEnum.ERROR
+            self.response_code = LoginResponseEnum.UNKNOWN_ERROR
             self.message = ''
             self.keep_alive = ''
             self.session_id = ''
