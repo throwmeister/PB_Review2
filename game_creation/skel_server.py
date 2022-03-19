@@ -14,9 +14,8 @@ class MainServer(Protocol):
 
     def dataReceived(self, data: bytes):
         sp_data = data.decode(self.format).split('\r')
-        print(sp_data)
-        for d in sp_data:
-            print(d)
+        remove = [x for x in sp_data if x]
+        for d in remove:
             messages = form.ClientRequestHeader(d)
             if messages.request_type == form.ClientRequestTypeEnum.LOGIN_REQUEST:
                 data = handler.handle_login_requests(messages.data)
@@ -29,6 +28,8 @@ class MainServer(Protocol):
                     case form.ClientRequestTypeEnum.LOGOUT_REQUEST:
                         handler.handle_logout(messages.session_id)
                         print('logout successful')
+                    case form.ClientRequestTypeEnum.CREATE_GAME:
+                        handler.handle_create_game(messages.data, messages.session_id)
             else:
                 print('Invalid session request')
                 data = handler.invalid_session()

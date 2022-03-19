@@ -1,4 +1,4 @@
-import games as blackjack
+import games_logic as blackjack
 
 if __name__ == '__main__':
     game = blackjack.Blackjack(blackjack.BlackjackPlayer)

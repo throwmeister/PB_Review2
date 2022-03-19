@@ -1,7 +1,7 @@
 from twisted.internet.protocol import Protocol, ServerFactory, Factory
 from twisted.internet import endpoints, reactor
 from twisted.protocols import basic
-from old_files.games import Poker, PokerPlayer, Blackjack, BlackjackPlayer
+from old_files.games_logic import Poker, PokerPlayer, Blackjack, BlackjackPlayer
 
 
 class Echo(basic.LineReceiver):

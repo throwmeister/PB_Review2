@@ -1,5 +1,6 @@
 import builtins
 import session
+from games_data import Game, Participant
 import shared_directory.data_format as form
 from gamerserver_data import DBManager
 from configuration_protocol import ServerConfig
@@ -52,3 +53,14 @@ def invalid_session():
     req = form.ServerRequestHeader()
     req.request_type = form.ServerRequestTypeEnum.INVALID_SESSION
     return json.dumps(req.__dict__)
+
+
+def handle_create_game(data, session_id):
+    client_data = form.ClientCreateGame(data)
+    if Game.game_exists(client_data.lobby_name):
+        # raise error
+        pass
+    else:
+        my_game = Game(name=client_data.lobby_name, password=client_data.password, game_type=client_data.game_type,
+                       owner_id=session_id)
+

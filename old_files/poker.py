@@ -1,4 +1,4 @@
-import games as poker
+import games_logic as poker
 
 
 if __name__ == '__main__':

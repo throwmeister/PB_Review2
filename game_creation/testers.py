@@ -1,4 +1,6 @@
 import json
+import enum
+import shared_directory.data_format as form
 
 x = hash('3')
 print(x)
@@ -24,3 +26,19 @@ x = {'username': 'alex'}
 print(x.values())
 for s in x.values():
     print(s)
+
+
+class Test(str, enum.Enum):
+    A = 0
+    B = 1
+
+
+print(Test.A.name)
+
+if '':
+    print('not working')
+else:
+    print('working')
+
+if t['pasword']:
+    print('testing')

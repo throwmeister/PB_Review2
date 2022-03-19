@@ -2,6 +2,13 @@ from enum import Enum
 import json
 
 
+class GameStatus(str, Enum):
+    INVALID = 0
+    VALID = 1
+    STARTING = 2
+    IN_PROGRESS = 3
+
+
 class LoginResponseEnum(str, Enum):
     UNKNOWN_ERROR = 0
     SUCCESS = 1
@@ -13,12 +20,19 @@ class ClientRequestTypeEnum(str, Enum):
     KEEP_ALIVE = 404
     LOGIN_REQUEST = 1
     LOGOUT_REQUEST = 2
+    CREATE_GAME = 3
 
 
 class ServerRequestTypeEnum(str, Enum):
     UNKNOWN = 0
     LOGIN_RESPONSE = 1
     INVALID_SESSION = 2
+    CREATE_GAME_RESPONSE = 3
+
+class GameTypeEnum(str, Enum):
+    UNKNOWN = 0
+    POKER = 1
+    BLACKJACK = 2
 
 
 class ClientRequestHeader:
@@ -79,6 +93,18 @@ class ServerLoginResponse:
             self.message = ''
             self.keep_alive = ''
             self.session_id = ''
+
+
+class ClientCreateGame:
+    def __init__(self, data=None):
+        if data:
+            self.lobby_name = data['lobby_name']
+            self.password = data['password']
+            self.game_type = data['game_type']
+        else:
+            self.lobby_name = ''
+            self.password = ''
+            self.game_type = GameTypeEnum.UNKNOWN
 
 
 def version_number():
