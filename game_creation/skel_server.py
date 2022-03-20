@@ -1,3 +1,5 @@
+import builtins
+
 from twisted.internet import reactor, endpoints
 from twisted.internet.protocol import ServerFactory, Protocol
 # from configuration_protocol import ServerConfig
@@ -30,7 +32,10 @@ class MainServer(Protocol):
         req = form.ServerRequestHeader()
         req.request_type = request_type
         if data:
-            req.data = data.__dict__
+            try:
+                req.data = data.__dict__
+            except builtins.AttributeError:
+                req.data = data
         else:
             req.data = ''
         print(request_type.name)
@@ -41,6 +46,7 @@ class MainServer(Protocol):
         sp_data = data.decode(self.format).split('\r')
         remove = [x for x in sp_data if x]
         for d in remove:
+            print(d)
             messages = form.ClientRequestHeader(d)
             if messages.request_type == form.ClientRequestTypeEnum.LOGIN_REQUEST:
                 server_data = handler.handle_login_requests(messages.data)

@@ -1,3 +1,4 @@
+import builtins
 import logging
 '''
 from twisted.internet.defer import Deferred
@@ -61,7 +62,10 @@ class MainClient(Protocol):
         req.request_type = request_type
         req.session_id = self.client_info.session_id
         if data:
-            req.data = data.__dict__
+            try:
+                req.data = data.__dict__
+            except builtins.AttributeError:
+                req.data = data
         else:
             req.data = ''
         s = json.dumps(req.__dict__)
