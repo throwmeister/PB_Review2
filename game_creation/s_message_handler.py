@@ -39,28 +39,41 @@ def handle_login_requests(data):
         # Return error to client - need to update software
         response_data.message = 'Invalid client version. Please update your software'
         response_data.response_code = form.LoginResponseEnum.ERROR
-    req = form.ServerRequestHeader()
-    req.request_type = form.ServerRequestTypeEnum.LOGIN_RESPONSE
-    req.data = response_data.__dict__
-    return json.dumps(req.__dict__)
+    return response_data.__dict__
 
 
 def handle_logout(session_id):
     session.Session.delete_session(session_id)
 
 
-def invalid_session():
-    req = form.ServerRequestHeader()
-    req.request_type = form.ServerRequestTypeEnum.INVALID_SESSION
-    return json.dumps(req.__dict__)
-
-
 def handle_create_game(data, session_id):
     client_data = form.ClientCreateGame(data)
-    if Game.game_exists(client_data.lobby_name):
+    send_data = form.ServerCreateGame()
+    if Game.lobby_name_exists(client_data.game_name):
         # raise error
-        pass
+        send_data.response_code = form.CreateGameEnum.NAME_ERROR
     else:
-        my_game = Game(name=client_data.lobby_name, password=client_data.password, game_type=client_data.game_type,
+        my_game = Game(name=client_data.game_name, password=client_data.password, game_type=client_data.game_type,
                        owner_id=session_id)
 
+        send_data.response_code = form.CreateGameEnum.SUCCESS
+        send_data.game_id = my_game.game_id
+
+    return send_data.__dict__
+
+
+def handle_join_game(data, session_id):
+    client_data = form.ClientJoinGame(data)
+    send_data = form.ServerJoinGame()
+    try:
+        game = Game.Games[client_data.game_id]
+        send_data.response_type = form.JoinGameEnum.WRONG_PASSWORD
+        if game.password == client_data.password:
+            player = Participant(session_id)
+            game.add_participant(player)
+            send_data.game_name = game.game_name
+            send_data.response_type = form.JoinGameEnum.SUCCESS
+    except KeyError:
+        send_data.response_type = form.JoinGameEnum.NOT_EXIST
+
+    return send_data.__dict__

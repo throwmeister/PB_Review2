@@ -40,5 +40,10 @@ if '':
 else:
     print('working')
 
-if t['pasword']:
+if t['password']:
     print('testing')
+
+try:
+    var = x['penis']
+except KeyError:
+    print('no way')

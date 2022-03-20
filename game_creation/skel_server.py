@@ -4,13 +4,38 @@ from twisted.internet.protocol import ServerFactory, Protocol
 import shared_directory.data_format as form
 import s_message_handler as handler
 import session
+import json
 
 
+# noinspection PyArgumentList
 class MainServer(Protocol):
     format = form.decode_format()
 
     def connectionMade(self):
         pass
+
+    def login(self, data):
+        self.format_send_data(form.ServerRequestTypeEnum.LOGIN_RESPONSE, data)
+
+    def invalid_session(self):
+        self.format_send_data(form.ServerRequestTypeEnum.INVALID_SESSION)
+
+    def send_create_game(self, data):
+        self.format_send_data(form.ServerRequestTypeEnum.CREATE_GAME_RESPONSE, data)
+
+    def send_join_game(self, data):
+        self.format_send_data(form.ServerRequestTypeEnum.JOIN_GAME_RESPONSE, data)
+
+    def format_send_data(self, request_type, data=None):
+        req = form.ServerRequestHeader()
+        req.request_type = request_type
+        if data:
+            req.data = data.__dict__
+        else:
+            req.data = ''
+        print(request_type.name)
+        s = json.dumps(req.__dict__)
+        self.transport.write(f'{s}\r'.encode(self.format))
 
     def dataReceived(self, data: bytes):
         sp_data = data.decode(self.format).split('\r')
@@ -18,22 +43,28 @@ class MainServer(Protocol):
         for d in remove:
             messages = form.ClientRequestHeader(d)
             if messages.request_type == form.ClientRequestTypeEnum.LOGIN_REQUEST:
-                data = handler.handle_login_requests(messages.data)
-                self.transport.write(f'{data}\r'.encode(self.format))
+                server_data = handler.handle_login_requests(messages.data)
+                self.login(server_data)
             # Validate session updates the activity timer. Therefore, no need to call it for the keep alive
             elif session.Session.validate_session(messages.session_id):
                 match messages.request_type:
                     case form.ClientRequestTypeEnum.KEEP_ALIVE:
                         print(f'keep alive message received from {messages.session_id}: {messages.data}')
                     case form.ClientRequestTypeEnum.LOGOUT_REQUEST:
-                        handler.handle_logout(messages.session_id)
+                        session.Session.delete_session(messages.session_id)
                         print('logout successful')
                     case form.ClientRequestTypeEnum.CREATE_GAME:
-                        handler.handle_create_game(messages.data, messages.session_id)
+                        server_data = handler.handle_create_game(messages.data, messages.session_id)
+                        self.send_create_game(server_data)
+                    case form.ClientRequestTypeEnum.JOIN_GAME:
+                        server_data = handler.handle_join_game(messages.data, messages.session_id)
+                        self.send_join_game(server_data)
+                    case _:
+                        pass
+
             else:
                 print('Invalid session request')
-                data = handler.invalid_session()
-                self.transport.write(f"{data}\r".encode(self.format))
+                self.invalid_session()
 
 
 class ServerProtocol(ServerFactory):

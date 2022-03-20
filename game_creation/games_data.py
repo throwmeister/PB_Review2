@@ -4,6 +4,8 @@ from uuid import uuid4
 
 
 class Participant:
+    Participants = {}
+
     def __init__(self, session_id):
         self.session_id = session_id
         session_object: session.Session = session.Session.sessions[session_id]
@@ -17,23 +19,24 @@ class Game:
         self.present = []
         self.players = []
         self.owner_id = owner_id
-        self.lobby_name = name
+        self.game_name = name
         self.game_type = game_type
         self.password = password
         self.in_progress = False
         self.game_status = form.GameStatus.INVALID
         self.game_id = self.create_game_id()
-        self.add_game()
+        self._add_game()
+        self.add_participant(Participant(owner_id))
 
     @staticmethod
     def create_game_id():
         return str(uuid4())
 
-    def add_game(self):
+    def _add_game(self):
         self.Games[self.game_id] = self
 
     @classmethod
-    def game_exists(cls, session_id):
+    def lobby_name_exists(cls, session_id):
         if session_id in cls.Games:
             return True
         else:
@@ -43,7 +46,7 @@ class Game:
     def game_name_exists(cls, name, session_id):
         for game in cls.Games.values():
             game: Game
-            if game.lobby_name == name:
+            if game.game_name == name:
                 return True
         return False
 
@@ -57,5 +60,13 @@ class Game:
 
     def remove_game(self):
         del self.Games[self.owner_id]
+
+    @property
+    def num_present(self):
+        return len(self.present)
+
+    @property
+    def num_playing(self):
+        return len(self.players)
 
 

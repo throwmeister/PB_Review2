@@ -21,6 +21,7 @@ class ClientRequestTypeEnum(str, Enum):
     LOGIN_REQUEST = 1
     LOGOUT_REQUEST = 2
     CREATE_GAME = 3
+    JOIN_GAME = 4
 
 
 class ServerRequestTypeEnum(str, Enum):
@@ -28,11 +29,26 @@ class ServerRequestTypeEnum(str, Enum):
     LOGIN_RESPONSE = 1
     INVALID_SESSION = 2
     CREATE_GAME_RESPONSE = 3
+    JOIN_GAME_RESPONSE = 4
+
 
 class GameTypeEnum(str, Enum):
     UNKNOWN = 0
     POKER = 1
     BLACKJACK = 2
+
+
+class CreateGameEnum(str, Enum):
+    UNKNOWN = 0
+    SUCCESS = 1
+    NAME_ERROR = 2
+
+
+class JoinGameEnum(str, Enum):
+    UNKNOWN = 0
+    SUCCESS = 1
+    WRONG_PASSWORD = 2
+    NOT_EXIST = 3
 
 
 class ClientRequestHeader:
@@ -56,7 +72,7 @@ class ServerRequestHeader:
             self.data = f['data']
         else:
             self.request_type = ServerRequestTypeEnum.UNKNOWN
-            self.data = ''
+            self.data = None
 
 
 class ClientLoginRequest:
@@ -98,13 +114,44 @@ class ServerLoginResponse:
 class ClientCreateGame:
     def __init__(self, data=None):
         if data:
-            self.lobby_name = data['lobby_name']
+            self.game_name = data['game_name']
             self.password = data['password']
             self.game_type = data['game_type']
         else:
-            self.lobby_name = ''
+            self.game_name = ''
             self.password = ''
             self.game_type = GameTypeEnum.UNKNOWN
+
+
+class ServerCreateGame:
+    def __init__(self, data=None):
+        if data:
+            self.response_code = data['response_code']
+            self.game_id = data['game_id']
+        else:
+            self.response_code = CreateGameEnum.UNKNOWN
+            self.game_id = ''
+
+
+class ClientJoinGame:
+    def __init__(self, data=None):
+        if data:
+            self.game_id = data['game_id']
+            self.password = data['password']
+        else:
+            self.game_id = ''
+            self.password = ''
+
+
+class ServerJoinGame:
+    def __init__(self, data=None):
+        if data:
+            self.response_type = data['response_type']
+            self.game_name = data['game_name']
+
+        else:
+            pass
+
 
 
 def version_number():

@@ -1,4 +1,4 @@
-import time
+import logging
 '''
 from twisted.internet.defer import Deferred
 from twisted.internet.threads import deferToThread'''
@@ -8,7 +8,6 @@ from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet.task import LoopingCall
 from game_creation.shared_directory import data_format as form
 from client_data import ClientInfo
-import c_message_handler as handler
 import json
 
 
@@ -27,7 +26,6 @@ class MainClient(Protocol):
 
     def connectionLost(self, reason):
         print('disconnecting')
-        self.send_logout()
 
     def send_login(self):
         x = form.ClientLoginRequest()
@@ -38,18 +36,25 @@ class MainClient(Protocol):
         req.request_type = form.ClientRequestTypeEnum.LOGIN_REQUEST
         req.data = x.__dict__
         s = json.dumps(req.__dict__)
-        print('send login')
+        logger.info('Send login')
         self.transport.write(f'{s}\r'.encode(self.format))
 
     def send_logout(self):
+        logger.info('Send logout')
         self.format_send_data(form.ClientRequestTypeEnum.LOGOUT_REQUEST)
 
-    def create_game(self):
+    def create_game(self, name=None, password=None):
         user_data = form.ClientCreateGame()
         user_data.game_type = form.GameTypeEnum.POKER
-        user_data.lobby_name = 'Alex has a lobby'
+        user_data.game_name = 'Alex has a lobby'
         user_data.password = 'ILOVEPOKER'
         self.format_send_data(form.ClientRequestTypeEnum.CREATE_GAME, user_data)
+
+    def join_game(self, game_id, password=None):
+        user_data = form.ClientJoinGame()
+        user_data.game_id = game_id
+        user_data.password = 'ILOVEPOKER'
+        self.format_send_data(form.ClientRequestTypeEnum.JOIN_GAME, user_data)
 
     def format_send_data(self, request_type: form.ClientRequestTypeEnum, data=None):
         req = form.ClientRequestHeader()
@@ -60,32 +65,34 @@ class MainClient(Protocol):
         else:
             req.data = ''
         s = json.dumps(req.__dict__)
-        print(request_type.name)
+        logger.debug(f'{request_type.name}')
         self.transport.write(f'{s}\r'.encode(self.format))
 
     def dataReceived(self, data: bytes):
         sp_data = data.decode(self.format).split('\r')
         remove = [x for x in sp_data if x]
         for d in remove:
-            print(d)
+            logger.debug(f'{d}')
             message = form.ServerRequestHeader(d)
             match message.request_type:
                 case form.ServerRequestTypeEnum.LOGIN_RESPONSE:
-                    print('login response')
+                    logger.info('Handling login')
                     self.handle_login_response(message.data)
                 case form.ServerRequestTypeEnum.INVALID_SESSION:
                     # Stop keep alive function
-                    print('RELOG IN')
+                    logger.error('Invalid session. Log in')
                     self.loop.stop()
-                    pass
-
+                case form.ServerRequestTypeEnum.CREATE_GAME_RESPONSE:
+                    self.handle_create_game_response(message.data)
+                case form.ServerRequestTypeEnum.JOIN_GAME_RESPONSE:
+                    self.handle_join_game_response
                 case _:
                     # Invalid command
                     pass
 
     def handle_login_response(self, data):
         response_data = form.ServerLoginResponse(data)
-        print(response_data.message)
+        logger.debug(response_data.message)
         if response_data.response_code == form.LoginResponseEnum.SUCCESS:
             self.client_info = ClientInfo(response_data.username, response_data.keep_alive, response_data.session_id)
             self.loop.start(response_data.keep_alive)
@@ -99,12 +106,22 @@ class MainClient(Protocol):
             raise RuntimeError
 
     def send_keep_alive(self):
-        response_data = form.ClientRequestHeader()
-        response_data.request_type = form.ClientRequestTypeEnum.KEEP_ALIVE
-        response_data.session_id = self.client_info.session_id
-        response_data.data = self.client_info.username
-        s = json.dumps(response_data.__dict__)
-        self.transport.write(f'{s}\r'.encode(self.format))
+        self.format_send_data(form.ClientRequestTypeEnum.KEEP_ALIVE, self.client_info.username)
+
+    def handle_create_game_response(self, data):
+        response_data = form.ServerCreateGame(data)
+        logger.info(f'Game creation: {response_data.response_code.name}')
+        if response_data.response_code == form.CreateGameEnum.SUCCESS:
+            self.client_info.game_joined = response_data.game_id
+            self.client_info.game_owner = True
+        elif response_data.response_code == form.CreateGameEnum.NAME_ERROR:
+            # Popup
+            logger.error('Game name exists')
+        else:
+            raise RuntimeError
+
+    def handle_join_game_response(self, data):
+        pass
 
 
 class ClientCreator(ClientFactory):
@@ -113,6 +130,11 @@ class ClientCreator(ClientFactory):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+                        datefmt='%d-%m-%Y:%H:%M:%S',
+                        level=logging.DEBUG)
+
+    logger = logging.getLogger('Main')
     endpoint = TCP4ClientEndpoint(reactor, 'localhost', 8007)
     endpoint.connect(ClientCreator())
     reactor.run()
