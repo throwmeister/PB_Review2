@@ -114,13 +114,13 @@ class MainClient(Protocol):
 
     def handle_create_game_response(self, data):
         response_data = form.ServerCreateGame(data)
-        logger.info(f'Game creation: {response_data.response_code.name}')
         if response_data.response_code == form.CreateGameEnum.SUCCESS:
+            logger.info(f'Game creation: {form.CreateGameEnum.SUCCESS.name}')
             self.client_info.game_joined = response_data.game_id
             self.client_info.game_owner = True
         elif response_data.response_code == form.CreateGameEnum.NAME_ERROR:
             # Popup
-            logger.error('Game name exists')
+            logger.info(f'Game creation: {form.CreateGameEnum.NAME_ERROR.name}')
         else:
             raise RuntimeError
 
