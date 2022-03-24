@@ -178,5 +178,5 @@ if __name__ == '__main__':
     endpoint = TCP4ClientEndpoint(reactor, 'localhost', 8007)
     endpoint.connect(ClientCreator())
     reactor.run()
-
+    print('run...')
     x = MessageQueue(queue_name='gaming.client.lobby', exchange='gameserver.broadcast')
