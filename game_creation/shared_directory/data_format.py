@@ -160,3 +160,7 @@ def version_number():
 
 def decode_format():
     return 'utf-8'
+
+
+def message_url():
+    return 'amqps://nueyygmi:rB5rQ_Q7VVq-X8S1ytyilh20EPhcj0S9@rattlesnake.rmq.cloudamqp.com/nueyygmi'

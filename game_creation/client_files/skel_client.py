@@ -1,15 +1,13 @@
-import builtins
-import logging
-'''
+import builtins, logging, json, pika
+
 from twisted.internet.defer import Deferred
-from twisted.internet.threads import deferToThread'''
+from twisted.internet.threads import deferToThread
 from twisted.internet import reactor
 from twisted.internet.protocol import Protocol, ClientFactory
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet.task import LoopingCall
 from game_creation.shared_directory import data_format as form
 from client_data import ClientInfo
-import json
 
 
 # noinspection PyArgumentList
@@ -133,7 +131,45 @@ class ClientCreator(ClientFactory):
         return MainClient()
 
 
+class MessageQueue:
+    def __init__(self, queue_name, exchange, routing_key=''):
+        self.queue_name = queue_name
+        self.exchange = exchange
+        self.routing_key = routing_key
+        my_url = form.message_url()
+
+        self.connection = pika.BlockingConnection(pika.URLParameters(url=my_url))
+        self.channel = self.connection.channel()
+
+        self.channel.queue_declare(queue=queue_name, durable=True, exclusive=False, auto_delete=False)
+        self.channel.queue_bind(queue=queue_name, exchange=exchange, routing_key=routing_key)
+
+        def callback(ch, method, properties, body):
+            print(f'Received: {body.decode()}')
+            print(f'''ch: {ch}
+        method: {method}
+        properties: {properties}
+        ''')
+
+        def called():
+            pass
+
+        self.channel.basic_consume(queue=queue_name,
+                              on_message_callback=self.dataRecieved)
+
+        self.channel.start_consuming()
+
+    def dataRecieved(self, ch, method, properties, body):
+        print(f'Received: {body.decode()}')
+        print(f'''ch: {ch}
+                method: {method}
+                properties: {properties}
+                ''')
+
+
+
 if __name__ == '__main__':
+
     logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
                         datefmt='%d-%m-%Y:%H:%M:%S',
                         level=logging.DEBUG)
@@ -142,3 +178,5 @@ if __name__ == '__main__':
     endpoint = TCP4ClientEndpoint(reactor, 'localhost', 8007)
     endpoint.connect(ClientCreator())
     reactor.run()
+
+    x = MessageQueue(queue_name='gaming.client.lobby', exchange='gameserver.broadcast')

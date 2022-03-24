@@ -8,6 +8,9 @@ import s_message_handler as handler
 import session
 import json
 
+import pika
+import pika.adapters.twisted_connection as tw
+import pika.channel as chan
 
 # noinspection PyArgumentList
 class MainServer(Protocol):
@@ -82,3 +85,4 @@ if __name__ == '__main__':
     endpoint = endpoints.TCP4ServerEndpoint(reactor, 8007)
     endpoint.listen(ServerProtocol())
     reactor.run()
+
