@@ -77,3 +77,18 @@ def handle_join_game(data, session_id):
         send_data.response_type = form.JoinGameEnum.NOT_EXIST
 
     return send_data.__dict__
+
+
+def aggregate_lobby_list():
+    d = {}
+    for games in Game.Games.values():
+        games: Game
+        var = form.UpdateGameListVariables()
+        var.game_name = games.game_name
+        var.game_type = games.game_type
+        var.num_players = games.num_present
+        var.in_progress = str(games.in_progress)
+        d[games.game_id] = var.__dict__
+    return d
+
+

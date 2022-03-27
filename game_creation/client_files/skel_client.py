@@ -9,15 +9,17 @@ from twisted.internet.task import LoopingCall
 from game_creation.shared_directory import data_format as form
 from client_data import ClientInfo
 
+decode_type = form.decode_format()
+
 
 # noinspection PyArgumentList
 class MainClient(Protocol):
-    format = form.decode_format()
+    format = decode_type
 
     def __init__(self):
         self.client_info: ClientInfo = ClientInfo()
         self.loop: LoopingCall = LoopingCall(self.send_keep_alive)
-        self.message_queue = MessageQueue(queue_name='gaming.client.lobby', exchange='gameserver.broadcast')
+        self.lobby_mq: MessageQueue = None
 
     def connectionMade(self):
         # Do we want the client to be auto logged in?
@@ -41,7 +43,7 @@ class MainClient(Protocol):
 
     def send_logout(self):
         logger.info('Send logout')
-        self.message_queue.stop_consuming()
+        self.lobby_mq.stop_consumption()
         self.format_send_data(form.ClientRequestTypeEnum.LOGOUT_REQUEST)
 
     def create_game(self, name=None, password=None):
@@ -73,11 +75,10 @@ class MainClient(Protocol):
         self.transport.write(f'{s}\r'.encode(self.format))
 
     def dataReceived(self, data: bytes):
-        sp_data = data.decode(self.format).split('\r')
-        remove = [x for x in sp_data if x]
-        for d in remove:
-            logger.debug(f'{d}')
-            message = form.ServerRequestHeader(d)
+        listed_data = self.decode_data(data)
+        for json_data in listed_data:
+            logger.debug(f'{json_data}')
+            message = form.ServerRequestHeader(json_data)
             match message.request_type:
                 case form.ServerRequestTypeEnum.LOGIN_RESPONSE:
                     logger.info('Handling login')
@@ -89,10 +90,16 @@ class MainClient(Protocol):
                 case form.ServerRequestTypeEnum.CREATE_GAME_RESPONSE:
                     self.handle_create_game_response(message.data)
                 case form.ServerRequestTypeEnum.JOIN_GAME_RESPONSE:
-                    self.handle_join_game_response
+                    self.handle_join_game_response()
+                case form.ServerRequestTypeEnum.UPDATE_GAME_LIST:
+                    pass
                 case _:
                     # Invalid command
                     pass
+
+    def decode_data(self, data):
+        sp_data = data.decode(self.format).split('\r')
+        return [x for x in sp_data if x]
 
     def handle_login_response(self, data):
         response_data = form.ServerLoginResponse(data)
@@ -102,7 +109,10 @@ class MainClient(Protocol):
             self.loop.start(response_data.keep_alive)
             # reactor.callFromThread(self.start_keep_alive, response_data.keep_alive)
             logger.info('Running message queue')
-            reactor.callInThread(self.message_queue.start_consumption)
+            self.lobby_mq = MessageQueue(queue_name=f'gameserver.{response_data.username}.{response_data.session_id}',
+                                         exchange=form.exchange_name())
+            self.lobby_mq.set_consume(self.dataReceived)
+            reactor.callInThread(self.lobby_mq.start_consumption)
             logger.info('Message queue has successfully been added to the thread')
             self.create_game()
         elif response_data.response_code == form.LoginResponseEnum.ERROR:
@@ -146,20 +156,21 @@ class MessageQueue:
         self.connection = pika.BlockingConnection(pika.URLParameters(url=my_url))
         self.channel = self.connection.channel()
 
-        self.channel.queue_declare(queue=queue_name, durable=True, exclusive=False, auto_delete=False)
+        self.channel.queue_declare(queue=queue_name, durable=False, exclusive=False, auto_delete=True)
         self.channel.queue_bind(queue=queue_name, exchange=exchange, routing_key=routing_key)
-
-        self.channel.basic_consume(queue=queue_name,
-                                   on_message_callback=self.data_received)
-
-    def data_received(self, ch, method, properties, body):
-        print(f'Received: {body.decode()}')
 
     def start_consumption(self):
         self.channel.start_consuming()
 
-    def stop_consuming(self):
+    def set_consume(self, func):
+        self.channel.basic_consume(queue=self.queue_name, on_message_callback=func)
+
+    def stop_consumption(self):
         self.channel.stop_consuming()
+
+
+def mq_data_received(ch, method, properties, body):
+    print(f'Received: {body.decode_type()}')
 
 
 if __name__ == '__main__':

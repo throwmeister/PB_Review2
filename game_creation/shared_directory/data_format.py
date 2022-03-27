@@ -30,6 +30,8 @@ class ServerRequestTypeEnum(str, Enum):
     INVALID_SESSION = 2
     CREATE_GAME_RESPONSE = 3
     JOIN_GAME_RESPONSE = 4
+    UPDATE_EVERY_GAME_LIST = 5
+    UPDATE_ONE_GAME_LIST = 6
 
 
 class GameTypeEnum(str, Enum):
@@ -148,11 +150,27 @@ class ServerJoinGame:
         if data:
             self.response_type = data['response_type']
             self.game_name = data['game_name']
+        else:
+            self.response_type = JoinGameEnum.UNKNOWN
+            self.game_name = ''
 
+
+class UpdateGameList:
+    def __init__(self, data=None):
+        if data:
+            self.game_id = data['game_id']
+            self.game_vars = UpdateGameListVariables(data['game_vars'])
         else:
             pass
 
 
+class UpdateGameListVariables:
+    def __init__(self, data=None):
+        if data:
+            self.game_name = data['game_name']
+            self.game_type = data['game_type']
+            self.num_players = data['num_players']
+            self.in_progress = data['in_progress']
 
 def version_number():
     return '1.0'
@@ -164,3 +182,7 @@ def decode_format():
 
 def message_url():
     return 'amqps://nueyygmi:rB5rQ_Q7VVq-X8S1ytyilh20EPhcj0S9@rattlesnake.rmq.cloudamqp.com/nueyygmi'
+
+
+def exchange_name():
+    return 'gameserver.broadcast'

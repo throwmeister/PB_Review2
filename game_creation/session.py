@@ -6,7 +6,6 @@ import uuid
 
 class Session:
     sessions = {}
-    #
 
     def __init__(self, name):
         self._username = name

@@ -9,8 +9,7 @@ import session
 import json
 
 import pika
-import pika.adapters.twisted_connection as tw
-import pika.channel as chan
+
 
 # noinspection PyArgumentList
 class MainServer(Protocol):
@@ -20,18 +19,23 @@ class MainServer(Protocol):
         pass
 
     def login(self, data):
-        self.format_send_data(form.ServerRequestTypeEnum.LOGIN_RESPONSE, data)
+        d = self.format_send_data(form.ServerRequestTypeEnum.LOGIN_RESPONSE, data)
+        self.tcp_send_data(d)
 
     def invalid_session(self):
-        self.format_send_data(form.ServerRequestTypeEnum.INVALID_SESSION)
+        d = self.format_send_data(form.ServerRequestTypeEnum.INVALID_SESSION)
+        self.tcp_send_data(d)
 
     def send_create_game(self, data):
-        self.format_send_data(form.ServerRequestTypeEnum.CREATE_GAME_RESPONSE, data)
+        d = self.format_send_data(form.ServerRequestTypeEnum.CREATE_GAME_RESPONSE, data)
+        self.tcp_send_data(d)
 
     def send_join_game(self, data):
-        self.format_send_data(form.ServerRequestTypeEnum.JOIN_GAME_RESPONSE, data)
+        d = self.format_send_data(form.ServerRequestTypeEnum.JOIN_GAME_RESPONSE, data)
+        self.tcp_send_data(d)
 
-    def format_send_data(self, request_type, data=None):
+    @staticmethod
+    def format_send_data(request_type, data=None):
         req = form.ServerRequestHeader()
         req.request_type = request_type
         if data:
@@ -43,7 +47,10 @@ class MainServer(Protocol):
             req.data = ''
         print(request_type.name)
         s = json.dumps(req.__dict__)
-        self.transport.write(f'{s}\r'.encode(self.format))
+        return s
+
+    def tcp_send_data(self, message):
+        self.transport.write(f'{message}\r'.encode(self.format))
 
     def dataReceived(self, data: bytes):
         sp_data = data.decode(self.format).split('\r')
@@ -82,8 +89,7 @@ class ServerProtocol(ServerFactory):
 
 
 class MessageQueue:
-    def __init__(self, queue_name, exchange, routing_key=''):
-        self.queue_name = queue_name
+    def __init__(self, exchange, routing_key=''):
         self.exchange = exchange
         self.routing_key = routing_key
         my_url = form.message_url()
@@ -91,17 +97,25 @@ class MessageQueue:
         self.connection = pika.BlockingConnection(pika.URLParameters(url=my_url))
         self.channel = self.connection.channel()
 
-        self.channel.queue_declare(queue=queue_name, durable=True, exclusive=False, auto_delete=False)
+        # self.channel.queue_declare(queue=queue_name, durable=True, exclusive=False, auto_delete=False)
 
-    def send_message(self, message):
-        self.channel.basic_publish(self.exchange, body=message, routing_key=self.routing_key)
+    def construct_message(self):
+        pass
+
+    def send_message(self, message, routing_key=''):
+        self.channel.basic_publish(self.exchange, body=message, routing_key=routing_key)
 
     def close_connection(self):
         self.connection.close()
 
 
+def send_whole_lobby_list():
+    all_games = handler.aggregate_lobby_list()
+
+
 if __name__ == '__main__':
     endpoint = endpoints.TCP4ServerEndpoint(reactor, 8007)
+    message_queue = MessageQueue(exchange='gameserver.broadcast')
     endpoint.listen(ServerProtocol())
     reactor.run()
 
