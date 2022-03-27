@@ -81,6 +81,25 @@ class ServerProtocol(ServerFactory):
         return MainServer()
 
 
+class MessageQueue:
+    def __init__(self, queue_name, exchange, routing_key=''):
+        self.queue_name = queue_name
+        self.exchange = exchange
+        self.routing_key = routing_key
+        my_url = form.message_url()
+
+        self.connection = pika.BlockingConnection(pika.URLParameters(url=my_url))
+        self.channel = self.connection.channel()
+
+        self.channel.queue_declare(queue=queue_name, durable=True, exclusive=False, auto_delete=False)
+
+    def send_message(self, message):
+        self.channel.basic_publish(self.exchange, body=message, routing_key=self.routing_key)
+
+    def close_connection(self):
+        self.connection.close()
+
+
 if __name__ == '__main__':
     endpoint = endpoints.TCP4ServerEndpoint(reactor, 8007)
     endpoint.listen(ServerProtocol())

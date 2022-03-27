@@ -17,6 +17,7 @@ class MainClient(Protocol):
     def __init__(self):
         self.client_info: ClientInfo = ClientInfo()
         self.loop: LoopingCall = LoopingCall(self.send_keep_alive)
+        self.message_queue = MessageQueue(queue_name='gaming.client.lobby', exchange='gameserver.broadcast')
 
     def connectionMade(self):
         # Do we want the client to be auto logged in?
@@ -40,6 +41,7 @@ class MainClient(Protocol):
 
     def send_logout(self):
         logger.info('Send logout')
+        self.message_queue.stop_consuming()
         self.format_send_data(form.ClientRequestTypeEnum.LOGOUT_REQUEST)
 
     def create_game(self, name=None, password=None):
@@ -67,7 +69,7 @@ class MainClient(Protocol):
         else:
             req.data = ''
         s = json.dumps(req.__dict__)
-        logger.debug(f'{request_type.name}')
+        logger.info(f'{request_type.name}')
         self.transport.write(f'{s}\r'.encode(self.format))
 
     def dataReceived(self, data: bytes):
@@ -99,6 +101,9 @@ class MainClient(Protocol):
             self.client_info = ClientInfo(response_data.username, response_data.keep_alive, response_data.session_id)
             self.loop.start(response_data.keep_alive)
             # reactor.callFromThread(self.start_keep_alive, response_data.keep_alive)
+            logger.info('Running message queue')
+            reactor.callInThread(self.message_queue.start_consumption)
+            logger.info('Message queue has successfully been added to the thread')
             self.create_game()
         elif response_data.response_code == form.LoginResponseEnum.ERROR:
             # User must re-input
@@ -144,39 +149,26 @@ class MessageQueue:
         self.channel.queue_declare(queue=queue_name, durable=True, exclusive=False, auto_delete=False)
         self.channel.queue_bind(queue=queue_name, exchange=exchange, routing_key=routing_key)
 
-        def callback(ch, method, properties, body):
-            print(f'Received: {body.decode()}')
-            print(f'''ch: {ch}
-        method: {method}
-        properties: {properties}
-        ''')
-
-        def called():
-            pass
-
         self.channel.basic_consume(queue=queue_name,
-                              on_message_callback=self.dataRecieved)
+                                   on_message_callback=self.data_received)
 
+    def data_received(self, ch, method, properties, body):
+        print(f'Received: {body.decode()}')
+
+    def start_consumption(self):
         self.channel.start_consuming()
 
-    def dataRecieved(self, ch, method, properties, body):
-        print(f'Received: {body.decode()}')
-        print(f'''ch: {ch}
-                method: {method}
-                properties: {properties}
-                ''')
-
+    def stop_consuming(self):
+        self.channel.stop_consuming()
 
 
 if __name__ == '__main__':
-
     logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
                         datefmt='%d-%m-%Y:%H:%M:%S',
-                        level=logging.DEBUG)
+                        level=logging.INFO)
 
     logger = logging.getLogger('Main')
     endpoint = TCP4ClientEndpoint(reactor, 'localhost', 8007)
     endpoint.connect(ClientCreator())
     reactor.run()
-    print('run...')
-    x = MessageQueue(queue_name='gaming.client.lobby', exchange='gameserver.broadcast')
+
