@@ -106,7 +106,8 @@ class MainClient(Protocol):
         response_data = form.ServerLoginResponse(data)
         logger.debug(response_data.message)
         if response_data.response_code == form.LoginResponseEnum.SUCCESS:
-            self.client_info = ClientInfo(response_data.username, response_data.keep_alive, response_data.session_id)
+            self.client_info = ClientInfo.set_login_values(response_data.username, response_data.keep_alive,
+                                                           response_data.session_id)
             self.loop.start(response_data.keep_alive)
             # reactor.callFromThread(self.start_keep_alive, response_data.keep_alive)
             logger.info('Running message queue')

@@ -1,10 +1,15 @@
 class ClientInfo:
-    def __init__(self, username=None, keepalive=None, session_id=None):
-        self.username = username
-        self.keepalive = keepalive
-        self.session_id = session_id
-        self.game_joined = ''
-        self.game_owner = False
+    username = ''
+    keep_alive = 0
+    session_id = ''
+    game_joined = ''
+    game_owner = True
+
+    @classmethod
+    def set_login_values(cls, username, keepalive, session_id):
+        cls.username = username
+        cls.keep_alive = keepalive
+        cls.session_id = session_id
 
 
 class GameLobbies:
