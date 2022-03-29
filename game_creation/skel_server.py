@@ -30,6 +30,7 @@ class MainServer(Protocol):
         d = self.format_send_data(form.ServerRequestTypeEnum.CREATE_GAME_RESPONSE, data)
         self.tcp_send_data(d)
 
+
     def send_join_game(self, data):
         d = self.format_send_data(form.ServerRequestTypeEnum.JOIN_GAME_RESPONSE, data)
         self.tcp_send_data(d)
@@ -37,7 +38,8 @@ class MainServer(Protocol):
     def send_aggregate_lobby(self):
         all_games = handler.aggregate_lobby_list()
         d = self.format_send_data(form.ServerRequestTypeEnum.UPDATE_EVERY_GAME_LIST, all_games)
-        self.tcp_send_data(d)
+        # self.tcp_send_data(d)
+        self.queue_message(form.exchange_name(), '', d)
 
     @staticmethod
     def format_send_data(request_type, data=None):
@@ -56,6 +58,11 @@ class MainServer(Protocol):
 
     def tcp_send_data(self, message):
         self.transport.write(f'{message}\r'.encode(self.format))
+
+    def queue_message(self, exchange, routing_key, message):
+        x = MessageQueue(exchange=exchange, routing_key=routing_key)
+        x.send_message(message=message, routing_key=routing_key)
+        x.close_connection()
 
     def dataReceived(self, data: bytes):
         sp_data = data.decode(self.format).split('\r')
@@ -77,6 +84,7 @@ class MainServer(Protocol):
                     case form.ClientRequestTypeEnum.CREATE_GAME:
                         server_data = handler.handle_create_game(messages.data, messages.session_id)
                         self.send_create_game(server_data)
+                        self.send_aggregate_lobby()
                     case form.ClientRequestTypeEnum.JOIN_GAME:
                         server_data = handler.handle_join_game(messages.data, messages.session_id)
                         self.send_join_game(server_data)
@@ -117,7 +125,7 @@ class MessageQueue:
 
 if __name__ == '__main__':
     endpoint = endpoints.TCP4ServerEndpoint(reactor, 8007)
-    message_queue = MessageQueue(exchange='gameserver.broadcast')
+    # message_queue = MessageQueue(exchange='gameserver.broadcast')
     endpoint.listen(ServerProtocol())
     reactor.run()
 

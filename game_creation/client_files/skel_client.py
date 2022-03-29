@@ -18,32 +18,31 @@ class MainClient(Protocol):
     format = decode_type
 
     def __init__(self):
-        self.client_info: ClientInfo = ClientInfo()
         self.loop: LoopingCall = LoopingCall(self.send_keep_alive)
         self.lobby_mq: MessageQueue = None
 
     def connectionMade(self):
         # Do we want the client to be auto logged in?
         # Do we want to save the login details if they have logged in before?
-        self.send_login()
+        pass
 
     def connectionLost(self, reason):
         print('disconnecting')
 
-    def send_login(self):
+    def send_login(self, username, password):
         x = form.ClientLoginRequest()
-        x.username = 'Alex'
-        x.password = 'alex'
+        x.username = username
+        x.password = password
         x.version = form.version_number()
         req = form.ClientRequestHeader()
         req.request_type = form.ClientRequestTypeEnum.LOGIN_REQUEST
         req.data = x.__dict__
         s = json.dumps(req.__dict__)
-        logger.info('Send login')
+        ClientInfo.logger.info('Send login')
         self.transport.write(f'{s}\r'.encode(self.format))
 
     def send_logout(self):
-        logger.info('Send logout')
+        ClientInfo.logger.info('Send logout')
         self.lobby_mq.stop_consumption()
         self.format_send_data(form.ClientRequestTypeEnum.LOGOUT_REQUEST)
 
@@ -63,7 +62,7 @@ class MainClient(Protocol):
     def format_send_data(self, request_type: form.ClientRequestTypeEnum, data=None):
         req = form.ClientRequestHeader()
         req.request_type = request_type
-        req.session_id = self.client_info.session_id
+        req.session_id = ClientInfo.session_id
         if data:
             try:
                 req.data = data.__dict__
@@ -72,21 +71,21 @@ class MainClient(Protocol):
         else:
             req.data = ''
         s = json.dumps(req.__dict__)
-        logger.info(f'{request_type.name}')
+        ClientInfo.logger.info(f'{request_type.name}')
         self.transport.write(f'{s}\r'.encode(self.format))
 
     def dataReceived(self, data: bytes):
         listed_data = self.decode_data(data)
         for json_data in listed_data:
-            logger.debug(f'{json_data}')
+            ClientInfo.logger.debug(f'{json_data}')
             message = form.ServerRequestHeader(json_data)
             match message.request_type:
                 case form.ServerRequestTypeEnum.LOGIN_RESPONSE:
-                    logger.info('Handling login')
+                    ClientInfo.logger.info('Handling login')
                     self.handle_login_response(message.data)
                 case form.ServerRequestTypeEnum.INVALID_SESSION:
                     # Stop keep alive function
-                    logger.error('Invalid session. Log in')
+                    ClientInfo.logger.error('Invalid session. Log in')
                     self.loop.stop()
                 case form.ServerRequestTypeEnum.CREATE_GAME_RESPONSE:
                     self.handle_create_game_response(message.data)
@@ -104,18 +103,18 @@ class MainClient(Protocol):
 
     def handle_login_response(self, data):
         response_data = form.ServerLoginResponse(data)
-        logger.debug(response_data.message)
+        ClientInfo.logger.debug(response_data.message)
         if response_data.response_code == form.LoginResponseEnum.SUCCESS:
-            self.client_info = ClientInfo.set_login_values(response_data.username, response_data.keep_alive,
-                                                           response_data.session_id)
+            ClientInfo.set_login_values(response_data.username, response_data.keep_alive,
+                                                          response_data.session_id)
             self.loop.start(response_data.keep_alive)
             # reactor.callFromThread(self.start_keep_alive, response_data.keep_alive)
-            logger.info('Running message queue')
+            ClientInfo.logger.info('Running message queue')
             self.lobby_mq = MessageQueue(queue_name=f'gameserver.{response_data.username}.{response_data.session_id}',
                                          exchange=form.exchange_name())
             self.lobby_mq.set_consume(self.dataReceived)
             reactor.callInThread(self.lobby_mq.start_consumption)
-            logger.info('Message queue has successfully been added to the thread')
+            ClientInfo.logger.info('Message queue has successfully been added to the thread')
             self.create_game()
         elif response_data.response_code == form.LoginResponseEnum.ERROR:
             # User must re-input
@@ -125,17 +124,17 @@ class MainClient(Protocol):
             raise RuntimeError
 
     def send_keep_alive(self):
-        self.format_send_data(form.ClientRequestTypeEnum.KEEP_ALIVE, self.client_info.username)
+        self.format_send_data(form.ClientRequestTypeEnum.KEEP_ALIVE, ClientInfo.username)
 
     def handle_create_game_response(self, data):
         response_data = form.ServerCreateGame(data)
         if response_data.response_code == form.CreateGameEnum.SUCCESS:
-            logger.info(f'Game creation: {form.CreateGameEnum.SUCCESS.name}')
-            self.client_info.game_joined = response_data.game_id
-            self.client_info.game_owner = True
+            ClientInfo.logger.info(f'Game creation: {form.CreateGameEnum.SUCCESS.name}')
+            ClientInfo.game_joined = response_data.game_id
+            ClientInfo.game_owner = True
         elif response_data.response_code == form.CreateGameEnum.NAME_ERROR:
             # Popup
-            logger.info(f'Game creation: {form.CreateGameEnum.NAME_ERROR.name}')
+            ClientInfo.logger.info(f'Game creation: {form.CreateGameEnum.NAME_ERROR.name}')
         else:
             raise RuntimeError
 
@@ -182,14 +181,20 @@ class MessageQueue:
         self.channel.start_consuming()
 
     def set_consume(self, func):
-        self.channel.basic_consume(queue=self.queue_name, on_message_callback=func)
+        self.channel.basic_consume(queue=self.queue_name, auto_ack=True, on_message_callback=mq_data_received)
 
     def stop_consumption(self):
         self.channel.stop_consuming()
 
 
 def mq_data_received(ch, method, properties, body):
-    print(f'Received: {body.decode_type()}')
+    json_data = body.decode()
+    ClientInfo.logger.debug(f'{json_data}')
+    message = form.ServerRequestHeader(json_data)
+    match message.request_type:
+        case form.ServerRequestTypeEnum.UPDATE_EVERY_GAME_LIST:
+            pass
+
 
 
 if __name__ == '__main__':

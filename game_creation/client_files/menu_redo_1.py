@@ -158,6 +158,8 @@ class Menu(object):
         self.window = QtWidgets.QDialog()
         self.ui = Login()
         self.ui.setupUi(self.window)
+        self.ui.username_line.setText('Alex')
+        self.ui.password_line.setText('alex')
         self.window.show()
 
 

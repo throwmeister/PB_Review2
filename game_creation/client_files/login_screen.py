@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+from client_data import ClientInfo
 
 class Login(object):
     def setupUi(self, Dialog):
@@ -102,4 +102,4 @@ class Login(object):
         self.login_button.setText(_translate("Login", "Login"))
 
     def login_button_clicked(self):
-        pass
+        ClientInfo.tcpHandler.send_login(self.username_line.text(), self.password_line.text())
