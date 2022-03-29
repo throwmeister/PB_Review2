@@ -5,6 +5,9 @@ class ClientInfo:
     game_joined = ''
     game_owner = True
 
+    tcpHandler = None
+    logger = None
+
     @classmethod
     def set_login_values(cls, username, keepalive, session_id):
         cls.username = username

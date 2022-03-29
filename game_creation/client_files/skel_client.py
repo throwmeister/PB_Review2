@@ -149,8 +149,20 @@ class MainClient(Protocol):
 
 
 class ClientCreator(ClientFactory):
+    @staticmethod
+    def start_connection():
+        logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+                            datefmt='%d-%m-%Y:%H:%M:%S',
+                            level=logging.INFO)
+
+        ClientInfo.logger = logging.getLogger('Main')
+        endpoint = TCP4ClientEndpoint(reactor, 'localhost', 8007)
+        endpoint.connect(ClientCreator())
+        reactor.run()
+
     def buildProtocol(self, addr):
-        return MainClient()
+        ClientInfo.tcpHandler = MainClient()
+        return ClientInfo.tcpHandler
 
 
 class MessageQueue:

@@ -3,6 +3,8 @@ from create_game_screen import CreateGame
 from login_screen import Login
 
 
+
+
 class Menu(object):
     def setupUi(self, Form):
         Form.setObjectName("Poker and Blackjack")
@@ -161,16 +163,28 @@ class Menu(object):
 
 if __name__ == '__main__':
     import sys
-
+    import qt5reactor
     app = QtWidgets.QApplication(sys.argv)
+
+    qt5reactor.install()
+
     main = QtWidgets.QWidget()
     ui = Menu()
     ui.setupUi(main)
 
-    create_login = Login()
-    create_game = CreateGame()
+    # create_login = Login()
+    # create_game = CreateGame()
+    import skel_client as tcp_client
 
     main.show()
+
+
+    # Start TCP Client
+    tcp_client.ClientCreator.start_connection()
+
+
+    # main.show()
+
     sys.exit(app.exec_())
 
 
