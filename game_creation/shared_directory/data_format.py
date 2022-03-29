@@ -172,6 +172,7 @@ class UpdateGameListVariables:
             self.num_players = data['num_players']
             self.in_progress = data['in_progress']
 
+
 def version_number():
     return '1.0'
 

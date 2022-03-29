@@ -1,7 +1,8 @@
 import builtins, logging, json, pika
-
+'''
 from twisted.internet.defer import Deferred
 from twisted.internet.threads import deferToThread
+'''
 from twisted.internet import reactor
 from twisted.internet.protocol import Protocol, ClientFactory
 from twisted.internet.endpoints import TCP4ClientEndpoint
@@ -91,8 +92,8 @@ class MainClient(Protocol):
                     self.handle_create_game_response(message.data)
                 case form.ServerRequestTypeEnum.JOIN_GAME_RESPONSE:
                     self.handle_join_game_response()
-                case form.ServerRequestTypeEnum.UPDATE_GAME_LIST:
-                    pass
+                case form.ServerRequestTypeEnum.UPDATE_EVERY_GAME_LIST:
+                    self.handle_set_games_list(message.data)
                 case _:
                     # Invalid command
                     pass
@@ -139,6 +140,11 @@ class MainClient(Protocol):
 
     def handle_join_game_response(self, data):
         pass
+
+    def handle_set_games_list(self, data: dict):
+        for game_id, game_vars in data.items():
+            print(f'Game from game_id: {game_id} and values: {game_vars}')
+
 
 
 class ClientCreator(ClientFactory):

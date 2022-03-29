@@ -47,3 +47,7 @@ try:
     var = x['penis']
 except KeyError:
     print('no way')
+
+values = {'h': 'hello', 'p': 'pussio'}
+for k, v in values.items():
+    print(f'{k}, {v}')
