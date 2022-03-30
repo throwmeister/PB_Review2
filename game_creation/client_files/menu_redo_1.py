@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from create_game_screen import CreateGame
 from login_screen import Login
+from client_data import ClientInfo
 
 
 
@@ -30,7 +31,24 @@ class Menu(object):
 "            QPushButton:hover{\n"
 "            background-color: #e3c086;\n"
 "            outline: none\n"
-"            }")
+"            }"
+"QHeaderView::section {\n"
+"    background-color: #ebc17a;\n"
+"    border-style: none;\n"
+"    font-size: 14pt;\n"
+"    border-right: 1px solid #d9a143;\n"
+"border-bottom: 1px solid #d9a143;\n"
+"border-left: 1px solid #d9a143;\n"
+"padding: 6px\n"
+"}\n"
+"QTableCornerButton::section{\n"
+"background-color: #ebc17a;\n"
+"    padding: 4px;\n"
+"    border: 1px solid #ebc17a;\n"
+"    font-size: 14pt;\n"
+"}\n"
+"\n"
+"")
         self.gridLayout = QtWidgets.QGridLayout(Form)
         self.gridLayout.setObjectName("gridLayout")
         self.verticalLayout = QtWidgets.QVBoxLayout()
@@ -89,32 +107,34 @@ class Menu(object):
         self.verticalLayout_4.setObjectName("verticalLayout_4")
         self.verticalLayout_5 = QtWidgets.QVBoxLayout()
         self.verticalLayout_5.setObjectName("verticalLayout_5")
-        self.lobby_list = QtWidgets.QListWidget(self.lobby)
-        font = QtGui.QFont()
-        font.setPointSize(40)
-        self.lobby_list.setFont(font)
-        self.lobby_list.setStyleSheet("             background-color: #ebc17a;\n"
-"                border: 6px groove #d9a143")
-        self.lobby_list.setObjectName("lobby_list")
-        item = QtWidgets.QListWidgetItem()
-        self.lobby_list.addItem(item)
-        self.verticalLayout_5.addWidget(self.lobby_list)
-        self.add_player_lobby = QtWidgets.QPushButton(self.lobby)
-        self.add_player_lobby.setMinimumSize(QtCore.QSize(0, 50))
-        self.add_player_lobby.setObjectName("pushButton_5")
-        self.verticalLayout_5.addWidget(self.add_player_lobby)
-        self.remove_player_lobby = QtWidgets.QPushButton(self.lobby)
-        self.remove_player_lobby.setMinimumSize(QtCore.QSize(0, 50))
-        self.remove_player_lobby.setObjectName("pushButton_4")
-        self.verticalLayout_5.addWidget(self.remove_player_lobby)
-        self.pushButton_6 = QtWidgets.QPushButton(self.lobby)
-        self.pushButton_6.setMinimumSize(QtCore.QSize(0, 50))
-        self.pushButton_6.setObjectName("pushButton_6")
-        self.verticalLayout_5.addWidget(self.pushButton_6)
-        self.pushButton_3 = QtWidgets.QPushButton(self.lobby)
-        self.pushButton_3.setMinimumSize(QtCore.QSize(0, 50))
-        self.pushButton_3.setObjectName("pushButton_3")
-        self.verticalLayout_5.addWidget(self.pushButton_3)
+        self.games_list = QtWidgets.QTreeWidget(self.lobby)
+        self.games_list.setStyleSheet("background-color: #ebc17a;\n"
+                                      "                border: 6px groove #d9a143;\n"
+                                      "font-size: 22px;\n"
+                                      "QHeaderView::section\n"
+                                      "{\n"
+                                      "    border-top: 1px solid #fffff8;\n"
+                                      "}\n"
+                                      "\n"
+                                      "QHeaderView::vertical\n"
+                                      "{\n"
+                                      "    border-left: 1px solid #fffff8;\n"
+                                      "}")
+        self.games_list.setObjectName("treeWidget")
+        item_0 = QtWidgets.QTreeWidgetItem(self.games_list)
+        self.verticalLayout_5.addWidget(self.games_list)
+        self.join_game_button = QtWidgets.QPushButton(self.lobby)
+        self.join_game_button.setMinimumSize(QtCore.QSize(0, 50))
+        self.join_game_button.setObjectName("pushButton_5")
+        self.verticalLayout_5.addWidget(self.join_game_button)
+        self.create_game_button = QtWidgets.QPushButton(self.lobby)
+        self.create_game_button.setMinimumSize(QtCore.QSize(0, 50))
+        self.create_game_button.setObjectName("pushButton_4")
+        self.verticalLayout_5.addWidget(self.create_game_button)
+        self.back_button_game_list = QtWidgets.QPushButton(self.lobby)
+        self.back_button_game_list.setMinimumSize(QtCore.QSize(0, 50))
+        self.back_button_game_list.setObjectName("pushButton_3")
+        self.verticalLayout_5.addWidget(self.back_button_game_list)
         self.verticalLayout_4.addLayout(self.verticalLayout_5)
         self.main_stack.addWidget(self.lobby)
         self.p_or_b = QtWidgets.QWidget()
@@ -125,11 +145,16 @@ class Menu(object):
         self.verticalLayout.addWidget(self.main_stack)
         self.gridLayout.addLayout(self.verticalLayout, 1, 0, 1, 1)
 
+
         self.retranslateUi(Form)
         self.main_stack.setCurrentIndex(0)
         self.exit_button.clicked.connect(Form.close) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(Form)
         self.play_button.clicked.connect(self.open_login_window)
+        ClientInfo.main_gui = self
+        ClientInfo.main_gui: ClientInfo
+        self.settings_button.clicked.connect(lambda _: self.main_stack.setCurrentIndex(1))
+
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
@@ -138,19 +163,29 @@ class Menu(object):
         self.play_button.setText(_translate("Poker and Blackjack", "Play"))
         self.settings_button.setText(_translate("Poker and Blackjack", "Settings"))
         self.exit_button.setText(_translate("Poker and Blackjack", "Exit"))
-        __sortingEnabled = self.lobby_list.isSortingEnabled()
-        self.lobby_list.setSortingEnabled(False)
-        item = self.lobby_list.item(0)
-        item.setText(_translate("Poker and Blackjack", "Player 1"))
-        self.lobby_list.setSortingEnabled(__sortingEnabled)
-        self.add_player_lobby.setText(_translate("Poker and Blackjack", "Add player"))
-        self.remove_player_lobby.setText(_translate("Poker and Blackjack", "Remove player"))
-        self.pushButton_6.setText(_translate("Poker and Blackjack", "Start lobby"))
-        self.pushButton_3.setText(_translate("Poker and Blackjack", "Exit lobby"))
+        self.games_list.headerItem().setText(0, _translate("Form", "Name"))
+        self.games_list.headerItem().setText(1, _translate("Form", "Type"))
+        self.games_list.headerItem().setText(2, _translate("Form", "Owner"))
+        self.games_list.headerItem().setText(3, _translate("Form", "Players"))
+        self.games_list.headerItem().setText(4, _translate("Form", "In progress"))
+        __sortingEnabled = self.games_list.isSortingEnabled()
+        self.games_list.setSortingEnabled(False)
+        self.games_list.topLevelItem(0).setText(0, _translate("Form", "deez uts"))
+        self.games_list.topLevelItem(0).setText(1, _translate("Form", "Poker"))
+        self.games_list.topLevelItem(0).setText(2, _translate("Form", "GAB"))
+        self.games_list.topLevelItem(0).setText(3, _translate("Form", "3"))
+        self.games_list.topLevelItem(0).setText(4, _translate("Form", "False"))
+        self.games_list.setSortingEnabled(__sortingEnabled)
+        self.join_game_button.setText(_translate("Form", "Join game"))
+        self.create_game_button.setText(_translate("Form", "Create game"))
+        self.back_button_game_list.setText(_translate("Form", "Back"))
 
 
     def reset_lobby(self):
-        self.lobby_table.clear()
+        self.lobby_list.clear()
+        self.main_stack.setCurrentIndex(1)
+
+    def change_to_games_screen(self):
         self.main_stack.setCurrentIndex(1)
 
     def open_login_window(self):

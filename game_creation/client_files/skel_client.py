@@ -103,7 +103,7 @@ class MainClient(Protocol):
 
     def handle_login_response(self, data):
         response_data = form.ServerLoginResponse(data)
-        ClientInfo.logger.debug(response_data.message)
+        ClientInfo.logger.info(response_data.message)
         if response_data.response_code == form.LoginResponseEnum.SUCCESS:
             ClientInfo.set_login_values(response_data.username, response_data.keep_alive,
                                                           response_data.session_id)
@@ -115,6 +115,8 @@ class MainClient(Protocol):
             self.lobby_mq.set_consume(self.dataReceived)
             reactor.callInThread(self.lobby_mq.start_consumption)
             ClientInfo.logger.info('Message queue has successfully been added to the thread')
+            ClientInfo.login_gui.login_response_success()
+            ClientInfo.main_gui.change_to_games_screen()
             self.create_game()
         elif response_data.response_code == form.LoginResponseEnum.ERROR:
             # User must re-input

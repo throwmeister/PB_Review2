@@ -1,3 +1,4 @@
+
 class ClientInfo:
     username = ''
     keep_alive = 0
@@ -10,7 +11,6 @@ class ClientInfo:
     login_gui = None
     create_game_gui = None
     logger = None
-
 
     @classmethod
     def set_login_values(cls, username, keepalive, session_id):

@@ -90,8 +90,10 @@ class Login(object):
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
-        Dialog.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
+        Dialog.setWindowModality(QtCore.Qt.ApplicationModal)
         self.login_button.clicked.connect(self.login_button_clicked)
+        ClientInfo.login_gui = self
+
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
@@ -100,6 +102,14 @@ class Login(object):
         self.username_label.setText(_translate("Login", "Username"))
         self.password_label.setText(_translate("Login", "Password"))
         self.login_button.setText(_translate("Login", "Login"))
+        Dialog.close()
+        self.dialog = Dialog
+        self.dialog.close()
 
     def login_button_clicked(self):
         ClientInfo.tcpHandler.send_login(self.username_line.text(), self.password_line.text())
+
+    def login_response_success(self):
+        ClientInfo.logger.info('Closing login window')
+        ClientInfo.login_gui = None
+        self.dialog.close()
