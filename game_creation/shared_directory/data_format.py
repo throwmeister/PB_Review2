@@ -171,6 +171,13 @@ class UpdateGameListVariables:
             self.game_type = data['game_type']
             self.num_players = data['num_players']
             self.in_progress = data['in_progress']
+            self.owner = data['owner']
+        else:
+            self.game_name = ''
+            self.game_type = GameTypeEnum.UNKNOWN
+            self.owner = ''
+            self.num_players = 0
+            self.in_progress = False
 
 
 def version_number():

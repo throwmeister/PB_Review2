@@ -2,7 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from create_game_screen import CreateGame
 from login_screen import Login
 from client_data import ClientInfo
-
+from game_creation.shared_directory import data_format as form
 
 
 class Menu(object):
@@ -152,9 +152,8 @@ class Menu(object):
         QtCore.QMetaObject.connectSlotsByName(Form)
         self.play_button.clicked.connect(self.open_login_window)
         ClientInfo.main_gui = self
-        ClientInfo.main_gui: ClientInfo
-        self.settings_button.clicked.connect(lambda _: self.main_stack.setCurrentIndex(1))
-
+        self.settings_button.clicked.connect(self.tester_button)
+        self.games_list.itemClicked.connect(self.tester_func)
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
@@ -175,15 +174,25 @@ class Menu(object):
         self.games_list.topLevelItem(0).setText(2, _translate("Form", "GAB"))
         self.games_list.topLevelItem(0).setText(3, _translate("Form", "3"))
         self.games_list.topLevelItem(0).setText(4, _translate("Form", "False"))
+
         self.games_list.setSortingEnabled(__sortingEnabled)
         self.join_game_button.setText(_translate("Form", "Join game"))
         self.create_game_button.setText(_translate("Form", "Create game"))
         self.back_button_game_list.setText(_translate("Form", "Back"))
 
-
-    def reset_lobby(self):
-        self.lobby_list.clear()
+    def tester_button(self):
         self.main_stack.setCurrentIndex(1)
+        items = ['Alex', 'Poker', 'alex', '1', 'False', 'Hi']
+        QtWidgets.QTreeWidgetItem(self.games_list, items)
+
+    def tester_func(self, items):
+        '''
+        print(self.games_list.topLevelItem(0).data(5, 0))
+        print(self.games_list.selectedItems()[0])
+        print(items.treeWidget().currentIndex().row())'''
+        pass
+
+
 
     def change_to_games_screen(self):
         self.main_stack.setCurrentIndex(1)
@@ -196,6 +205,14 @@ class Menu(object):
         self.ui.password_line.setText('alex')
         self.window.show()
         print('This ran!')
+
+    def set_game_list(self, data):
+        self.games_list.clear()
+        for game_id, game_vars in data.items():
+            ClientInfo.logger.info(f'Game from game_id: {game_id} and values: {game_vars}')
+            d = form.UpdateGameListVariables(game_vars)
+            items = [d.game_name, d.game_type, d.owner, str(d.num_players), str(d.in_progress), game_id]
+            QtWidgets.QTreeWidgetItem(self.games_list, items)
 
 
 if __name__ == '__main__':

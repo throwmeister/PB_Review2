@@ -28,7 +28,6 @@ class MainServer(Protocol):
         d = self.format_send_data(form.ServerRequestTypeEnum.CREATE_GAME_RESPONSE, data)
         self.tcp_send_data(d)
 
-
     def send_join_game(self, data):
         d = self.format_send_data(form.ServerRequestTypeEnum.JOIN_GAME_RESPONSE, data)
         self.tcp_send_data(d)
@@ -36,8 +35,8 @@ class MainServer(Protocol):
     def send_aggregate_lobby(self):
         all_games = handler.aggregate_lobby_list()
         d = self.format_send_data(form.ServerRequestTypeEnum.UPDATE_EVERY_GAME_LIST, all_games)
-        # self.tcp_send_data(d)
-        self.queue_message(form.exchange_name(), '', d)
+        self.tcp_send_data(d)
+        # self.queue_message(form.exchange_name(), '', d)
 
     @staticmethod
     def format_send_data(request_type, data=None):

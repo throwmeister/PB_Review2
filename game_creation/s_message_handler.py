@@ -87,6 +87,7 @@ def aggregate_lobby_list():
         var = form.UpdateGameListVariables()
         var.game_name = games.game_name
         var.game_type = games.game_type
+        var.owner = session.Session.sessions[games.owner_id].player_name
         var.num_players = games.num_present
         var.in_progress = str(games.in_progress)
         d[games.game_id] = var.__dict__
