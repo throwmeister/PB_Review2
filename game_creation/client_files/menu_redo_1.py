@@ -4,7 +4,6 @@ from login_screen import Login
 
 
 
-
 class Menu(object):
     def setupUi(self, Form):
         Form.setObjectName("Poker and Blackjack")
@@ -161,6 +160,7 @@ class Menu(object):
         self.ui.username_line.setText('Alex')
         self.ui.password_line.setText('alex')
         self.window.show()
+        print('This ran!')
 
 
 if __name__ == '__main__':

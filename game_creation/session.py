@@ -9,7 +9,7 @@ class Session:
 
     def __init__(self, name):
         self._username = name
-        self._last_activity = None
+        self._last_activity_done = None
         self._session_id = self._createID()
         self._last_activity_time = self.current_time()
         self.sessions[self._session_id] = self
@@ -27,10 +27,11 @@ class Session:
 
     @property
     def activity(self):
-        return self._last_activity
+        return self._last_activity_done
 
     def update_activity(self):
-        self._last_activity = self.current_time()
+        print('Updated')
+        self._last_activity_time = self.current_time()
 
     @property
     def ID(self):

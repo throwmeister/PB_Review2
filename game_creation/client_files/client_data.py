@@ -6,7 +6,11 @@ class ClientInfo:
     game_owner = True
 
     tcpHandler = None
+    main_gui = None
+    login_gui = None
+    create_game_gui = None
     logger = None
+
 
     @classmethod
     def set_login_values(cls, username, keepalive, session_id):

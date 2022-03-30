@@ -4,7 +4,7 @@ from games_data import Game, Participant
 import shared_directory.data_format as form
 from gamerserver_data import DBManager
 from configuration_protocol import ServerConfig
-import json
+import json, logging
 
 
 def handle_login_requests(data):
@@ -29,6 +29,7 @@ def handle_login_requests(data):
                 response_data.message = 'Your login has been successful'
                 response_data.session_id = str(new_session.ID)
             else:
+                print('It already exists')
                 response_data.message = 'User session already exists and is valid'
                 response_data.response_code = form.LoginResponseEnum.ERROR
         else:

@@ -6,9 +6,7 @@ from twisted.internet.protocol import ServerFactory, Protocol
 import shared_directory.data_format as form
 import s_message_handler as handler
 import session
-import json
-
-import pika
+import json, pika, logging
 
 
 # noinspection PyArgumentList
@@ -124,6 +122,11 @@ class MessageQueue:
 
 
 if __name__ == '__main__':
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+                        datefmt='%d-%m-%Y:%H:%M:%S',
+                        level=logging.INFO)
+
+    logger = logging.getLogger('Main')
     endpoint = endpoints.TCP4ServerEndpoint(reactor, 8007)
     # message_queue = MessageQueue(exchange='gameserver.broadcast')
     endpoint.listen(ServerProtocol())
