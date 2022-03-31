@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from create_game_screen import CreateGame
 from login_screen import Login
+from join_game_screen import JoinGame
 from client_data import ClientInfo
 from game_creation.shared_directory import data_format as form
 
@@ -8,6 +9,7 @@ from game_creation.shared_directory import data_format as form
 class Menu(object):
     def setupUi(self, Form):
         Form.setObjectName("Poker and Blackjack")
+        Form.closeEvent = self.closed_event
         Form.resize(1054, 860)
         Form.setStyleSheet("QWidget{\n"
 "    background-color: rgb(15, 102, 72);\n"
@@ -153,7 +155,8 @@ class Menu(object):
         self.play_button.clicked.connect(self.open_login_window)
         ClientInfo.main_gui = self
         self.settings_button.clicked.connect(self.tester_button)
-        self.games_list.itemClicked.connect(self.tester_func)
+        self.games_list.itemClicked.connect(self.game_clicked)
+        self.join_game_button.clicked.connect(self.join_game_pressed)
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
@@ -169,11 +172,6 @@ class Menu(object):
         self.games_list.headerItem().setText(4, _translate("Form", "In progress"))
         __sortingEnabled = self.games_list.isSortingEnabled()
         self.games_list.setSortingEnabled(False)
-        self.games_list.topLevelItem(0).setText(0, _translate("Form", "deez uts"))
-        self.games_list.topLevelItem(0).setText(1, _translate("Form", "Poker"))
-        self.games_list.topLevelItem(0).setText(2, _translate("Form", "GAB"))
-        self.games_list.topLevelItem(0).setText(3, _translate("Form", "3"))
-        self.games_list.topLevelItem(0).setText(4, _translate("Form", "False"))
 
         self.games_list.setSortingEnabled(__sortingEnabled)
         self.join_game_button.setText(_translate("Form", "Join game"))
@@ -185,25 +183,24 @@ class Menu(object):
         items = ['Alex', 'Poker', 'alex', '1', 'False', 'Hi']
         QtWidgets.QTreeWidgetItem(self.games_list, items)
 
-    def tester_func(self, items):
+    def game_clicked(self, items):
         '''
         print(self.games_list.topLevelItem(0).data(5, 0))
         print(self.games_list.selectedItems()[0])
         print(items.treeWidget().currentIndex().row())'''
-        pass
-
-
+        self.selected_game = items.data(5, 0)
+        print(self.selected_game)
 
     def change_to_games_screen(self):
         self.main_stack.setCurrentIndex(1)
 
     def open_login_window(self):
-        self.window = QtWidgets.QDialog()
-        self.ui = Login()
-        self.ui.setupUi(self.window)
-        self.ui.username_line.setText('Alex')
-        self.ui.password_line.setText('alex')
-        self.window.show()
+        self.lwindow = QtWidgets.QDialog()
+        self.lui = Login()
+        self.lui.setupUi(self.lwindow)
+        self.lui.username_line.setText('Alex')
+        self.lui.password_line.setText('alex')
+        self.lwindow.show()
         print('This ran!')
 
     def set_game_list(self, data):
@@ -213,6 +210,28 @@ class Menu(object):
             d = form.UpdateGameListVariables(game_vars)
             items = [d.game_name, d.game_type, d.owner, str(d.num_players), str(d.in_progress), game_id]
             QtWidgets.QTreeWidgetItem(self.games_list, items)
+
+    def join_game_pressed(self):
+        if self.selected_game:
+            self.jwindow = QtWidgets.QDialog()
+            self.jui = JoinGame()
+            self.jui.setupUi(self.jwindow)
+            self.jui.game_id = self.selected_game
+            self.jui.password_edit.setText('ILOVEPOKER')
+            self.jwindow.show()
+        else:
+            print('please select a game')
+
+    def create_game_pressed(self):
+        self.create_window = QtWidgets.QDialog()
+        self.create_ui = CreateGame()
+        self.create_ui.setupUi(self.create_window)
+
+    def closed_event(self, event):
+        # ClientInfo.tcpHandler.lose_connection()
+        print('this ran')
+        tcp_client.ClientCreator.stop_reactor()
+
 
 
 if __name__ == '__main__':
@@ -236,9 +255,4 @@ if __name__ == '__main__':
     # Start TCP Client
     tcp_client.ClientCreator.start_connection()
 
-
-    # main.show()
-
     sys.exit(app.exec_())
-
-

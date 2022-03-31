@@ -113,3 +113,6 @@ class Login(object):
         ClientInfo.logger.info('Closing login window')
         ClientInfo.login_gui = None
         self.dialog.close()
+
+    def login_response_failed(self):
+        pass

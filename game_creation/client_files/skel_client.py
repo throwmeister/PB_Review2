@@ -53,10 +53,10 @@ class MainClient(Protocol):
         user_data.password = 'ILOVEPOKER'
         self.format_send_data(form.ClientRequestTypeEnum.CREATE_GAME, user_data)
 
-    def join_game(self, game_id, password=None):
+    def join_game(self, game_id, password='ILOVEPOKER'):
         user_data = form.ClientJoinGame()
         user_data.game_id = game_id
-        user_data.password = 'ILOVEPOKER'
+        user_data.password = password
         self.format_send_data(form.ClientRequestTypeEnum.JOIN_GAME, user_data)
 
     def format_send_data(self, request_type: form.ClientRequestTypeEnum, data=None):
@@ -121,6 +121,7 @@ class MainClient(Protocol):
         elif response_data.response_code == form.LoginResponseEnum.ERROR:
             # User must re-input
             # self.send_login()
+            ClientInfo.login_gui.login_response_failed()
             pass
         else:
             raise RuntimeError
@@ -143,6 +144,9 @@ class MainClient(Protocol):
     def handle_join_game_response(self, data):
         pass
 
+    def lose_connection(self):
+        self.transport.loseConnection()
+
 
 class ClientCreator(ClientFactory):
     @staticmethod
@@ -155,6 +159,12 @@ class ClientCreator(ClientFactory):
         endpoint = TCP4ClientEndpoint(reactor, 'localhost', 8007)
         endpoint.connect(ClientCreator())
         reactor.run()
+
+    @staticmethod
+    def stop_reactor():
+        print('reactor stopped')
+        reactor.stop()
+        raise RuntimeError
 
     def buildProtocol(self, addr):
         ClientInfo.tcpHandler = MainClient()
@@ -192,7 +202,7 @@ def mq_data_received(ch, method, properties, body):
         case form.ServerRequestTypeEnum.UPDATE_EVERY_GAME_LIST:
             pass
 
-
+'''
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
@@ -204,3 +214,4 @@ if __name__ == '__main__':
     endpoint.connect(ClientCreator())
     reactor.run()
 
+'''
