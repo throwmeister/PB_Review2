@@ -157,6 +157,8 @@ class Menu(object):
         self.settings_button.clicked.connect(self.tester_button)
         self.games_list.itemClicked.connect(self.game_clicked)
         self.join_game_button.clicked.connect(self.join_game_pressed)
+        self.create_game_button.clicked.connect(self.create_game_pressed)
+        self.back_button_game_list.clicked.connect(lambda _: self.main_stack.setCurrentIndex(0))
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
@@ -195,13 +197,16 @@ class Menu(object):
         self.main_stack.setCurrentIndex(1)
 
     def open_login_window(self):
-        self.lwindow = QtWidgets.QDialog()
-        self.lui = Login()
-        self.lui.setupUi(self.lwindow)
-        self.lui.username_line.setText('Alex')
-        self.lui.password_line.setText('alex')
-        self.lwindow.show()
-        print('This ran!')
+        if ClientInfo.valid_session:
+            self.change_to_games_screen()
+        else:
+            self.lwindow = QtWidgets.QDialog()
+            self.lui = Login()
+            self.lui.setupUi(self.lwindow)
+            self.lui.username_line.setText('Alex')
+            self.lui.password_line.setText('alex')
+            self.lwindow.show()
+            print('This ran!')
 
     def set_game_list(self, data):
         self.games_list.clear()
@@ -226,11 +231,11 @@ class Menu(object):
         self.create_window = QtWidgets.QDialog()
         self.create_ui = CreateGame()
         self.create_ui.setupUi(self.create_window)
+        self.create_window.show()
 
     def closed_event(self, event):
         # ClientInfo.tcpHandler.lose_connection()
-        print('this ran')
-        tcp_client.ClientCreator.stop_reactor()
+        raise RuntimeError
 
 
 

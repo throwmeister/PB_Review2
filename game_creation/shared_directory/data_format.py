@@ -44,6 +44,7 @@ class CreateGameEnum(str, Enum):
     UNKNOWN = 0
     SUCCESS = 1
     NAME_ERROR = 2
+    ALREADY_CREATED_GAME = 3
 
 
 class JoinGameEnum(str, Enum):
@@ -148,11 +149,13 @@ class ClientJoinGame:
 class ServerJoinGame:
     def __init__(self, data=None):
         if data:
-            self.response_type = data['response_type']
+            self.response_code = data['response_code']
             self.game_name = data['game_name']
+            self.game_id = data['game_id']
         else:
-            self.response_type = JoinGameEnum.UNKNOWN
+            self.response_code = JoinGameEnum.UNKNOWN
             self.game_name = ''
+            self.game_id = ''
 
 
 class UpdateGameList:

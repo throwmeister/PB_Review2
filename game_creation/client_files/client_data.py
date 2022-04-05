@@ -5,6 +5,7 @@ class ClientInfo:
     session_id = ''
     game_joined = ''
     game_owner = True
+    valid_session = False
 
     tcpHandler = None
     main_gui = None

@@ -43,10 +43,18 @@ class Game:
             return False
 
     @classmethod
-    def game_name_exists(cls, name, session_id):
+    def game_name_exists(cls, name):
         for game in cls.Games.values():
             game: Game
             if game.game_name == name:
+                return True
+        return False
+
+    @classmethod
+    def game_owner_exists(cls, session_id):
+        for game in cls.Games.values():
+            game: Game
+            if game.owner_id == session_id:
                 return True
         return False
 

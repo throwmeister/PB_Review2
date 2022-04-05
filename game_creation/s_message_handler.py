@@ -50,7 +50,11 @@ def handle_logout(session_id):
 def handle_create_game(data, session_id):
     client_data = form.ClientCreateGame(data)
     send_data = form.ServerCreateGame()
-    if Game.lobby_name_exists(client_data.game_name):
+
+    if Game.game_owner_exists(session_id):
+        send_data.response_code = form.CreateGameEnum.ALREADY_CREATED_GAME
+
+    elif Game.lobby_name_exists(client_data.game_name):
         # raise error
         send_data.response_code = form.CreateGameEnum.NAME_ERROR
     else:
@@ -68,14 +72,15 @@ def handle_join_game(data, session_id):
     send_data = form.ServerJoinGame()
     try:
         game = Game.Games[client_data.game_id]
-        send_data.response_type = form.JoinGameEnum.WRONG_PASSWORD
+        send_data.response_code = form.JoinGameEnum.WRONG_PASSWORD
         if game.password == client_data.password:
             player = Participant(session_id)
             game.add_participant(player)
             send_data.game_name = game.game_name
-            send_data.response_type = form.JoinGameEnum.SUCCESS
+            send_data.response_code = form.JoinGameEnum.SUCCESS
+            send_data.game_id = game.game_id
     except KeyError:
-        send_data.response_type = form.JoinGameEnum.NOT_EXIST
+        send_data.response_code = form.JoinGameEnum.NOT_EXIST
 
     return send_data.__dict__
 

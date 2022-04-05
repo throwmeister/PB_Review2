@@ -81,7 +81,7 @@ class JoinGame(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        Dialog.setWindowTitle(_translate("Dialog", "Join Game"))
         self.label.setText(_translate("Dialog", "Join game"))
         self.label_3.setText(_translate("Dialog", "Password"))
         self.join_button.setText(_translate("Dialog", "Join"))

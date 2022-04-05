@@ -46,14 +46,14 @@ class MainClient(Protocol):
         self.lobby_mq.stop_consumption()
         self.format_send_data(form.ClientRequestTypeEnum.LOGOUT_REQUEST)
 
-    def create_game(self, name=None, password=None):
+    def create_game(self, name, game_type, password=''):
         user_data = form.ClientCreateGame()
-        user_data.game_type = form.GameTypeEnum.POKER
-        user_data.game_name = 'Alex has a lobby'
-        user_data.password = 'ILOVEPOKER'
+        user_data.game_type = game_type
+        user_data.game_name = name
+        user_data.password = password
         self.format_send_data(form.ClientRequestTypeEnum.CREATE_GAME, user_data)
 
-    def join_game(self, game_id, password='ILOVEPOKER'):
+    def join_game(self, game_id, password=''):
         user_data = form.ClientJoinGame()
         user_data.game_id = game_id
         user_data.password = password
@@ -90,7 +90,7 @@ class MainClient(Protocol):
                 case form.ServerRequestTypeEnum.CREATE_GAME_RESPONSE:
                     self.handle_create_game_response(message.data)
                 case form.ServerRequestTypeEnum.JOIN_GAME_RESPONSE:
-                    self.handle_join_game_response()
+                    self.handle_join_game_response(message.data)
                 case form.ServerRequestTypeEnum.UPDATE_EVERY_GAME_LIST:
                     ClientInfo.main_gui.set_game_list(message.data)
                 case _:
@@ -106,7 +106,8 @@ class MainClient(Protocol):
         ClientInfo.logger.info(response_data.message)
         if response_data.response_code == form.LoginResponseEnum.SUCCESS:
             ClientInfo.set_login_values(response_data.username, response_data.keep_alive,
-                                                          response_data.session_id)
+                                        response_data.session_id)
+            ClientInfo.valid_session = True
             self.loop.start(response_data.keep_alive)
             # reactor.callFromThread(self.start_keep_alive, response_data.keep_alive)
             ClientInfo.logger.info('Running message queue')
@@ -117,7 +118,7 @@ class MainClient(Protocol):
             ClientInfo.logger.info('Message queue has successfully been added to the thread')
             ClientInfo.login_gui.login_response_success()
             ClientInfo.main_gui.change_to_games_screen()
-            self.create_game()
+            # self.create_game()
         elif response_data.response_code == form.LoginResponseEnum.ERROR:
             # User must re-input
             # self.send_login()
@@ -138,11 +139,19 @@ class MainClient(Protocol):
         elif response_data.response_code == form.CreateGameEnum.NAME_ERROR:
             # Popup
             ClientInfo.logger.info(f'Game creation: {form.CreateGameEnum.NAME_ERROR.name}')
+        elif response_data.response_code == form.CreateGameEnum.ALREADY_CREATED_GAME:
+            ClientInfo.logger.info(f'Game creation: {form.CreateGameEnum.ALREADY_CREATED_GAME.name}')
         else:
             raise RuntimeError
 
     def handle_join_game_response(self, data):
-        pass
+        response_data = form.ServerJoinGame(data)
+        log_join = lambda response: ClientInfo.logger.info(f'Game join: {response}')
+        if response_data.response_code == form.JoinGameEnum.SUCCESS:
+            log_join(form.JoinGameEnum.SUCCESS.name)
+            ClientInfo.game_joined = response_data.game_id
+        elif response_data.response_code == form.JoinGameEnum.WRONG_PASSWORD:
+            log_join(form.JoinGameEnum.WRONG_PASSWORD.name)
 
     def lose_connection(self):
         self.transport.loseConnection()
@@ -151,11 +160,18 @@ class MainClient(Protocol):
 class ClientCreator(ClientFactory):
     @staticmethod
     def start_connection():
+        import colouredlogs
+        '''
         logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
                             datefmt='%d-%m-%Y:%H:%M:%S',
-                            level=logging.INFO)
+                            level=logging.INFO,
 
+                            )
+        '''
         ClientInfo.logger = logging.getLogger('Main')
+        colouredlogs.format('[%(hostname)s] %(asctime)s %(message)s')
+
+        colouredlogs.install(logger=ClientInfo.logger)
         endpoint = TCP4ClientEndpoint(reactor, 'localhost', 8007)
         endpoint.connect(ClientCreator())
         reactor.run()
