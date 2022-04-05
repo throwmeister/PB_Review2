@@ -20,6 +20,7 @@ class MainClient(Protocol):
     def __init__(self):
         self.loop: LoopingCall = LoopingCall(self.send_keep_alive)
         self.lobby_mq: MessageQueue = None
+        self.game_mq: MessageQueue = None
 
     def connectionMade(self):
         # Do we want the client to be auto logged in?
@@ -113,7 +114,7 @@ class MainClient(Protocol):
             ClientInfo.logger.info('Running message queue')
             self.lobby_mq = MessageQueue(queue_name=f'gameserver.{response_data.username}.{response_data.session_id}',
                                          exchange=form.exchange_name())
-            self.lobby_mq.set_consume(self.dataReceived)
+            self.lobby_mq.set_consume()
             reactor.callInThread(self.lobby_mq.start_consumption)
             ClientInfo.logger.info('Message queue has successfully been added to the thread')
             ClientInfo.login_gui.login_response_success()
@@ -136,6 +137,13 @@ class MainClient(Protocol):
             ClientInfo.logger.info(f'Game creation: {form.CreateGameEnum.SUCCESS.name}')
             ClientInfo.game_joined = response_data.game_id
             ClientInfo.game_owner = True
+            # Creator listens in on Game Queue
+            self.game_mq = MessageQueue(queue_name=f'gameserver.{ClientInfo.username}.playing.game.{response_data.game_id}',
+                                         exchange=form.game_exchange_name(), routing_key=response_data.game_id)
+            self.game_mq.set_consume()
+            reactor.callInThread(self.game_mq.start_consumption)
+            ClientInfo.logger.info(f'Listening to Game Queue with Queue Name {self.game_mq.queue_name}')
+
         elif response_data.response_code == form.CreateGameEnum.NAME_ERROR:
             # Popup
             ClientInfo.logger.info(f'Game creation: {form.CreateGameEnum.NAME_ERROR.name}')
@@ -150,6 +158,12 @@ class MainClient(Protocol):
         if response_data.response_code == form.JoinGameEnum.SUCCESS:
             log_join(form.JoinGameEnum.SUCCESS.name)
             ClientInfo.game_joined = response_data.game_id
+            # Joiner listens in on Game Queue
+            self.game_mq = MessageQueue(queue_name=f'gameserver.{ClientInfo.username}.playing.game.{response_data.game_id}',
+                                         exchange=form.game_exchange_name(), routing_key=response_data.game_id)
+            self.game_mq.set_consume()
+            ClientInfo.logger.info(f'Listening to Game Queue with Queue Name {self.game_mq.queue_name}')
+            reactor.callInThread(self.game_mq.start_consumption)
         elif response_data.response_code == form.JoinGameEnum.WRONG_PASSWORD:
             log_join(form.JoinGameEnum.WRONG_PASSWORD.name)
 
@@ -203,7 +217,7 @@ class MessageQueue:
     def start_consumption(self):
         self.channel.start_consuming()
 
-    def set_consume(self, func):
+    def set_consume(self):
         self.channel.basic_consume(queue=self.queue_name, auto_ack=True, on_message_callback=mq_data_received)
 
     def stop_consumption(self):

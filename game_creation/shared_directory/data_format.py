@@ -197,3 +197,6 @@ def message_url():
 
 def exchange_name():
     return 'gameserver.broadcast'
+
+def game_exchange_name():
+    return 'gameserver.games'
