@@ -142,6 +142,8 @@ class Menu(object):
         self.p_or_b = QtWidgets.QWidget()
         self.p_or_b.setObjectName("p_or_b")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.p_or_b)
+        self.players_list = QtWidgets.QListWidget()
+        self.horizontalLayout_2.addWidget()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.main_stack.addWidget(self.p_or_b)
         self.verticalLayout.addWidget(self.main_stack)
