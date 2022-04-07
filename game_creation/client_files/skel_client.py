@@ -118,7 +118,7 @@ class MainClient(Protocol):
             reactor.callInThread(self.lobby_mq.start_consumption)
             ClientInfo.logger.info('Message queue has successfully been added to the thread')
             ClientInfo.login_gui.login_response_success()
-            ClientInfo.main_gui.change_to_games_screen()
+            ClientInfo.main_gui.change_screens(form.MenuScreenEnums.GAME_LIST)
             # self.create_game()
         elif response_data.response_code == form.LoginResponseEnum.ERROR:
             # User must re-input
@@ -143,7 +143,8 @@ class MainClient(Protocol):
             self.game_mq.set_consume()
             reactor.callInThread(self.game_mq.start_consumption)
             ClientInfo.logger.info(f'Listening to Game Queue with Queue Name {self.game_mq.queue_name}')
-
+            ClientInfo.create_game_gui.create_game_success()
+            ClientInfo.main_gui.change_screens(form.MenuScreenEnums.WAITING_ROOM)
         elif response_data.response_code == form.CreateGameEnum.NAME_ERROR:
             # Popup
             ClientInfo.logger.info(f'Game creation: {form.CreateGameEnum.NAME_ERROR.name}')
@@ -154,7 +155,7 @@ class MainClient(Protocol):
 
     def handle_join_game_response(self, data):
         response_data = form.ServerJoinGame(data)
-        log_join = lambda response: ClientInfo.logger.info(f'Game join: {response}')
+        log_join = lambda response: ClientInfo.logger.info(f'Game join: {response.name}')
         if response_data.response_code == form.JoinGameEnum.SUCCESS:
             log_join(form.JoinGameEnum.SUCCESS.name)
             ClientInfo.game_joined = response_data.game_id
@@ -164,8 +165,15 @@ class MainClient(Protocol):
             self.game_mq.set_consume()
             ClientInfo.logger.info(f'Listening to Game Queue with Queue Name {self.game_mq.queue_name}')
             reactor.callInThread(self.game_mq.start_consumption)
+            ClientInfo.join_gui.join_game_success()
+            ClientInfo.main_gui.change_screens(form.MenuScreenEnums.WAITING_ROOM)
         elif response_data.response_code == form.JoinGameEnum.WRONG_PASSWORD:
             log_join(form.JoinGameEnum.WRONG_PASSWORD.name)
+        elif response_data.response_code == form.JoinGameEnum.JOIN_ITSELF:
+            log_join(form.JoinGameEnum.JOIN_ITSELF.name)
+        else:
+            print('unhandled')
+            raise RuntimeError
 
     def lose_connection(self):
         self.transport.loseConnection()
@@ -230,7 +238,10 @@ def mq_data_received(ch, method, properties, body):
     message = form.ServerRequestHeader(json_data)
     match message.request_type:
         case form.ServerRequestTypeEnum.UPDATE_EVERY_GAME_LIST:
-            pass
+            ClientInfo.main_gui.set_game_list(message.data)
+        case form.ServerRequestTypeEnum.UPDATE_PLAYER_LIST:
+            ClientInfo.main_gui.set_player_list(message.data)
+
 
 '''
 

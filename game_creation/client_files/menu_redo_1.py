@@ -157,6 +157,7 @@ class Menu(object):
         self.start_game_button.setAutoDefault(False)
         self.start_game_button.setFlat(False)
         self.start_game_button.setObjectName("start_game_button")
+        self.start_game_button.setDisabled(True)
         self.verticalLayout_6.addWidget(self.start_game_button)
         self.leave_game_button = QtWidgets.QPushButton(self.game_player_list)
         self.leave_game_button.setObjectName("leave_game_button")
@@ -213,12 +214,12 @@ class Menu(object):
         self.selected_game = items.data(5, 0)
         print(self.selected_game)
 
-    def change_to_games_screen(self):
-        self.main_stack.setCurrentIndex(1)
+    def change_screens(self, num):
+        self.main_stack.setCurrentIndex(int(num))
 
     def open_login_window(self):
         if ClientInfo.valid_session:
-            self.change_to_games_screen()
+            self.change_screens(form.MenuScreenEnums.GAME_LIST)
         else:
             self.lwindow = QtWidgets.QDialog()
             self.lui = Login()
@@ -235,6 +236,11 @@ class Menu(object):
             d = form.UpdateGameListVariables(game_vars)
             items = [d.game_name, d.game_type, d.owner, str(d.num_players), str(d.in_progress), game_id]
             QtWidgets.QTreeWidgetItem(self.games_list, items)
+
+    def set_player_list(self, data):
+        self.game_player_list.clear()
+
+
 
     def join_game_pressed(self):
         if self.selected_game:

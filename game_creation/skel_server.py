@@ -38,6 +38,11 @@ class MainServer(Protocol):
         self.tcp_send_data(d)
         # self.queue_message(form.exchange_name(), '', d)
 
+    def send_aggregate_player_list(self, game_id):
+        players = handler.aggregate_player_list(game_id)
+        d = self.format_send_data(form.ServerRequestTypeEnum.UPDATE_PLAYER_LIST, players)
+        self.queue_message(form.game_exchange_name(), game_id, d)
+
     @staticmethod
     def format_send_data(request_type, data=None):
         req = form.ServerRequestHeader()
@@ -56,7 +61,8 @@ class MainServer(Protocol):
     def tcp_send_data(self, message):
         self.transport.write(f'{message}\r'.encode(self.format))
 
-    def queue_message(self, exchange, routing_key, message):
+    @staticmethod
+    def queue_message(exchange, routing_key, message):
         x = MessageQueue(exchange=exchange, routing_key=routing_key)
         x.send_message(message=message, routing_key=routing_key)
         x.close_connection()

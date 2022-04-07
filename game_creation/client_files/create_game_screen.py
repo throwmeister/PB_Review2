@@ -118,9 +118,19 @@ class CreateGame(object):
         self.create.setText(_translate("Dialog", "Create"))
         self.type_box_dict = {'Poker': form.GameTypeEnum.POKER,
                               'Blackjack': form.GameTypeEnum.BLACKJACK}
+        self.dialog = Dialog
 
     def create_game_button_pressed(self):
         game_type = self.type_box_dict[self.type_box.currentData(0)]
         name = self.game_name_edit.text()
         password = self.game_name_edit.text()
         ClientInfo.tcpHandler.create_game(name=name, game_type=game_type, password=password)
+
+    def create_response_success(self):
+        ClientInfo.game_owner = True
+        ClientInfo.logger.info('Closing create game screen')
+        ClientInfo.create_game_gui = None
+        self.dialog.close()
+
+    def create_response_failure(self):
+        pass

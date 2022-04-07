@@ -1,6 +1,6 @@
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 from client_data import ClientInfo
+
 
 class JoinGame(object):
     def setupUi(self, Dialog):
@@ -8,37 +8,37 @@ class JoinGame(object):
         Dialog.setMinimumSize(QtCore.QSize(480, 307))
         Dialog.setMaximumSize(QtCore.QSize(480, 370))
         Dialog.setStyleSheet("QWidget{\n"
-"    background-color: rgb(15, 102, 72);\n"
-"    \n"
-"}\n"
-"\n"
-"QLabel{\n"
-"font-family: MS Shell Dlg 2;\n"
-"    font-size: 22px;\n"
-"\n"
-"}\n"
-"\n"
-"QLineEdit{\n"
-"font-family: MS Shell Dlg 2;\n"
-"    font-size: 18px;\n"
-"\n"
-"}\n"
-"\n"
-"QPushButton{\n"
-"    font-family: MS Shell Dlg 2;\n"
-"    font-size: 30px;\n"
-"                \n"
-"    color: rgb(0, 85, 0);\n"
-"                \n"
-"    background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 132, 93, 255), stop:1 rgba(97, 192, 164, 255));\n"
-"                border-radius: 3px;\n"
-"                border: 2px groove rgb(0, 0, 0)\n"
-"            }\n"
-"            QPushButton:hover{\n"
-"            background-color: #e3c086;\n"
-"            outline: none\n"
-"            }\n"
-"")
+                             "    background-color: rgb(15, 102, 72);\n"
+                             "    \n"
+                             "}\n"
+                             "\n"
+                             "QLabel{\n"
+                             "font-family: MS Shell Dlg 2;\n"
+                             "    font-size: 22px;\n"
+                             "\n"
+                             "}\n"
+                             "\n"
+                             "QLineEdit{\n"
+                             "font-family: MS Shell Dlg 2;\n"
+                             "    font-size: 18px;\n"
+                             "\n"
+                             "}\n"
+                             "\n"
+                             "QPushButton{\n"
+                             "    font-family: MS Shell Dlg 2;\n"
+                             "    font-size: 30px;\n"
+                             "                \n"
+                             "    color: rgb(0, 85, 0);\n"
+                             "                \n"
+                             "    background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 132, 93, 255), stop:1 rgba(97, 192, 164, 255));\n"
+                             "                border-radius: 3px;\n"
+                             "                border: 2px groove rgb(0, 0, 0)\n"
+                             "            }\n"
+                             "            QPushButton:hover{\n"
+                             "            background-color: #e3c086;\n"
+                             "            outline: none\n"
+                             "            }\n"
+                             "")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(Dialog)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.verticalLayout = QtWidgets.QVBoxLayout()
@@ -50,8 +50,8 @@ class JoinGame(object):
         font.setPointSize(-1)
         self.label.setFont(font)
         self.label.setStyleSheet("font-family: MS Shell Dlg 2;\n"
-"    font-size: 30px;\n"
-"                ")
+                                 "    font-size: 30px;\n"
+                                 "                ")
         self.label.setObjectName("label")
         self.verticalLayout.addWidget(self.label, 0, QtCore.Qt.AlignHCenter)
         self.formLayout = QtWidgets.QFormLayout()
@@ -78,6 +78,7 @@ class JoinGame(object):
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
+        ClientInfo.join_gui = self
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
@@ -85,6 +86,13 @@ class JoinGame(object):
         self.label.setText(_translate("Dialog", "Join game"))
         self.label_3.setText(_translate("Dialog", "Password"))
         self.join_button.setText(_translate("Dialog", "Join"))
+        self.dialog = Dialog
 
     def join_button_pressed(self):
         ClientInfo.tcpHandler.join_game(self.password_edit.text())
+
+    def join_game_success(self):
+        ClientInfo.game_owner = False
+        ClientInfo.logger.info('Closing join game screen')
+        ClientInfo.join_gui = None
+        self.dialog.close()

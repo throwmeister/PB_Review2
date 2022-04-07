@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, IntEnum
 import json
 
 
@@ -31,7 +31,7 @@ class ServerRequestTypeEnum(str, Enum):
     CREATE_GAME_RESPONSE = 3
     JOIN_GAME_RESPONSE = 4
     UPDATE_EVERY_GAME_LIST = 5
-    UPDATE_ONE_GAME_LIST = 6
+    UPDATE_PLAYER_LIST = 6
 
 
 class GameTypeEnum(str, Enum):
@@ -52,6 +52,12 @@ class JoinGameEnum(str, Enum):
     SUCCESS = 1
     WRONG_PASSWORD = 2
     NOT_EXIST = 3
+    JOIN_ITSELF = 4
+
+
+class PlayerReadyEnum(str, Enum):
+    FALSE = 0
+    TRUE = 1
 
 
 class ClientRequestHeader:
@@ -183,6 +189,15 @@ class UpdateGameListVariables:
             self.in_progress = False
 
 
+class UpdatePlayerList:
+    def __init__(self, data=None):
+        if data:
+            self.player_name = data['player_name']
+            self.ready = data['ready']
+        else:
+            self.player_name = ''
+            self.ready = PlayerReadyEnum.FALSE
+
 def version_number():
     return '1.0'
 
@@ -200,3 +215,9 @@ def exchange_name():
 
 def game_exchange_name():
     return 'gameserver.games'
+
+
+class MenuScreenEnums(IntEnum):
+    START = 0
+    GAME_LIST = 1
+    WAITING_ROOM = 2

@@ -102,9 +102,7 @@ class Login(object):
         self.username_label.setText(_translate("Login", "Username"))
         self.password_label.setText(_translate("Login", "Password"))
         self.login_button.setText(_translate("Login", "Login"))
-        Dialog.close()
         self.dialog = Dialog
-        self.dialog.close()
 
     def login_button_clicked(self):
         ClientInfo.tcpHandler.send_login(self.username_line.text(), self.password_line.text())

@@ -4,13 +4,14 @@ class ClientInfo:
     keep_alive = 0
     session_id = ''
     game_joined = ''
-    game_owner = True
+    game_owner = False
     valid_session = False
 
     tcpHandler = None
     main_gui = None
     login_gui = None
     create_game_gui = None
+    join_gui = None
     logger = None
 
     @classmethod

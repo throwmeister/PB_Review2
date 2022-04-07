@@ -73,7 +73,9 @@ def handle_join_game(data, session_id):
     try:
         game = Game.Games[client_data.game_id]
         send_data.response_code = form.JoinGameEnum.WRONG_PASSWORD
-        if game.password == client_data.password:
+        if session_id == game.owner_id:
+            send_data.response_code = form.JoinGameEnum.JOIN_ITSELF
+        elif game.password == client_data.password:
             player = Participant(session_id)
             game.add_participant(player)
             send_data.game_name = game.game_name
@@ -99,3 +101,14 @@ def aggregate_lobby_list():
     return d
 
 
+def aggregate_player_list(game_id):
+    game = Game.Games[game_id]
+    d = []
+    for player in game.present:
+        player: Participant
+        var = form.UpdatePlayerList()
+        var.player_name = player.username
+        if player in game.players:
+            var.ready = form.PlayerReadyEnum.TRUE
+        d.append(var.__dict__)
+    return d
