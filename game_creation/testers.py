@@ -51,3 +51,7 @@ except KeyError:
 values = {'h': 'hello', 'p': 'pussio'}
 for k, v in values.items():
     print(f'{k}, {v}')
+
+n, m = [1, 2]
+print(n)
+print(m)

@@ -42,6 +42,7 @@ class MainServer(Protocol):
         players = handler.aggregate_player_list(game_id)
         d = self.format_send_data(form.ServerRequestTypeEnum.UPDATE_PLAYER_LIST, players)
         self.queue_message(form.game_exchange_name(), game_id, d)
+        self.tcp_send_data(d)
 
     @staticmethod
     def format_send_data(request_type, data=None):
@@ -63,6 +64,9 @@ class MainServer(Protocol):
 
     @staticmethod
     def queue_message(exchange, routing_key, message):
+        print(f'exchange: {exchange}'
+f'routing key: {routing_key}'
+f'message: {message}')
         x = MessageQueue(exchange=exchange, routing_key=routing_key)
         x.send_message(message=message, routing_key=routing_key)
         x.close_connection()
@@ -76,6 +80,7 @@ class MainServer(Protocol):
             if messages.request_type == form.ClientRequestTypeEnum.LOGIN_REQUEST:
                 server_data = handler.handle_login_requests(messages.data)
                 self.login(server_data)
+                self.send_aggregate_lobby()
             # Validate session updates the activity timer. Therefore, no need to call it for the keep alive
             elif session.Session.validate_session(messages.session_id):
                 match messages.request_type:
@@ -85,12 +90,16 @@ class MainServer(Protocol):
                         session.Session.delete_session(messages.session_id)
                         print('logout successful')
                     case form.ClientRequestTypeEnum.CREATE_GAME:
-                        server_data = handler.handle_create_game(messages.data, messages.session_id)
+                        list_d = handler.handle_create_game(messages.data, messages.session_id)
+                        server_data, game_id = list_d
                         self.send_create_game(server_data)
                         self.send_aggregate_lobby()
+                        self.send_aggregate_player_list(game_id)
                     case form.ClientRequestTypeEnum.JOIN_GAME:
-                        server_data = handler.handle_join_game(messages.data, messages.session_id)
+                        list_d = handler.handle_join_game(messages.data, messages.session_id)
+                        server_data, game_id = list_d
                         self.send_join_game(server_data)
+                        self.send_aggregate_player_list(game_id)
                     case _:
                         pass
 

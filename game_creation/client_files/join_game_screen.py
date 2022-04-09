@@ -89,7 +89,7 @@ class JoinGame(object):
         self.dialog = Dialog
 
     def join_button_pressed(self):
-        ClientInfo.tcpHandler.join_game(self.password_edit.text())
+        ClientInfo.tcpHandler.join_game(password=self.password_edit.text(), game_id=self.game_id)
 
     def join_game_success(self):
         ClientInfo.game_owner = False

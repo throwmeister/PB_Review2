@@ -94,6 +94,8 @@ class MainClient(Protocol):
                     self.handle_join_game_response(message.data)
                 case form.ServerRequestTypeEnum.UPDATE_EVERY_GAME_LIST:
                     ClientInfo.main_gui.set_game_list(message.data)
+                case form.ServerRequestTypeEnum.UPDATE_PLAYER_LIST:
+                    ClientInfo.main_gui.set_player_list(message.data)
                 case _:
                     # Invalid command
                     pass
@@ -143,7 +145,7 @@ class MainClient(Protocol):
             self.game_mq.set_consume()
             reactor.callInThread(self.game_mq.start_consumption)
             ClientInfo.logger.info(f'Listening to Game Queue with Queue Name {self.game_mq.queue_name}')
-            ClientInfo.create_game_gui.create_game_success()
+            ClientInfo.create_game_gui.create_response_success()
             ClientInfo.main_gui.change_screens(form.MenuScreenEnums.WAITING_ROOM)
         elif response_data.response_code == form.CreateGameEnum.NAME_ERROR:
             # Popup
@@ -155,7 +157,7 @@ class MainClient(Protocol):
 
     def handle_join_game_response(self, data):
         response_data = form.ServerJoinGame(data)
-        log_join = lambda response: ClientInfo.logger.info(f'Game join: {response.name}')
+        log_join = lambda response: ClientInfo.logger.info(f'Game join: {response}')
         if response_data.response_code == form.JoinGameEnum.SUCCESS:
             log_join(form.JoinGameEnum.SUCCESS.name)
             ClientInfo.game_joined = response_data.game_id
@@ -221,8 +223,12 @@ class MessageQueue:
 
         self.channel.queue_declare(queue=queue_name, durable=False, exclusive=False, auto_delete=True)
         self.channel.queue_bind(queue=queue_name, exchange=exchange, routing_key=routing_key)
+        ClientInfo.logger.info(f'Message queue object made: queue name: {queue_name}'
+                               f' exchange: {exchange} '
+                               f'routing key: {routing_key}')
 
     def start_consumption(self):
+        ClientInfo.logger.info('Start consumption')
         self.channel.start_consuming()
 
     def set_consume(self):
@@ -234,7 +240,8 @@ class MessageQueue:
 
 def mq_data_received(ch, method, properties, body):
     json_data = body.decode()
-    ClientInfo.logger.debug(f'{json_data}')
+    print('THIS DID NOT RUN :)')
+    ClientInfo.logger.info(f'{json_data}')
     message = form.ServerRequestHeader(json_data)
     match message.request_type:
         case form.ServerRequestTypeEnum.UPDATE_EVERY_GAME_LIST:

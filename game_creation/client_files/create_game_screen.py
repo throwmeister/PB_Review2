@@ -119,6 +119,7 @@ class CreateGame(object):
         self.type_box_dict = {'Poker': form.GameTypeEnum.POKER,
                               'Blackjack': form.GameTypeEnum.BLACKJACK}
         self.dialog = Dialog
+        ClientInfo.create_game_gui = self
 
     def create_game_button_pressed(self):
         game_type = self.type_box_dict[self.type_box.currentData(0)]

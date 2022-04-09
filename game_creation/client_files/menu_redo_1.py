@@ -231,16 +231,26 @@ class Menu(object):
 
     def set_game_list(self, data):
         self.games_list.clear()
-        for game_id, game_vars in data.items():
-            ClientInfo.logger.info(f'Game from game_id: {game_id} and values: {game_vars}')
-            d = form.UpdateGameListVariables(game_vars)
-            items = [d.game_name, d.game_type, d.owner, str(d.num_players), str(d.in_progress), game_id]
-            QtWidgets.QTreeWidgetItem(self.games_list, items)
+        ClientInfo.logger.info(data)
+        try:
+            for game_id, game_vars in data.items():
+                ClientInfo.logger.info(f'Game from game_id: {game_id} and values: {game_vars}')
+                d = form.UpdateGameListVariables(game_vars)
+                items = [d.game_name, d.game_type, d.owner, str(d.num_players), str(d.in_progress), game_id]
+                QtWidgets.QTreeWidgetItem(self.games_list, items)
+        except AttributeError:
+            pass
 
     def set_player_list(self, data):
-        self.game_player_list.clear()
-
-
+        self.player_list.clear()
+        ClientInfo.logger.info('Setting game player list')
+        ClientInfo.logger.info(data)
+        for player in data:
+            d = form.UpdatePlayerList(player)
+            ready = '✅'
+            if d.ready == form.PlayerReadyEnum.FALSE:
+                ready = '❌'
+            self.player_list.addItem(f'{d.player_name} {ready}')
 
     def join_game_pressed(self):
         if self.selected_game:

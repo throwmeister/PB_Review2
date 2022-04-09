@@ -64,11 +64,12 @@ def handle_create_game(data, session_id):
         send_data.response_code = form.CreateGameEnum.SUCCESS
         send_data.game_id = my_game.game_id
 
-    return send_data.__dict__
+    return [send_data.__dict__, send_data.game_id]
 
 
 def handle_join_game(data, session_id):
     client_data = form.ClientJoinGame(data)
+    print(client_data.game_id)
     send_data = form.ServerJoinGame()
     try:
         game = Game.Games[client_data.game_id]
@@ -83,8 +84,8 @@ def handle_join_game(data, session_id):
             send_data.game_id = game.game_id
     except KeyError:
         send_data.response_code = form.JoinGameEnum.NOT_EXIST
-
-    return send_data.__dict__
+    print(f'game id: {send_data.game_id}, {client_data.game_id}')
+    return [send_data.__dict__, client_data.game_id]
 
 
 def aggregate_lobby_list():
@@ -102,6 +103,7 @@ def aggregate_lobby_list():
 
 
 def aggregate_player_list(game_id):
+    print(game_id)
     game = Game.Games[game_id]
     d = []
     for player in game.present:
