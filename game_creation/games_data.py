@@ -10,6 +10,7 @@ class Participant:
         self.session_id = session_id
         session_object: session.Session = session.Session.sessions[session_id]
         self.username = session_object.player_name
+        self.Participants[session_id] = self
 
 
 class Game:
@@ -65,6 +66,18 @@ class Game:
         if participant in self.players:
             self.players.remove(participant)
         self.present.remove(participant)
+
+    def add_player(self, participant: Participant):
+        self.players.append(participant)
+
+    def remove_player(self, participant: Participant):
+        self.players.remove(participant)
+
+    def player_present(self, participant: Participant):
+        if participant in self.present:
+            return True
+        else:
+            return False
 
     def remove_game(self):
         del self.Games[self.owner_id]

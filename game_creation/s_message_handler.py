@@ -4,7 +4,7 @@ from games_data import Game, Participant
 import shared_directory.data_format as form
 from gamerserver_data import DBManager
 from configuration_protocol import ServerConfig
-import json, logging
+from server_info import ServerData
 
 
 def handle_login_requests(data):
@@ -85,6 +85,34 @@ def handle_join_game(data, session_id):
     except KeyError:
         send_data.response_code = form.JoinGameEnum.NOT_EXIST
     print(f'game id: {send_data.game_id}, {client_data.game_id}')
+    return [send_data.__dict__, client_data.game_id]
+
+
+def handle_ready_game(data, session_id):
+    client_data = form.ClientReadyGame(data)
+    send_data = form.ServerReadyResponse()
+    send_data.response_type = client_data.request
+    ServerData.logger.info(f'Client request: {send_data.response_type}')
+    try:
+        game = Game.Games[client_data.game_id]
+        player = Participant.Participants[session_id]
+        if game.player_present(player):
+            ServerData.logger.info('Player is present')
+            send_data.response_code = form.ReadyResponseEnum.SUCCESS
+            if client_data.request == form.ReadyTypeEnum.READY:
+                ServerData.logger.info('Player is readying')
+                game.add_player(player)
+            elif client_data.request == form.ReadyTypeEnum.UNREADY:
+                ServerData.logger.info('Player is unreadying')
+                game.remove_player(player)
+            else:
+                send_data.response_code = form.ReadyResponseEnum.ERROR
+        else:
+            send_data.response_code = form.ReadyResponseEnum.ERROR
+            ServerData.logger.info('Player is not present')
+    except KeyError:
+        ServerData.logger.info('Key error')
+
     return [send_data.__dict__, client_data.game_id]
 
 

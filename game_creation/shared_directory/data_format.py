@@ -22,6 +22,8 @@ class ClientRequestTypeEnum(str, Enum):
     LOGOUT_REQUEST = 2
     CREATE_GAME = 3
     JOIN_GAME = 4
+    READY_GAME = 5
+    LEAVE_GAME = 6
 
 
 class ServerRequestTypeEnum(str, Enum):
@@ -32,6 +34,8 @@ class ServerRequestTypeEnum(str, Enum):
     JOIN_GAME_RESPONSE = 4
     UPDATE_EVERY_GAME_LIST = 5
     UPDATE_PLAYER_LIST = 6
+    READY_GAME_RESPONSE = 7
+
 
 
 class GameTypeEnum(str, Enum):
@@ -58,6 +62,18 @@ class JoinGameEnum(str, Enum):
 class PlayerReadyEnum(str, Enum):
     FALSE = 0
     TRUE = 1
+
+
+class ReadyTypeEnum(str, Enum):
+    UNKNOWN = 0
+    READY = 1
+    UNREADY = 2
+
+
+class ReadyResponseEnum(str, Enum):
+    UNKNOWN_ERROR = 0
+    SUCCESS = 1
+    ERROR = 2
 
 
 class ClientRequestHeader:
@@ -198,6 +214,27 @@ class UpdatePlayerList:
             self.player_name = ''
             self.ready = PlayerReadyEnum.FALSE
 
+
+class ClientReadyGame:
+    def __init__(self, data=None):
+        if data:
+            self.game_id = data['game_id']
+            self.request = data['request']
+        else:
+            self.game_id = ''
+            self.request = ReadyTypeEnum.UNKNOWN
+
+
+class ServerReadyResponse:
+    def __init__(self, data=None):
+        if data:
+            self.response_code = data['response_code']
+            self.response_type = data['response_type']
+        else:
+            self.response_code = ReadyResponseEnum.UNKNOWN_ERROR
+            self.response_type = ReadyTypeEnum.UNKNOWN
+
+
 def version_number():
     return '1.0'
 
@@ -212,6 +249,7 @@ def message_url():
 
 def exchange_name():
     return 'gameserver.broadcast'
+
 
 def game_exchange_name():
     return 'gameserver.games'

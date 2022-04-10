@@ -60,6 +60,12 @@ class MainClient(Protocol):
         user_data.password = password
         self.format_send_data(form.ClientRequestTypeEnum.JOIN_GAME, user_data)
 
+    def ready_game(self, game_id, ready_type):
+        user_data = form.ClientReadyGame()
+        user_data.game_id = game_id
+        user_data.request = ready_type
+        self.format_send_data(form.ClientRequestTypeEnum.READY_GAME, user_data)
+
     def format_send_data(self, request_type: form.ClientRequestTypeEnum, data=None):
         req = form.ClientRequestHeader()
         req.request_type = request_type
@@ -96,6 +102,8 @@ class MainClient(Protocol):
                     ClientInfo.main_gui.set_game_list(message.data)
                 case form.ServerRequestTypeEnum.UPDATE_PLAYER_LIST:
                     ClientInfo.main_gui.set_player_list(message.data)
+                case form.ServerRequestTypeEnum.READY_GAME_RESPONSE:
+                    self.handle_ready_game_response(message.data)
                 case _:
                     # Invalid command
                     pass
@@ -177,6 +185,28 @@ class MainClient(Protocol):
             print('unhandled')
             raise RuntimeError
 
+    def handle_ready_game_response(self, data):
+        response_data = form.ServerReadyResponse(data)
+        if response_data.response_code == form.ReadyResponseEnum.SUCCESS:
+            if response_data.response_type == form.ReadyTypeEnum.READY:
+                ClientInfo.playing = True
+                ClientInfo.main_gui.ready_success()
+            elif response_data.response_type == form.ReadyTypeEnum.UNREADY:
+                ClientInfo.playing = False
+                ClientInfo.main_gui.ready_success()
+        elif response_data.response_code == form.ReadyResponseEnum.ERROR:
+            if response_data.response_type == form.ReadyTypeEnum.READY:
+                t = False
+            elif response_data.response_type == form.ReadyTypeEnum.UNREADY:
+                t = True
+            else:
+                ClientInfo.logger.info('Ready type seems to be unknown')
+                raise RuntimeError
+            ClientInfo.main_gui.ready_error(t)
+        else:
+            ClientInfo.logger.info('Unhandled ready error')
+            raise RuntimeError
+
     def lose_connection(self):
         self.transport.loseConnection()
 
@@ -185,13 +215,6 @@ class ClientCreator(ClientFactory):
     @staticmethod
     def start_connection():
         import colouredlogs
-        '''
-        logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
-                            datefmt='%d-%m-%Y:%H:%M:%S',
-                            level=logging.INFO,
-
-                            )
-        '''
         ClientInfo.logger = logging.getLogger('Main')
         colouredlogs.format('[%(hostname)s] %(asctime)s %(message)s')
 

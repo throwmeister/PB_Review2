@@ -131,6 +131,7 @@ class CreateGame(object):
         ClientInfo.game_owner = True
         ClientInfo.logger.info('Closing create game screen')
         ClientInfo.create_game_gui = None
+        ClientInfo.main_gui.set_owner_command()
         self.dialog.close()
 
     def create_response_failure(self):

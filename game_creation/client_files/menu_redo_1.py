@@ -140,30 +140,57 @@ class Menu(object):
         self.verticalLayout_4.addLayout(self.verticalLayout_5)
         self.main_stack.addWidget(self.lobby)
         self.game_player_list = QtWidgets.QWidget()
-        self.game_player_list.setObjectName("p_or_b")
-        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.game_player_list)
+        self.player_list_screen = QtWidgets.QWidget()
+        self.player_list_screen.setObjectName("p_or_b")
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.player_list_screen)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.verticalLayout_6 = QtWidgets.QVBoxLayout()
         self.verticalLayout_6.setObjectName("verticalLayout_6")
-        self.player_list = QtWidgets.QListWidget(self.game_player_list)
+        self.player_list = QtWidgets.QListWidget(self.player_list_screen)
         self.player_list.setStyleSheet("background-color: #ebc17a;\n"
                                        "                border: 6px groove #d9a143;\n"
                                        "font-size: 22px;")
         self.player_list.setObjectName("player_list")
         self.verticalLayout_6.addWidget(self.player_list)
-        self.start_game_button = QtWidgets.QPushButton(self.game_player_list)
-        self.start_game_button.setMouseTracking(False)
-        self.start_game_button.setCheckable(False)
-        self.start_game_button.setAutoDefault(False)
-        self.start_game_button.setFlat(False)
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.start_game_button = QtWidgets.QPushButton(self.player_list_screen)
+        self.start_game_button.setEnabled(False)
         self.start_game_button.setObjectName("start_game_button")
-        self.start_game_button.setDisabled(True)
-        self.verticalLayout_6.addWidget(self.start_game_button)
-        self.leave_game_button = QtWidgets.QPushButton(self.game_player_list)
+        self.horizontalLayout.addWidget(self.start_game_button)
+        self.playing_checkbox = QtWidgets.QCheckBox(self.player_list_screen)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.playing_checkbox.sizePolicy().hasHeightForWidth())
+        self.playing_checkbox.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("MS Shell Dlg 2")
+        font.setPointSize(-1)
+        font.setBold(False)
+        font.setItalic(False)
+        font.setUnderline(False)
+        font.setWeight(50)
+        font.setStrikeOut(False)
+        self.playing_checkbox.setFont(font)
+        self.playing_checkbox.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.playing_checkbox.setStyleSheet("font-family: MS Shell Dlg 2;\n"
+                                            "    font-size: 30px;\n"
+                                            "                \n"
+                                            "    color: rgb(0, 85, 0);\n"
+                                            "                \n"
+                                            "    background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 132, 93, 255), stop:1 rgba(97, 192, 164, 255));\n"
+                                            "                border-radius: 3px;\n"
+                                            "                border: 2px groove rgb(0, 0, 0)")
+        self.playing_checkbox.setObjectName("playing_checkbox")
+        self.horizontalLayout.addWidget(self.playing_checkbox)
+        self.verticalLayout_6.addLayout(self.horizontalLayout)
+        self.leave_game_button = QtWidgets.QPushButton(self.player_list_screen)
+        self.leave_game_button.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.leave_game_button.setObjectName("leave_game_button")
         self.verticalLayout_6.addWidget(self.leave_game_button)
         self.horizontalLayout_2.addLayout(self.verticalLayout_6)
-        self.main_stack.addWidget(self.game_player_list)
+        self.main_stack.addWidget(self.player_list_screen)
         self.verticalLayout.addWidget(self.main_stack)
         self.gridLayout.addLayout(self.verticalLayout, 1, 0, 1, 1)
 
@@ -179,6 +206,7 @@ class Menu(object):
         self.join_game_button.clicked.connect(self.join_game_pressed)
         self.create_game_button.clicked.connect(self.create_game_pressed)
         self.back_button_game_list.clicked.connect(lambda _: self.main_stack.setCurrentIndex(0))
+        self.playing_checkbox.clicked.connect(self.playing_checkbox_clicked)
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
@@ -199,13 +227,11 @@ class Menu(object):
         self.create_game_button.setText(_translate("Form", "Create game"))
         self.back_button_game_list.setText(_translate("Form", "Back"))
         self.start_game_button.setText(_translate("Form", "Start"))
+        self.playing_checkbox.setText(_translate("Form", "Playing"))
         self.leave_game_button.setText(_translate("Form", "Leave"))
 
     def tester_button(self):
-        self.main_stack.setCurrentIndex(1)
-        items = ['Alex', 'Poker', 'alex', '1', 'False', 'Hi']
-        QtWidgets.QTreeWidgetItem(self.games_list, items)
-
+        self.main_stack.setCurrentIndex(2)
     def game_clicked(self, items):
         '''
         print(self.games_list.topLevelItem(0).data(5, 0))
@@ -269,9 +295,29 @@ class Menu(object):
         self.create_ui.setupUi(self.create_window)
         self.create_window.show()
 
+    def set_owner_command(self):
+        self.start_game_button.setEnabled(True)
+
+    def playing_checkbox_clicked(self):
+        self.playing_checkbox.setEnabled(False)
+        if self.playing_checkbox.isChecked():
+            ClientInfo.tcpHandler.ready_game(game_id=ClientInfo.game_joined, ready_type=form.ReadyTypeEnum.READY)
+        else:
+            ClientInfo.tcpHandler.ready_game(game_id=ClientInfo.game_joined, ready_type=form.ReadyTypeEnum.UNREADY)
+
+    def ready_success(self):
+        ClientInfo.logger.info('Ready: success')
+        self.playing_checkbox.setEnabled(True)
+
+    def ready_error(self, reverse_action: bool):
+        self.playing_checkbox.setEnabled(True)
+        self.playing_checkbox.setChecked(reverse_action)
+        ClientInfo.logger.info('Ready failed')
+
     def closed_event(self, event):
-        # ClientInfo.tcpHandler.lose_connection()
+        ClientInfo.tcpHandler.lose_connection()
         raise RuntimeError
+
 
 
 

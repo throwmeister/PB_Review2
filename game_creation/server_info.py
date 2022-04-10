@@ -1,0 +1,3 @@
+class ServerData:
+    logger = None
+

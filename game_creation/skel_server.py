@@ -1,5 +1,7 @@
 import builtins
 
+from server_info import ServerData
+
 from twisted.internet import reactor, endpoints
 from twisted.internet.protocol import ServerFactory, Protocol
 # from configuration_protocol import ServerConfig
@@ -32,11 +34,15 @@ class MainServer(Protocol):
         d = self.format_send_data(form.ServerRequestTypeEnum.JOIN_GAME_RESPONSE, data)
         self.tcp_send_data(d)
 
+    def send_ready_game(self, data):
+        d = self.format_send_data(form.ServerRequestTypeEnum.READY_GAME_RESPONSE, data)
+        self.tcp_send_data(d)
+
     def send_aggregate_lobby(self):
         all_games = handler.aggregate_lobby_list()
         d = self.format_send_data(form.ServerRequestTypeEnum.UPDATE_EVERY_GAME_LIST, all_games)
         self.tcp_send_data(d)
-        # self.queue_message(form.exchange_name(), '', d)
+        self.queue_message(form.exchange_name(), '', d)
 
     def send_aggregate_player_list(self, game_id):
         players = handler.aggregate_player_list(game_id)
@@ -88,7 +94,6 @@ f'message: {message}')
                         print(f'keep alive message received from {messages.session_id}: {messages.data}')
                     case form.ClientRequestTypeEnum.LOGOUT_REQUEST:
                         session.Session.delete_session(messages.session_id)
-                        print('logout successful')
                     case form.ClientRequestTypeEnum.CREATE_GAME:
                         list_d = handler.handle_create_game(messages.data, messages.session_id)
                         server_data, game_id = list_d
@@ -99,6 +104,11 @@ f'message: {message}')
                         list_d = handler.handle_join_game(messages.data, messages.session_id)
                         server_data, game_id = list_d
                         self.send_join_game(server_data)
+                        self.send_aggregate_player_list(game_id)
+                    case form.ClientRequestTypeEnum.READY_GAME:
+                        list_d = handler.handle_ready_game(messages.data, messages.session_id)
+                        server_data, game_id = list_d
+                        self.send_ready_game(server_data)
                         self.send_aggregate_player_list(game_id)
                     case _:
                         pass
@@ -119,6 +129,7 @@ class MessageQueue:
         self.routing_key = routing_key
         my_url = form.message_url()
 
+
         self.connection = pika.BlockingConnection(pika.URLParameters(url=my_url))
         self.channel = self.connection.channel()
 
@@ -136,11 +147,12 @@ class MessageQueue:
 
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
-                        datefmt='%d-%m-%Y:%H:%M:%S',
-                        level=logging.INFO)
+    import colouredlogs
 
-    logger = logging.getLogger('Main')
+    ServerData.logger = logging.getLogger('Main')
+    colouredlogs.format('[%(hostname)s] %(asctime)s %(message)s')
+
+    colouredlogs.install(logger=ServerData.logger)
     endpoint = endpoints.TCP4ServerEndpoint(reactor, 8007)
     # message_queue = MessageQueue(exchange='gameserver.broadcast')
     endpoint.listen(ServerProtocol())
