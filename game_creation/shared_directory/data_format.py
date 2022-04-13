@@ -9,6 +9,11 @@ class GameStatus(str, Enum):
     IN_PROGRESS = 3
 
 
+class GeneralEnum(str, Enum):
+    UNKNOWN_ERROR = 0
+    SUCCESS = 1
+    ERROR = 2
+
 class LoginResponseEnum(str, Enum):
     UNKNOWN_ERROR = 0
     SUCCESS = 1
@@ -24,6 +29,7 @@ class ClientRequestTypeEnum(str, Enum):
     JOIN_GAME = 4
     READY_GAME = 5
     LEAVE_GAME = 6
+    START_GAME = 7
 
 
 class ServerRequestTypeEnum(str, Enum):
@@ -35,6 +41,7 @@ class ServerRequestTypeEnum(str, Enum):
     UPDATE_EVERY_GAME_LIST = 5
     UPDATE_PLAYER_LIST = 6
     READY_GAME_RESPONSE = 7
+    START_GAME_RESPONSE = 8
 
 
 
@@ -235,6 +242,22 @@ class ServerReadyResponse:
             self.response_type = ReadyTypeEnum.UNKNOWN
 
 
+class ClientStartGame:
+    def __init__(self, data=None):
+        if data:
+            self.game_id = data['game_id']
+        else:
+            self.game_id = ''
+
+
+class ServerStartResponse:
+    def __init__(self, data=None):
+        if data:
+            self.response_code = data['response_code']
+            self.game_type = data['game_type']
+        else:
+            self.response_code = GeneralEnum.UNKNOWN_ERROR
+            self.game_type = GameTypeEnum.UNKNOWN
 def version_number():
     return '1.0'
 

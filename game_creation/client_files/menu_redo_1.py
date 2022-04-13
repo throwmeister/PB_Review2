@@ -2,6 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from create_game_screen import CreateGame
 from login_screen import Login
 from join_game_screen import JoinGame
+from poker_game_screen import Game
 from client_data import ClientInfo
 from game_creation.shared_directory import data_format as form
 
@@ -207,6 +208,7 @@ class Menu(object):
         self.create_game_button.clicked.connect(self.create_game_pressed)
         self.back_button_game_list.clicked.connect(lambda _: self.main_stack.setCurrentIndex(0))
         self.playing_checkbox.clicked.connect(self.playing_checkbox_clicked)
+        self.start_game_button.clicked.connect()
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
@@ -313,6 +315,15 @@ class Menu(object):
         self.playing_checkbox.setEnabled(True)
         self.playing_checkbox.setChecked(reverse_action)
         ClientInfo.logger.info('Ready failed')
+
+    def start_game_clicked(self):
+        ClientInfo.tcpHandler.start_game()
+
+    def setup_game(self):
+        self.gwindow = QtWidgets.QWidget()
+        self.game_ui = Game()
+        self.game_ui.setupUi(self.gwindow)
+        self.gwindow.show()
 
     def closed_event(self, event):
         ClientInfo.tcpHandler.lose_connection()

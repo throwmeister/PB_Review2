@@ -66,6 +66,11 @@ class MainClient(Protocol):
         user_data.request = ready_type
         self.format_send_data(form.ClientRequestTypeEnum.READY_GAME, user_data)
 
+    def start_game(self):
+        user_data = form.ClientStartGame()
+        user_data.game_id = ClientInfo.game_joined
+        self.format_send_data(form.ClientRequestTypeEnum.START_GAME, user_data)
+
     def format_send_data(self, request_type: form.ClientRequestTypeEnum, data=None):
         req = form.ClientRequestHeader()
         req.request_type = request_type
@@ -271,8 +276,19 @@ def mq_data_received(ch, method, properties, body):
             ClientInfo.main_gui.set_game_list(message.data)
         case form.ServerRequestTypeEnum.UPDATE_PLAYER_LIST:
             ClientInfo.main_gui.set_player_list(message.data)
+        case form.ServerRequestTypeEnum.READY_GAME_RESPONSE:
+            ready_game_response(message.data)
 
-
+def ready_game_response(data):
+    sent_data = form.ServerStartResponse(data)
+    if sent_data.response_code == form.GeneralEnum.SUCCESS:
+        ClientInfo.logger.info('Starting game...')
+        ClientInfo.main_gui.setup_game()
+    elif sent_data.response_code == form.GeneralEnum.ERROR:
+        ClientInfo.logger.info('Wrong input data. An error has occured')
+    else:
+        ClientInfo.logger.info('Unknown error has occurred')
+        raise RuntimeError
 '''
 
 if __name__ == '__main__':

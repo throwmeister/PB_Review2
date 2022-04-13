@@ -116,6 +116,25 @@ def handle_ready_game(data, session_id):
     return [send_data.__dict__, client_data.game_id]
 
 
+def handle_start_game(data, session_id):
+    client_data = form.ClientStartGame(data)
+    send_data = form.ServerStartResponse()
+
+    def error():
+        send_data.response_code = form.GeneralEnum.ERROR
+
+    try:
+        game = Game.Games[session_id]
+        if game.owner_id == session_id:
+            send_data.response_code = form.GeneralEnum.SUCCESS
+            send_data.game_type = game.game_type
+        else:
+            error()
+    except KeyError:
+        error()
+
+    return [send_data.__dict__, client_data.game_id]
+
 def aggregate_lobby_list():
     d = {}
     for games in Game.Games.values():
