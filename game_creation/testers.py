@@ -55,3 +55,27 @@ for k, v in values.items():
 n, m = [1, 2]
 print(n)
 print(m)
+
+
+class Card:
+    def __init__(self, suit, value):
+        self.suit = suit
+        self.value = value
+
+    def display(self):
+        print(f'{self.value} of {self.suit}')
+
+    def return_card(self):
+        return f'{self.value} of {self.suit}'
+
+    def get_suit(self):
+        return self.suit
+
+    def get_value(self):
+        return self.value
+
+    def __str__(self):
+        return f'{self.value} of {self.suit}'
+
+card = Card('spades', 7)
+print(card.__dict__)

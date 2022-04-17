@@ -54,6 +54,17 @@ class MainServer(Protocol):
         d = self.format_send_data(form.ServerRequestTypeEnum.READY_GAME_RESPONSE, data)
         self.queue_message(form.game_exchange_name(), game_id, d)
 
+    def send_new_bet(self, game_id):
+        pass
+
+    def send_cards(self, data):
+        d = self.format_send_data(form.ServerRequestTypeEnum.CARDS, data)
+        self.tcp_send_data(d)
+
+    def signal_state_change(self, game_id, state):
+        d = self.format_send_data(form.ServerRequestTypeEnum.STATE_CHANGE, state)
+        self.queue_message(form.game_exchange_name(), game_id, d)
+
     @staticmethod
     def format_send_data(request_type, data=None):
         req = form.ServerRequestHeader()
@@ -105,7 +116,7 @@ f'message: {message}')
                         self.send_aggregate_lobby()
                         self.send_aggregate_player_list(game_id)
                     case form.ClientRequestTypeEnum.JOIN_GAME:
-                        server_data, game_id  = handler.handle_join_game(messages.data, messages.session_id)
+                        server_data, game_id = handler.handle_join_game(messages.data, messages.session_id)
                         self.send_join_game(server_data)
                         self.send_aggregate_player_list(game_id)
                     case form.ClientRequestTypeEnum.READY_GAME:
@@ -114,7 +125,16 @@ f'message: {message}')
                         self.send_aggregate_player_list(game_id)
                     case form.ClientRequestTypeEnum.START_GAME:
                         server_data, game_id = handler.handle_start_game(messages.data, messages.session_id)
-                        self.send_start_game(server_data, game_id)
+                        self.send_start_game(data=server_data, game_id=game_id)
+                    case form.ClientRequestTypeEnum.SEND_BET:
+                        server_data, game_id, complete = handler.handle_input_bet(messages.data, messages.session_id)
+                        self.tcp_send_data(server_data)
+                        self.send_new_bet(game_id)
+                        if complete:
+                            self.signal_state_change(game_id=game_id, state=form.GameState.CARD_CHANGING)
+                    case form.ClientRequestTypeEnum.REQUEST_CARDS:
+                        server_data = handler.get_cards(messages.data, messages.session_id)
+                        self.tcp_send_data(server_data)
                     case _:
                         pass
 

@@ -30,6 +30,8 @@ class ClientRequestTypeEnum(str, Enum):
     READY_GAME = 5
     LEAVE_GAME = 6
     START_GAME = 7
+    SEND_BET = 8
+    REQUEST_CARDS = 9
 
 
 class ServerRequestTypeEnum(str, Enum):
@@ -42,6 +44,9 @@ class ServerRequestTypeEnum(str, Enum):
     UPDATE_PLAYER_LIST = 6
     READY_GAME_RESPONSE = 7
     START_GAME_RESPONSE = 8
+    BET_RESPONSE = 9
+    STATE_CHANGE = 10
+    CARDS = 11
 
 
 
@@ -81,6 +86,14 @@ class ReadyResponseEnum(str, Enum):
     UNKNOWN_ERROR = 0
     SUCCESS = 1
     ERROR = 2
+
+
+class GameState(str, Enum):
+    SETUP = 0
+    BETTING = 1
+    CARD_CHANGING = 2
+    CALCULATING = 3
+    LOOP = 4
 
 
 class ClientRequestHeader:
@@ -258,6 +271,46 @@ class ServerStartResponse:
         else:
             self.response_code = GeneralEnum.UNKNOWN_ERROR
             self.game_type = GameTypeEnum.UNKNOWN
+
+
+class ClientSendBet:
+    def __init__(self, data=None):
+        if data:
+            self.game_id = data['game_id']
+            self.bet = data['bet']
+        else:
+            self.game_id = ''
+            self.bet = 0
+
+
+class ServerBetResponse:
+    def __init__(self, data=None):
+        if data:
+            self.response_code = data['response_code']
+        else:
+            self.response_code = GeneralEnum.UNKNOWN_ERROR
+
+
+class ServerGetCards:
+    def __init__(self, data=None):
+        if data:
+            self.response_code = data['response_code']
+            self.cards = data['cards']
+        else:
+            self.response_code = GeneralEnum.UNKNOWN_ERROR
+            self.cards = None
+
+
+class ExtractCard:
+    def __init__(self, data=None):
+        if data:
+            self.value = data['value']
+            self.suit = data['suit']
+        else:
+            self.value = 0
+            self.suit = ''
+
+
 def version_number():
     return '1.0'
 

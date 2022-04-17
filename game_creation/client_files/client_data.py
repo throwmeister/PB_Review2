@@ -1,9 +1,10 @@
+from game_creation.shared_directory import data_format as form
 
 class ClientInfo:
     username = ''
     keep_alive = 0
     session_id = ''
-    game_joined = ''
+    game_id = ''
     game_owner = False
     valid_session = False
     playing = False
@@ -13,6 +14,8 @@ class ClientInfo:
     login_gui = None
     create_game_gui = None
     join_gui = None
+    game_gui = None
+    bet_gui = None
     logger = None
 
     @classmethod
@@ -22,16 +25,11 @@ class ClientInfo:
         cls.session_id = session_id
 
 
-class GameLobbies:
-    Games = {}
+class GameInfo:
+    bet = 100
+    state = form.GameState.SETUP
 
-    def __init__(self, name, game_id, game_type):
-        self.name = name
-        self.game_id = game_id
-        self.game_type = game_type
-        self.num_players = int
-        self.Games[game_id] = self
-
-    def update_num(self, num):
-        self.num_players = num
-
+    @classmethod
+    def set_initial_values(cls):
+        cls.bet = 100
+        cls.state = form.GameState.BETTING

@@ -208,7 +208,7 @@ class Menu(object):
         self.create_game_button.clicked.connect(self.create_game_pressed)
         self.back_button_game_list.clicked.connect(lambda _: self.main_stack.setCurrentIndex(0))
         self.playing_checkbox.clicked.connect(self.playing_checkbox_clicked)
-        self.start_game_button.clicked.connect()
+        self.start_game_button.clicked.connect(self.start_game_clicked)
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
@@ -303,9 +303,9 @@ class Menu(object):
     def playing_checkbox_clicked(self):
         self.playing_checkbox.setEnabled(False)
         if self.playing_checkbox.isChecked():
-            ClientInfo.tcpHandler.ready_game(game_id=ClientInfo.game_joined, ready_type=form.ReadyTypeEnum.READY)
+            ClientInfo.tcpHandler.ready_game(game_id=ClientInfo.game_id, ready_type=form.ReadyTypeEnum.READY)
         else:
-            ClientInfo.tcpHandler.ready_game(game_id=ClientInfo.game_joined, ready_type=form.ReadyTypeEnum.UNREADY)
+            ClientInfo.tcpHandler.ready_game(game_id=ClientInfo.game_id, ready_type=form.ReadyTypeEnum.UNREADY)
 
     def ready_success(self):
         ClientInfo.logger.info('Ready: success')
@@ -320,10 +320,13 @@ class Menu(object):
         ClientInfo.tcpHandler.start_game()
 
     def setup_game(self):
-        self.gwindow = QtWidgets.QWidget()
-        self.game_ui = Game()
-        self.game_ui.setupUi(self.gwindow)
-        self.gwindow.show()
+        ClientInfo.logger.info('Setting up game')
+        app = QtWidgets.QApplication(sys.argv)
+        main = QtWidgets.QWidget()
+        ui = Game()
+        ui.setupUi(main)
+        main.show()
+        sys.exit(app.exec_())
 
     def closed_event(self, event):
         ClientInfo.tcpHandler.lose_connection()

@@ -68,8 +68,17 @@ class MainClient(Protocol):
 
     def start_game(self):
         user_data = form.ClientStartGame()
-        user_data.game_id = ClientInfo.game_joined
+        user_data.game_id = ClientInfo.game_id
         self.format_send_data(form.ClientRequestTypeEnum.START_GAME, user_data)
+
+    def send_bet(self, amount):
+        user_data = form.ClientSendBet()
+        user_data.bet = amount
+        user_data.game_id = ClientInfo.game_id
+        self.format_send_data(form.ClientRequestTypeEnum.SEND_BET, user_data)
+
+    def request_cards(self):
+        self.format_send_data(form.ClientRequestTypeEnum.REQUEST_CARDS, ClientInfo.game_id)
 
     def format_send_data(self, request_type: form.ClientRequestTypeEnum, data=None):
         req = form.ClientRequestHeader()
@@ -109,6 +118,10 @@ class MainClient(Protocol):
                     ClientInfo.main_gui.set_player_list(message.data)
                 case form.ServerRequestTypeEnum.READY_GAME_RESPONSE:
                     self.handle_ready_game_response(message.data)
+                case form.ServerRequestTypeEnum.CARDS:
+                    self.handle_cards(message.data)
+                case form.ServerRequestTypeEnum.BET_RESPONSE:
+                    self.handle_bet_response(message.data)
                 case _:
                     # Invalid command
                     pass
@@ -150,7 +163,7 @@ class MainClient(Protocol):
         response_data = form.ServerCreateGame(data)
         if response_data.response_code == form.CreateGameEnum.SUCCESS:
             ClientInfo.logger.info(f'Game creation: {form.CreateGameEnum.SUCCESS.name}')
-            ClientInfo.game_joined = response_data.game_id
+            ClientInfo.game_id = response_data.game_id
             ClientInfo.game_owner = True
             # Creator listens in on Game Queue
             self.game_mq = MessageQueue(queue_name=f'gameserver.{ClientInfo.username}.playing.game.{response_data.game_id}',
@@ -173,7 +186,7 @@ class MainClient(Protocol):
         log_join = lambda response: ClientInfo.logger.info(f'Game join: {response}')
         if response_data.response_code == form.JoinGameEnum.SUCCESS:
             log_join(form.JoinGameEnum.SUCCESS.name)
-            ClientInfo.game_joined = response_data.game_id
+            ClientInfo.game_id = response_data.game_id
             # Joiner listens in on Game Queue
             self.game_mq = MessageQueue(queue_name=f'gameserver.{ClientInfo.username}.playing.game.{response_data.game_id}',
                                          exchange=form.game_exchange_name(), routing_key=response_data.game_id)
@@ -190,7 +203,8 @@ class MainClient(Protocol):
             print('unhandled')
             raise RuntimeError
 
-    def handle_ready_game_response(self, data):
+    @staticmethod
+    def handle_ready_game_response(data):
         response_data = form.ServerReadyResponse(data)
         if response_data.response_code == form.ReadyResponseEnum.SUCCESS:
             if response_data.response_type == form.ReadyTypeEnum.READY:
@@ -211,6 +225,25 @@ class MainClient(Protocol):
         else:
             ClientInfo.logger.info('Unhandled ready error')
             raise RuntimeError
+
+    def handle_bet_response(self, data):
+        response_data = form.ServerBetResponse(data)
+        match response_data.response_code:
+            case form.GeneralEnum.SUCCESS:
+                ClientInfo.bet_gui.bet_success()
+            case form.GeneralEnum.ERROR:
+                ClientInfo.bet_gui.bet_failure()
+
+    @staticmethod
+    def handle_cards(self, data):
+        response_data = form.ServerGetCards(data)
+        if response_data.response_code == form.GeneralEnum.SUCCESS:
+            ClientInfo.logger.info('Card request successful')
+            ClientInfo.game_gui.set_cards(response_data.cards)
+        elif response_data.response_code == form.GeneralEnum.SUCCESS:
+            ClientInfo.logger.info('Error with card request')
+        else:
+            ClientInfo.logger.info('UNKNOWN ERROR')
 
     def lose_connection(self):
         self.transport.loseConnection()
@@ -277,13 +310,26 @@ def mq_data_received(ch, method, properties, body):
         case form.ServerRequestTypeEnum.UPDATE_PLAYER_LIST:
             ClientInfo.main_gui.set_player_list(message.data)
         case form.ServerRequestTypeEnum.READY_GAME_RESPONSE:
-            ready_game_response(message.data)
+            start_game_response(message.data)
+        case form.ServerRequestTypeEnum.STATE_CHANGE:
+            state_handler(message.data)
 
-def ready_game_response(data):
+
+def state_handler(data):
+    match data:
+        case form.GameState.CARD_CHANGING:
+            ClientInfo.tcpHandler.request_cards()
+
+
+def start_game_response(data):
     sent_data = form.ServerStartResponse(data)
     if sent_data.response_code == form.GeneralEnum.SUCCESS:
         ClientInfo.logger.info('Starting game...')
-        ClientInfo.main_gui.setup_game()
+        if ClientInfo.playing:
+            ClientInfo.logger.info('Game started. Loading assets...')
+            ClientInfo.main_gui.setup_game()
+        else:
+            ClientInfo.logger.info('Game started. Not playing')
     elif sent_data.response_code == form.GeneralEnum.ERROR:
         ClientInfo.logger.info('Wrong input data. An error has occured')
     else:
