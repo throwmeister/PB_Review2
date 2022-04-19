@@ -33,6 +33,7 @@ class ClientRequestTypeEnum(str, Enum):
     START_GAME = 7
     SEND_BET = 8
     REQUEST_CARDS = 9
+    SEND_CARDS = 10
 
 
 class ServerRequestTypeEnum(str, Enum):
@@ -309,6 +310,16 @@ class ExtractCard:
         else:
             self.value = 0
             self.suit = ''
+
+
+class ClientSendCards:
+    def __init__(self, data=None):
+        if data:
+            self.game_id = data['game_id']
+            self.cards = data['cards']
+        else:
+            self.game_id = ''
+            self.cards = None
 
 
 def version_number():

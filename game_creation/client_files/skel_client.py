@@ -80,6 +80,12 @@ class MainClient(Protocol):
     def request_cards(self):
         self.format_send_data(form.ClientRequestTypeEnum.REQUEST_CARDS, ClientInfo.game_id)
 
+    def send_replace_cards(self, cards):
+        user_data = form.ClientSendCards()
+        user_data.game_id = ClientInfo.game_id
+        user_data.cards = cards
+        self.format_send_data(form.ClientRequestTypeEnum.SEND_CARDS, user_data)
+
     def format_send_data(self, request_type: form.ClientRequestTypeEnum, data=None):
         req = form.ClientRequestHeader()
         req.request_type = request_type
@@ -231,6 +237,7 @@ class MainClient(Protocol):
         match response_data.response_code:
             case form.GeneralEnum.SUCCESS:
                 ClientInfo.bet_gui.bet_success()
+                self.request_cards()
             case form.GeneralEnum.ERROR:
                 ClientInfo.bet_gui.bet_failure()
 

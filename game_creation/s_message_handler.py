@@ -195,6 +195,33 @@ def get_cards(game_id, session_id):
     return send_data.__dict__
 
 
+def replace_cards(data, session_id):
+    # Poker only command
+    client_data = form.ClientSendCards(data)
+    send_data = form.ServerGetCards()
+    pv_checker = game_request_validation(session_id, client_data.game_id, form.GameState.CARD_CHANGING)
+    complete = False
+    if pv_checker:
+        game, player = pv_checker
+        player: Participant
+        game: Game
+        player.vars.change_cards(client_data.cards)
+        cards = player.vars.get_cards_formated()
+        send_data.cards = cards
+        send_data.response_code = form.GeneralEnum.SUCCESS
+        if game.game_logic.check_all_replaced(game.players):
+            complete = True
+
+    else:
+        send_data.response_code = form.GeneralEnum.ERROR
+
+    return [send_data.__dict__, client_data.game_id, complete]
+
+
+def calculate_game_score(game_id):
+    pass
+
+
 def aggregate_lobby_list():
     d = {}
     for games in Game.Games.values():

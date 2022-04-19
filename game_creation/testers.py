@@ -100,3 +100,18 @@ print(s)
 
 if isinstance('????', Enum):
     print('wheyyy')
+
+for c in []:
+    print('teegee')
+
+import numpy as np
+dictionary = {'suit': 'Spades', 'value': 4}
+sped = [{'value': 4, 'suit': 'Spades'}, {'suit': 'Spades', 'value': 7}]
+
+if dictionary in sped:
+    sped.remove(dictionary)
+    print('yayyyyy')
+    print(sped)
+
+
+

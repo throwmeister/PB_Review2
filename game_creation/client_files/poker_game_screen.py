@@ -99,7 +99,7 @@ class Game(object):
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
         Form.setWindowModality(QtCore.Qt.ApplicationModal)
-        self.replace_button.setDisabled(True)
+        # self.replace_button.setDisabled(True)
 
         self.replace_button.clicked.connect(self.replace_button_clicked)
         # self.test_change_vars()
@@ -146,14 +146,15 @@ class Game(object):
             self.card_list[i].set_values(c.suit, c.value)
 
     def replace_button_clicked(self):
+        self.replace_button.setDisabled(True)
         cards = []
         for card in GameInfo.replace_list:
             card: ExtendedCard
             d = form.ExtractCard()
             d.suit = card.suit
             d.value = card.value
-            cards.append(d.__dict__)
-
+            print(d.__dict__)
+        ClientInfo.tcpHandler.send_replace_cards(cards)
 
 class ExtendedCard(QtWidgets.QLabel):
     selected_style_sheet = '''background-color: #ebc17a;

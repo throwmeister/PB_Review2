@@ -95,11 +95,14 @@ class ParticipantVariables:
 
     def draw(self):
         self.hand.append(self.deck.draw())
-        return self
+
+    def remove(self, card):
+        self.hand.remove(card)
 
 
 class PokerPlayerVariables(ParticipantVariables):
     def __init__(self, deck):
+        self.has_replaced = False
         super().__init__(deck)
 
     def draw_cards(self):
@@ -107,7 +110,12 @@ class PokerPlayerVariables(ParticipantVariables):
             self.draw()
 
     def replace_cards(self, cards):
-        pass
+        for card in cards:
+            card: Card
+            index = self.get_cards_format().index(card)
+            self.hand.pop(index)
+            self.draw()
+        self.has_replaced = True
 
 
 class BlackjackPlayerVariables(ParticipantVariables):
@@ -232,6 +240,13 @@ class GameVariables:
 class Poker(GameVariables):
     def __init__(self):
         super().__init__(1)
+
+    def check_all_replaced(self, players):
+        for player in players:
+            player: Participant
+            if not player.vars.has_replaced:
+                return False
+        return True
 
 
 class Blackjack(GameVariables):
