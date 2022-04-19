@@ -307,6 +307,8 @@ class Menu(object):
 
         self.replace_button.clicked.connect(self.replace_button_clicked)
         # self.test_change_vars()
+    def signal(self):
+        ClientInfo.tcpHandler.request_start_signal()
 
     def card_clicked(self, event, card_obj):
         button = event.button()

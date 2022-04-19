@@ -1,8 +1,8 @@
 import builtins, logging, json, pika
 '''
-from twisted.internet.defer import Deferred
+from twisted.internet.defer import Deferred'''
 from twisted.internet.threads import deferToThread
-'''
+
 from twisted.internet import reactor, task
 from twisted.internet.protocol import Protocol, ClientFactory
 from twisted.internet.endpoints import TCP4ClientEndpoint
@@ -182,7 +182,7 @@ class MainClient(Protocol):
             self.game_mq = MessageQueue(queue_name=f'gameserver.{ClientInfo.username}.playing.game.{response_data.game_id}',
                                          exchange=form.game_exchange_name(), routing_key=response_data.game_id)
             self.game_mq.set_consume()
-            reactor.callInThread(self.game_mq.start_consumption)
+            reactor.callInThread(reactor, self.game_mq.start_consumption)
             ClientInfo.logger.info(f'Listening to Game Queue with Queue Name {self.game_mq.queue_name}')
             ClientInfo.create_game_gui.create_response_success()
             ClientInfo.main_gui.change_screens(form.MenuScreenEnums.WAITING_ROOM)
@@ -353,7 +353,7 @@ def start_game_response(data):
         ClientInfo.logger.info('Starting game...')
         if ClientInfo.playing:
             ClientInfo.logger.info('Game started. Loading assets...')
-            ClientInfo.tcpHandler.request_start_signal()
+            ClientInfo.main_gui.signal()
         else:
             ClientInfo.logger.info('Game started. Not playing')
     elif sent_data.response_code == form.GeneralEnum.ERROR:
