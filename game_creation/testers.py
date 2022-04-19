@@ -1,5 +1,5 @@
 import json
-import enum
+from enum import Enum
 import shared_directory.data_format as form
 
 x = hash('3')
@@ -28,7 +28,7 @@ for s in x.values():
     print(s)
 
 
-class Test(str, enum.Enum):
+class Test(str, Enum):
     A = 0
     B = 1
 
@@ -79,3 +79,24 @@ class Card:
 
 card = Card('spades', 7)
 print(card.__dict__)
+
+delist = ['john', 'alex', 'alan']
+delist.pop(0)
+print(delist)
+
+
+class GameState(str, Enum):
+    SETUP = 0
+    BETTING = 1
+    CARD_CHANGING = 2
+    CALCULATING = 3
+    LOOP = 4
+
+
+req = {'state': GameState.CARD_CHANGING, 'game_id': '3i2194u12385y18'}
+
+s = json.dumps(req)
+print(s)
+
+if isinstance('????', Enum):
+    print('wheyyy')

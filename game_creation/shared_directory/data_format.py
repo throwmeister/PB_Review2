@@ -14,6 +14,7 @@ class GeneralEnum(str, Enum):
     SUCCESS = 1
     ERROR = 2
 
+
 class LoginResponseEnum(str, Enum):
     UNKNOWN_ERROR = 0
     SUCCESS = 1
@@ -47,7 +48,6 @@ class ServerRequestTypeEnum(str, Enum):
     BET_RESPONSE = 9
     STATE_CHANGE = 10
     CARDS = 11
-
 
 
 class GameTypeEnum(str, Enum):

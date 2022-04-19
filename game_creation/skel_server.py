@@ -1,7 +1,6 @@
 import builtins
-
+from enum import Enum
 from server_info import ServerData
-
 from twisted.internet import reactor, endpoints
 from twisted.internet.protocol import ServerFactory, Protocol
 # from configuration_protocol import ServerConfig
@@ -57,6 +56,10 @@ class MainServer(Protocol):
     def send_new_bet(self, game_id):
         pass
 
+    def send_bet_response(self, data):
+        d = self.format_send_data(form.ServerRequestTypeEnum.BET_RESPONSE, data)
+        self.tcp_send_data(d)
+
     def send_cards(self, data):
         d = self.format_send_data(form.ServerRequestTypeEnum.CARDS, data)
         self.tcp_send_data(d)
@@ -71,12 +74,16 @@ class MainServer(Protocol):
         req.request_type = request_type
         if data:
             try:
-                req.data = data.__dict__
+                if isinstance(data, Enum):
+                    req.data = data
+                else:
+                    req.data = data.__dict__
             except builtins.AttributeError:
                 req.data = data
         else:
             req.data = ''
         print(request_type.name)
+        ServerData.logger.info(req.__dict__)
         s = json.dumps(req.__dict__)
         return s
 
@@ -127,8 +134,9 @@ f'message: {message}')
                         server_data, game_id = handler.handle_start_game(messages.data, messages.session_id)
                         self.send_start_game(data=server_data, game_id=game_id)
                     case form.ClientRequestTypeEnum.SEND_BET:
+                        ServerData.logger.info('Bet received')
                         server_data, game_id, complete = handler.handle_input_bet(messages.data, messages.session_id)
-                        self.tcp_send_data(server_data)
+                        self.send_bet_response(server_data)
                         self.send_new_bet(game_id)
                         if complete:
                             self.signal_state_change(game_id=game_id, state=form.GameState.CARD_CHANGING)

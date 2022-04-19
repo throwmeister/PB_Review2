@@ -3,7 +3,8 @@ from create_game_screen import CreateGame
 from login_screen import Login
 from join_game_screen import JoinGame
 from poker_game_screen import Game
-from client_data import ClientInfo
+from client_data import ClientInfo, GameInfo
+from bet_screen import Bet
 from game_creation.shared_directory import data_format as form
 
 
@@ -326,6 +327,12 @@ class Menu(object):
         ui = Game()
         ui.setupUi(main)
         main.show()
+        b_window = QtWidgets.QDialog()
+        b_lui = Bet()
+        b_lui.setupUi(b_window)
+        b_window.show()
+
+        GameInfo.state = form.GameState.CARD_CHANGING
         sys.exit(app.exec_())
 
     def closed_event(self, event):

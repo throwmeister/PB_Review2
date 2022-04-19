@@ -62,7 +62,6 @@ class Bet(object):
         self.bet_edit = QtWidgets.QLineEdit(Dialog)
         self.bet_edit.setMinimumSize(QtCore.QSize(0, 50))
         self.bet_edit.setText("")
-        self.bet_edit.setEchoMode(QtWidgets.QLineEdit.Password)
         self.bet_edit.setClearButtonEnabled(False)
         self.bet_edit.setObjectName("lineEdit_2")
         self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.bet_edit)
@@ -82,7 +81,7 @@ class Bet(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Bet"))
-        self.label.setText(_translate("Dialog", "How much would you like to bet"))
+        self.label.setText(_translate("Dialog", "Bet amount: "))
         self.label_3.setText(_translate("Dialog", "Amount"))
         self.bet_button.setText(_translate("Dialog", "Bet"))
         self.dialog = Dialog

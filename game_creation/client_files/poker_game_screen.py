@@ -42,7 +42,7 @@ class Game(object):
         self.verticalLayout.addWidget(self.EMPTY)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.card1 = ExtendedCard(Form, self.my_label_clicked)
+        self.card1 = ExtendedCard(Form, self.card_clicked)
         self.card1.setMinimumSize(QtCore.QSize(200, 100))
         self.card1.setMaximumSize(QtCore.QSize(200, 300))
         self.card1.setText("")
@@ -51,28 +51,28 @@ class Game(object):
         self.card1.setScaledContents(True)
         self.card1.setObjectName("label_4")
         self.horizontalLayout.addWidget(self.card1, 0, QtCore.Qt.AlignVCenter)
-        self.card2 = ExtendedCard(Form, None)
+        self.card2 = ExtendedCard(Form, self.card_clicked)
         self.card2.setMaximumSize(QtCore.QSize(200, 300))
         self.card2.setText("")
         self.card2.setPixmap(QtGui.QPixmap(self.back_card))
         self.card2.setScaledContents(True)
         self.card2.setObjectName("label_3")
         self.horizontalLayout.addWidget(self.card2, 0, QtCore.Qt.AlignVCenter)
-        self.card3 = ExtendedCard(Form, None)
+        self.card3 = ExtendedCard(Form, self.card_clicked)
         self.card3.setMaximumSize(QtCore.QSize(200, 300))
         self.card3.setText("")
         self.card3.setPixmap(QtGui.QPixmap(self.back_card))
         self.card3.setScaledContents(True)
         self.card3.setObjectName("label_6")
         self.horizontalLayout.addWidget(self.card3, 0, QtCore.Qt.AlignVCenter)
-        self.card4 = ExtendedCard(Form, None)
+        self.card4 = ExtendedCard(Form, self.card_clicked)
         self.card4.setMaximumSize(QtCore.QSize(200, 300))
         self.card4.setText("")
         self.card4.setPixmap(QtGui.QPixmap(self.back_card))
         self.card4.setScaledContents(True)
         self.card4.setObjectName("label_5")
         self.horizontalLayout.addWidget(self.card4, 0, QtCore.Qt.AlignVCenter)
-        self.card5 = ExtendedCard(Form, None)
+        self.card5 = ExtendedCard(Form, self.card_clicked)
         self.card5.setMaximumSize(QtCore.QSize(200, 300))
         self.card5.setText("")
         self.card5.setPixmap(QtGui.QPixmap(self.back_card))
@@ -80,12 +80,18 @@ class Game(object):
         self.card5.setObjectName("label_2")
         self.horizontalLayout.addWidget(self.card5, 0, QtCore.Qt.AlignVCenter)
         self.verticalLayout.addLayout(self.horizontalLayout)
+        self.replace_button = QtWidgets.QPushButton(Form)
+        self.replace_button.setObjectName("pushButton_3")
+        self.verticalLayout.addWidget(self.replace_button)
+        self.fold_button = QtWidgets.QPushButton(Form)
+        self.fold_button.setObjectName("pushButton")
+        self.verticalLayout.addWidget(self.fold_button)
+        self.leave_game_button = QtWidgets.QPushButton(Form)
+        self.leave_game_button.setObjectName("pushButton_2")
+        self.verticalLayout.addWidget(self.leave_game_button)
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
         ClientInfo.game_gui = self
-
-        self.card1.setEnabled(True)
-        self.card1.linkActivated.connect(self.card_clicked)
 
         self.card_list = [self.card1, self.card2, self.card3, self.card4, self.card5]
         self.state = form.GameState.BETTING
@@ -93,22 +99,39 @@ class Game(object):
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
         Form.setWindowModality(QtCore.Qt.ApplicationModal)
+        self.replace_button.setDisabled(True)
 
-        self.open_bet_screen()
+        self.replace_button.clicked.connect(self.replace_button_clicked)
+        # self.test_change_vars()
+
+    def test_change_vars(self):
+        GameInfo.state = form.GameState.CARD_CHANGING
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
         self.EMPTY.setText(_translate("Form", "EMPTY SPACE"))
+        self.replace_button.setText(_translate("Form", "Replace: 0"))
+        self.fold_button.setText(_translate("Form", "Fold"))
+        self.leave_game_button.setText(_translate("Form", "Leave Game"))
 
-    def my_label_clicked(self, event, obj):
+    def card_clicked(self, event, card_obj):
         button = event.button()
         modifiers = event.modifiers()
-
         if modifiers == QtCore.Qt.NoModifier and button == QtCore.Qt.LeftButton:
-            print('worked')
-            print(event)
-            print(obj)
+            card_obj: ExtendedCard
+            if GameInfo.state == form.GameState.CARD_CHANGING:
+                if card_obj.selected:
+                    # ClientInfo.logger.info('Deselecting')
+                    card_obj.deselect_card()
+                else:
+                    # ClientInfo.logger.info('Selecting')
+                    card_obj.select_card()
+                    if len(GameInfo.replace_list) == 4:
+                        removed_card = GameInfo.replace_list[0]
+                        removed_card: ExtendedCard
+                        removed_card.deselect_card()
+                self.replace_button.setText(f'Replace: {len(GameInfo.replace_list)}')
 
     def open_bet_screen(self):
         self.lwindow = QtWidgets.QDialog()
@@ -122,17 +145,26 @@ class Game(object):
             c = form.ExtractCard(card)
             self.card_list[i].set_values(c.suit, c.value)
 
-    def card_clicked(self, obj):
-        print('ran')
-        print(obj)
+    def replace_button_clicked(self):
+        cards = []
+        for card in GameInfo.replace_list:
+            card: ExtendedCard
+            d = form.ExtractCard()
+            d.suit = card.suit
+            d.value = card.value
+            cards.append(d.__dict__)
 
 
 class ExtendedCard(QtWidgets.QLabel):
+    selected_style_sheet = '''background-color: #ebc17a;
+                border: 6px groove #d9a143;'''
+
     def __init__(self, form, func):
         super(ExtendedCard, self).__init__(form)
         self.suit = ''
         self.value = 0
         self.when_clicked = func
+        self.selected = False
 
     def set_values(self, suit, value):
         self.suit = suit
@@ -142,6 +174,15 @@ class ExtendedCard(QtWidgets.QLabel):
     def mouseReleaseEvent(self, ev):
         self.when_clicked(ev, self)
 
+    def select_card(self):
+        self.selected = True
+        self.setStyleSheet(self.selected_style_sheet)
+        GameInfo.replace_list.append(self)
+
+    def deselect_card(self):
+        self.selected = False
+        GameInfo.replace_list.remove(self)
+        self.setStyleSheet('')
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
@@ -149,4 +190,9 @@ if __name__ == '__main__':
     ui = Game()
     ui.setupUi(main)
     main.show()
+    b_window = QtWidgets.QDialog()
+    b_lui = Bet()
+    b_lui.setupUi(b_window)
+    b_window.show()
+    GameInfo.state = form.GameState.CARD_CHANGING
     sys.exit(app.exec_())
