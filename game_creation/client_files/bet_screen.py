@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from client_data import ClientInfo, GameInfo
+import sys
 
 
 class Bet(object):
@@ -71,12 +72,14 @@ class Bet(object):
         self.bet_button.setObjectName("pushButton")
         self.verticalLayout_2.addWidget(self.bet_button)
         self.bet_button.clicked.connect(self.bet_button_pressed)
-        Dialog.setWindowModality(QtCore.Qt.ApplicationModal)
+        # Dialog.setWindowModality(QtCore.Qt.ApplicationModal)
 
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
         ClientInfo.bet_gui = self
+
+        print('THIS RANNNNNNNNNNNN')
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
@@ -107,3 +110,11 @@ class Bet(object):
     def bet_error(self):
         ClientInfo.logger.info('Bet error')
         self.bet_button.setDisabled(False)
+
+if __name__ == '__main__':
+    app = QtWidgets.QApplication(sys.argv)
+    main = QtWidgets.QWidget()
+    ui = Bet()
+    ui.setupUi(main)
+    main.show()
+    

@@ -34,6 +34,7 @@ class ClientRequestTypeEnum(str, Enum):
     SEND_BET = 8
     REQUEST_CARDS = 9
     SEND_CARDS = 10
+    SIGNAL_START = 11
 
 
 class ServerRequestTypeEnum(str, Enum):
@@ -49,7 +50,8 @@ class ServerRequestTypeEnum(str, Enum):
     BET_RESPONSE = 9
     STATE_CHANGE = 10
     CARDS = 11
-
+    REPLACED_CARDS = 12
+    SIGNAL_START = 13
 
 class GameTypeEnum(str, Enum):
     UNKNOWN = 0
@@ -346,3 +348,4 @@ class MenuScreenEnums(IntEnum):
     START = 0
     GAME_LIST = 1
     WAITING_ROOM = 2
+    GAME_SCREEN = 3

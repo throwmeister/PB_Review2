@@ -205,8 +205,8 @@ def replace_cards(data, session_id):
         game, player = pv_checker
         player: Participant
         game: Game
-        player.vars.change_cards(client_data.cards)
-        cards = player.vars.get_cards_formated()
+        player.vars.replace_cards(client_data.cards)
+        cards = player.vars.get_cards_format()
         send_data.cards = cards
         send_data.response_code = form.GeneralEnum.SUCCESS
         if game.game_logic.check_all_replaced(game.players):

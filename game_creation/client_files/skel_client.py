@@ -3,12 +3,12 @@ import builtins, logging, json, pika
 from twisted.internet.defer import Deferred
 from twisted.internet.threads import deferToThread
 '''
-from twisted.internet import reactor
+from twisted.internet import reactor, task
 from twisted.internet.protocol import Protocol, ClientFactory
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet.task import LoopingCall
 from game_creation.shared_directory import data_format as form
-from client_data import ClientInfo
+from client_data import ClientInfo, GameInfo
 
 decode_type = form.decode_format()
 
@@ -71,6 +71,9 @@ class MainClient(Protocol):
         user_data.game_id = ClientInfo.game_id
         self.format_send_data(form.ClientRequestTypeEnum.START_GAME, user_data)
 
+    def request_start_signal(self):
+        self.format_send_data(form.ClientRequestTypeEnum.SIGNAL_START)
+
     def send_bet(self, amount):
         user_data = form.ClientSendBet()
         user_data.bet = amount
@@ -128,6 +131,10 @@ class MainClient(Protocol):
                     self.handle_cards(message.data)
                 case form.ServerRequestTypeEnum.BET_RESPONSE:
                     self.handle_bet_response(message.data)
+                case form.ServerRequestTypeEnum.REPLACED_CARDS:
+                    self.handle_replaced_cards(message.data)
+                case form.ServerRequestTypeEnum.SIGNAL_START:
+                    ClientInfo.main_gui.setup_game()
                 case _:
                     # Invalid command
                     pass
@@ -194,8 +201,9 @@ class MainClient(Protocol):
             log_join(form.JoinGameEnum.SUCCESS.name)
             ClientInfo.game_id = response_data.game_id
             # Joiner listens in on Game Queue
-            self.game_mq = MessageQueue(queue_name=f'gameserver.{ClientInfo.username}.playing.game.{response_data.game_id}',
+            ClientInfo.message_queue = MessageQueue(queue_name=f'gameserver.{ClientInfo.username}.playing.game.{response_data.game_id}',
                                          exchange=form.game_exchange_name(), routing_key=response_data.game_id)
+            self.game_mq = ClientInfo.message_queue
             self.game_mq.set_consume()
             ClientInfo.logger.info(f'Listening to Game Queue with Queue Name {self.game_mq.queue_name}')
             reactor.callInThread(self.game_mq.start_consumption)
@@ -236,9 +244,9 @@ class MainClient(Protocol):
         response_data = form.ServerBetResponse(data)
         match response_data.response_code:
             case form.GeneralEnum.SUCCESS:
-                ClientInfo.bet_gui.bet_success()
-                self.request_cards()
+                ClientInfo.logger.info('Bet success')
             case form.GeneralEnum.ERROR:
+                ClientInfo.logger.info('Bait failure')
                 ClientInfo.bet_gui.bet_failure()
 
     @staticmethod
@@ -246,11 +254,19 @@ class MainClient(Protocol):
         response_data = form.ServerGetCards(data)
         if response_data.response_code == form.GeneralEnum.SUCCESS:
             ClientInfo.logger.info('Card request successful')
-            ClientInfo.game_gui.set_cards(response_data.cards)
-        elif response_data.response_code == form.GeneralEnum.SUCCESS:
+            ClientInfo.main_gui.set_cards(response_data.cards)
+        elif response_data.response_code == form.GeneralEnum.ERROR:
             ClientInfo.logger.info('Error with card request')
         else:
             ClientInfo.logger.info('UNKNOWN ERROR')
+
+    def handle_replaced_cards(self, data):
+        response_data = form.ServerGetCards(data)
+        if response_data.response_code == form.GeneralEnum.SUCCESS:
+            ClientInfo.logger.info('Cards replaced successfully')
+            ClientInfo.main_gui.set_cards(response_data.cards)
+        elif response_data.response_code == form.GeneralEnum.ERROR:
+            ClientInfo.logger.info('Error with card request')
 
     def lose_connection(self):
         self.transport.loseConnection()
@@ -307,8 +323,9 @@ class MessageQueue:
 
 
 def mq_data_received(ch, method, properties, body):
+    ClientInfo.logger.info('Received from message queue')
     json_data = body.decode()
-    print('THIS DID NOT RUN :)')
+
     ClientInfo.logger.info(f'{json_data}')
     message = form.ServerRequestHeader(json_data)
     match message.request_type:
@@ -325,7 +342,9 @@ def mq_data_received(ch, method, properties, body):
 def state_handler(data):
     match data:
         case form.GameState.CARD_CHANGING:
-            ClientInfo.tcpHandler.request_cards()
+            ClientInfo.logger.info('Betting section complete')
+            GameInfo.state = form.GameState.CARD_CHANGING
+            # ClientInfo.tcpHandler.request_cards()
 
 
 def start_game_response(data):
@@ -334,7 +353,7 @@ def start_game_response(data):
         ClientInfo.logger.info('Starting game...')
         if ClientInfo.playing:
             ClientInfo.logger.info('Game started. Loading assets...')
-            ClientInfo.main_gui.setup_game()
+            ClientInfo.tcpHandler.request_start_signal()
         else:
             ClientInfo.logger.info('Game started. Not playing')
     elif sent_data.response_code == form.GeneralEnum.ERROR:
@@ -342,6 +361,7 @@ def start_game_response(data):
     else:
         ClientInfo.logger.info('Unknown error has occurred')
         raise RuntimeError
+    ClientInfo.logger.info('This function has been completed')
 '''
 
 if __name__ == '__main__':

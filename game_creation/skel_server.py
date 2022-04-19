@@ -64,6 +64,15 @@ class MainServer(Protocol):
         d = self.format_send_data(form.ServerRequestTypeEnum.CARDS, data)
         self.tcp_send_data(d)
 
+    def send_new_cards(self, data):
+        d = self.format_send_data(form.ServerRequestTypeEnum.REPLACED_CARDS, data)
+        self.tcp_send_data(d)
+
+    def send_signal_start(self):
+        ServerData.logger.info('Signal to start')
+        d = self.format_send_data(form.ServerRequestTypeEnum.SIGNAL_START)
+        self.tcp_send_data(d)
+
     def signal_state_change(self, game_id, state):
         d = self.format_send_data(form.ServerRequestTypeEnum.STATE_CHANGE, state)
         self.queue_message(form.game_exchange_name(), game_id, d)
@@ -142,12 +151,15 @@ f'message: {message}')
                             self.signal_state_change(game_id=game_id, state=form.GameState.CARD_CHANGING)
                     case form.ClientRequestTypeEnum.REQUEST_CARDS:
                         server_data = handler.get_cards(messages.data, messages.session_id)
-                        self.tcp_send_data(server_data)
+                        self.send_cards(server_data)
                     case form.ClientRequestTypeEnum.SEND_CARDS:
                         server_data, game_id, complete = handler.replace_cards(messages.data, messages.session_id)
                         self.send_new_cards(server_data)
                         if complete:
                             handler.calculate_game_score(game_id)
+                    case form.ClientRequestTypeEnum.SIGNAL_START:
+                        ServerData.logger.info('Received signal start')
+                        self.send_signal_start()
                     case _:
                         pass
 
@@ -181,7 +193,6 @@ class MessageQueue:
 
     def close_connection(self):
         self.connection.close()
-
 
 
 if __name__ == '__main__':

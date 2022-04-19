@@ -9,12 +9,12 @@ class ClientInfo:
     valid_session = False
     playing = False
 
+    message_queue = None
     tcpHandler = None
     main_gui = None
     login_gui = None
     create_game_gui = None
     join_gui = None
-    game_gui = None
     bet_gui = None
     logger = None
 
