@@ -160,11 +160,22 @@ f'message: {message}')
                         server_data, game_id, complete = handler.replace_cards(messages.data, messages.session_id)
                         self.send_new_cards(server_data)
                         if complete:
+                            self.signal_state_change(game_id, form.GameState.BETTING_TWO)
+                        '''
+                        if complete:
                             winners = handler.calculate_game_score(game_id)
                             self.send_winners(winners, game_id)
+                            '''
                     case form.ClientRequestTypeEnum.SIGNAL_START:
                         ServerData.logger.info('Received signal start')
                         self.send_signal_start()
+                    case form.ClientRequestTypeEnum.SEND_BET_TWO:
+                        server_data, game_id, complete = handler.handle_input_bet(messages.data, messages.session_id)
+                        self.send_bet_response(server_data)
+                        self.send_new_bet(game_id)
+                        if complete:
+                            winners = handler.calculate_game_score(game_id)
+                            self.send_winners(winners, game_id)
                     case _:
                         pass
 

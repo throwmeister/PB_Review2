@@ -79,7 +79,10 @@ class MainClient(Protocol):
         user_data = form.ClientSendBet()
         user_data.bet = amount
         user_data.game_id = ClientInfo.game_id
-        self.format_send_data(form.ClientRequestTypeEnum.SEND_BET, user_data)
+        if GameInfo.state == form.GameState.BETTING:
+            self.format_send_data(form.ClientRequestTypeEnum.SEND_BET, user_data)
+        elif GameInfo.state == form.GameState.BETTING_TWO:
+            self.format_send_data(form.ClientRequestTypeEnum.SEND_BET_TWO, user_data)
 
     def request_cards(self):
         self.format_send_data(form.ClientRequestTypeEnum.REQUEST_CARDS, ClientInfo.game_id)
@@ -344,12 +347,17 @@ def mq_data_received(ch, method, properties, body):
 
 
 def state_handler(data):
-    match data:
-        case form.GameState.CARD_CHANGING:
-            ClientInfo.logger.info('Betting section complete')
-            ClientInfo.main_gui.all_bets_done()
-            GameInfo.state = form.GameState.CARD_CHANGING
-            # ClientInfo.tcpHandler.request_cards()
+    if ClientInfo.playing:
+        match data:
+            case form.GameState.CARD_CHANGING:
+                ClientInfo.logger.info('Betting section complete')
+                ClientInfo.main_gui.all_bets_done()
+                GameInfo.state = form.GameState.CARD_CHANGING
+                # ClientInfo.tcpHandler.request_cards()
+            case form.GameState.BETTING_TWO:
+                GameInfo.state = form.GameState.BETTING_TWO
+                ClientInfo.logger.info('Betting section 2')
+                ClientInfo.main_gui.enable_second_bet()
 
 
 def start_game_response(data):
@@ -370,12 +378,12 @@ def start_game_response(data):
 
 
 def winner_calculation_response(winners):
-
-    for d in winners:
-        player = form.GameWinnerVars(d)
-        ClientInfo.logger.info(f'Winner: {player.name}')
-        if player.session == ClientInfo.session_id:
-            ClientInfo.main_gui.handle_won(player.winnings)
+    if ClientInfo.playing:
+        for d in winners:
+            player = form.GameWinnerVars(d)
+            ClientInfo.logger.info(f'Winner: {player.name}')
+            if player.session == ClientInfo.session_id:
+                ClientInfo.main_gui.handle_won(player.winnings)
 
 
 '''

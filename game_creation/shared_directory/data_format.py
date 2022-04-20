@@ -35,6 +35,7 @@ class ClientRequestTypeEnum(str, Enum):
     REQUEST_CARDS = 9
     SEND_CARDS = 10
     SIGNAL_START = 11
+    SEND_BET_TWO = 12
 
 
 class ServerRequestTypeEnum(str, Enum):
@@ -97,8 +98,9 @@ class GameState(str, Enum):
     SETUP = 0
     BETTING = 1
     CARD_CHANGING = 2
-    CALCULATING = 3
-    LOOP = 4
+    BETTING_TWO = 3
+    CALCULATING = 4
+    LOOP = 5
 
 
 class ClientRequestHeader:

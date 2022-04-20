@@ -168,7 +168,11 @@ def handle_input_bet(data, session_id):
         # For now not full betting system
         game.game_logic.has_bet += 1
         if game.game_logic.has_bet == game.num_playing:
-            game.game_logic.set_state(form.GameState.CARD_CHANGING)
+            if game.game_logic.state == form.GameState.BETTING:
+                game.game_logic.set_state(form.GameState.CARD_CHANGING)
+                game.game_logic.has_bet = 0
+            elif game.game_logic.state == form.GameState.BETTING_TWO:
+                game.game_logic.set_state(form.GameState.CALCULATING)
             complete = True
         send_data.response_code = form.GeneralEnum.SUCCESS
     else:
@@ -211,6 +215,7 @@ def replace_cards(data, session_id):
         if game.game_logic.check_all_replaced():
             ServerData.logger.info('All players have replaced')
             complete = True
+            game.game_logic.state = form.GameState.BETTING_TWO
 
     else:
         send_data.response_code = form.GeneralEnum.ERROR

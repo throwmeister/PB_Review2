@@ -210,6 +210,7 @@ class Menu(object):
         self.playing_checkbox.clicked.connect(self.playing_checkbox_clicked)
         self.start_game_button.clicked.connect(self.start_game_clicked)
         self.bet_button.clicked.connect(self.bet_button_pressed)
+        self.bet_again_button.clicked.connect(self.bet_again_button_clicked)
         # self.tester_button()
 
     def retranslateUi(self, Form):
@@ -242,6 +243,7 @@ class Menu(object):
         self.bet_label.setText(_translate("Dialog", "Bet amount: "))
         self.amount_label.setText(_translate("Dialog", f"Amount: {GameInfo.bet}"))
         self.bet_button.setText(_translate("Dialog", "Bet"))
+        self.bet_again_button.setText(_translate('Dialog', 'Second Bet'))
 
     def add_bet_stack(self):
         self.bet_screen = QtWidgets.QWidget()
@@ -341,8 +343,8 @@ class Menu(object):
         self.replace_button.setObjectName("pushButton_3")
         self.verticalLayout23.addWidget(self.replace_button)
         self.bet_again_button = QtWidgets.QPushButton(self.poker_screen)
+        self.bet_again_button.setDisabled(True)
         self.verticalLayout23.addWidget(self.bet_again_button)
-
         self.fold_button = QtWidgets.QPushButton(self.poker_screen)
         self.fold_button.setObjectName("pushButton")
         self.verticalLayout23.addWidget(self.fold_button)
@@ -424,7 +426,6 @@ class Menu(object):
             d.suit = card.suit
             d.value = card.value
             cards.append(d.__dict__)
-        GameInfo.state = form.GameState.CALCULATING
         ClientInfo.logger.info(f'Cards being replaced: {cards}')
         ClientInfo.tcpHandler.send_replace_cards(cards)
 
@@ -527,9 +528,7 @@ class Menu(object):
     def refresh_bet_screen(self):
         self.bet_edit.setText("")
         self.amount_label.setText(f'Amount: {GameInfo.bet}')
-
-    def refresh_game_screen(self):
-        pass
+        self.bet_button.setEnabled(True)
 
     def bet_button_pressed(self):
         self.bet_button.setDisabled(True)
@@ -559,10 +558,17 @@ class Menu(object):
         # Prompt
         GameInfo.state = form.GameState.CARD_CHANGING
 
+    def enable_second_bet(self):
+        self.bet_again_button.setEnabled(True)
+        self.refresh_bet_screen()
 
     def bet_error(self):
         ClientInfo.logger.info('Bet error')
         self.bet_button.setDisabled(False)
+
+    def bet_again_button_clicked(self):
+        self.bet_again_button.setDisabled(True)
+        self.change_screens(form.MenuScreenEnums.BET_SCREEN)
 
     def handle_won(self, amount):
         pass
