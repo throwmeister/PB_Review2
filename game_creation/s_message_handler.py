@@ -187,6 +187,7 @@ def get_cards(game_id, session_id):
         player: Participant
         game: Game
         cards = player.vars.get_cards_format()
+        print(cards)
         send_data.response_code = form.GeneralEnum.SUCCESS
         send_data.cards = cards
     else:

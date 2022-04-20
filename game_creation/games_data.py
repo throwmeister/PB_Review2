@@ -40,6 +40,7 @@ class Deck:
                 for i in ['Jack', 'Queen', 'King', 'Ace']:
                     self.cards.append(self.game_type(suit, i))
         random.shuffle(self.cards)
+        print(self.cards)
 
     def display(self):
         # Displays each card individually
@@ -69,9 +70,11 @@ class Participant:
     def setup_game_vars(self, gtype, deck):
         if gtype == form.GameTypeEnum.POKER:
             self.vars = PokerPlayerVariables(deck)
+            self.vars.draw_cards()
             self.vars: PokerPlayerVariables
         elif gtype == form.GameTypeEnum.BLACKJACK:
             self.vars = BlackjackPlayerVariables(deck)
+            self.vars.draw_cards()
             self.vars: BlackjackPlayerVariables
 
 
@@ -89,6 +92,7 @@ class ParticipantVariables:
 
     def get_cards_format(self):
         cards = []
+        print(self.hand)
         for card in self.hand:
             cards.append(card.__dict__)
         return cards
@@ -107,6 +111,7 @@ class PokerPlayerVariables(ParticipantVariables):
 
     def draw_cards(self):
         for _ in range(5):
+            print('card has been drawn')
             self.draw()
 
     def replace_cards(self, cards):
@@ -239,7 +244,7 @@ class GameVariables:
 
 class Poker(GameVariables):
     def __init__(self):
-        super().__init__(1)
+        super(Poker, self).__init__(1)
 
     def check_all_replaced(self, players):
         for player in players:
