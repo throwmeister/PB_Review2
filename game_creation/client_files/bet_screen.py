@@ -40,37 +40,37 @@ class Bet(object):
                              "            outline: none\n"
                              "            }\n"
                              "")
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout(Dialog)
-        self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.verticalLayout = QtWidgets.QVBoxLayout()
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.label = QtWidgets.QLabel(Dialog)
-        self.label.setMaximumSize(QtCore.QSize(400, 50))
+        self.bet_vert_layout = QtWidgets.QVBoxLayout(Dialog)
+        self.bet_vert_layout.setObjectName("verticalLayout_2")
+        self.bet_vert_layout0 = QtWidgets.QVBoxLayout()
+        self.bet_vert_layout0.setObjectName("verticalLayout")
+        self.bet_label = QtWidgets.QLabel(Dialog)
+        self.bet_label.setMaximumSize(QtCore.QSize(400, 50))
         font = QtGui.QFont()
         font.setFamily("MS Shell Dlg 2")
         font.setPointSize(-1)
-        self.label.setFont(font)
-        self.label.setStyleSheet("font-family: MS Shell Dlg 2;\n"
+        self.bet_label.setFont(font)
+        self.bet_label.setStyleSheet("font-family: MS Shell Dlg 2;\n"
                                  "    font-size: 30px;\n"
                                  "                ")
-        self.label.setObjectName("label")
-        self.verticalLayout.addWidget(self.label, 0, QtCore.Qt.AlignHCenter)
-        self.formLayout = QtWidgets.QFormLayout()
-        self.formLayout.setObjectName("formLayout")
-        self.label_3 = QtWidgets.QLabel(Dialog)
-        self.label_3.setObjectName("label_3")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_3)
+        self.bet_label.setObjectName("label")
+        self.bet_vert_layout0.addWidget(self.bet_label, 0, QtCore.Qt.AlignHCenter)
+        self.bet_form_layout = QtWidgets.QFormLayout()
+        self.bet_form_layout.setObjectName("formLayout")
+        self.amount_label = QtWidgets.QLabel(Dialog)
+        self.amount_label.setObjectName("label_3")
+        self.bet_form_layout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.amount_label)
         self.bet_edit = QtWidgets.QLineEdit(Dialog)
         self.bet_edit.setMinimumSize(QtCore.QSize(0, 50))
         self.bet_edit.setText("")
         self.bet_edit.setClearButtonEnabled(False)
         self.bet_edit.setObjectName("lineEdit_2")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.bet_edit)
-        self.verticalLayout.addLayout(self.formLayout)
-        self.verticalLayout_2.addLayout(self.verticalLayout)
+        self.bet_form_layout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.bet_edit)
+        self.bet_vert_layout0.addLayout(self.bet_form_layout)
+        self.bet_vert_layout.addLayout(self.bet_vert_layout0)
         self.bet_button = QtWidgets.QPushButton(Dialog)
         self.bet_button.setObjectName("pushButton")
-        self.verticalLayout_2.addWidget(self.bet_button)
+        self.bet_vert_layout.addWidget(self.bet_button)
         self.bet_button.clicked.connect(self.bet_button_pressed)
         # Dialog.setWindowModality(QtCore.Qt.ApplicationModal)
 
@@ -84,8 +84,8 @@ class Bet(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Bet"))
-        self.label.setText(_translate("Dialog", "Bet amount: "))
-        self.label_3.setText(_translate("Dialog", "Amount"))
+        self.bet_label.setText(_translate("Dialog", "Bet amount: "))
+        self.amount_label.setText(_translate("Dialog", "Amount"))
         self.bet_button.setText(_translate("Dialog", "Bet"))
         self.dialog = Dialog
 
@@ -104,7 +104,6 @@ class Bet(object):
             ClientInfo.logger.error('Invalid character')
 
     def bet_success(self):
-        ClientInfo.bet_gui = None
         self.dialog.close()
 
     def bet_error(self):

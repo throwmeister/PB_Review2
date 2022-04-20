@@ -195,7 +195,7 @@ class Menu(object):
         self.main_stack.addWidget(self.player_list_screen)
         self.verticalLayout.addWidget(self.main_stack)
         self.gridLayout.addLayout(self.verticalLayout, 1, 0, 1, 1)
-
+        self.add_bet_stack()
         self.add_poker_stack()
         self.retranslateUi(Form)
         self.main_stack.setCurrentIndex(0)
@@ -210,6 +210,8 @@ class Menu(object):
         self.back_button_game_list.clicked.connect(lambda _: self.main_stack.setCurrentIndex(0))
         self.playing_checkbox.clicked.connect(self.playing_checkbox_clicked)
         self.start_game_button.clicked.connect(self.start_game_clicked)
+        self.bet_button.clicked.connect(self.bet_button_pressed)
+        # self.tester_button()
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
@@ -233,23 +235,68 @@ class Menu(object):
         self.playing_checkbox.setText(_translate("Form", "Playing"))
         self.leave_game_button.setText(_translate("Form", "Leave"))
         self.EMPTY.setText(_translate("Form", "EMPTY SPACE"))
+        "self.make_bet_button.setText(_translate('Form', 'Make bet'))"
         self.replace_button.setText(_translate("Form", "Replace: 0"))
         self.fold_button.setText(_translate("Form", "Fold"))
         self.leave_ingame_button.setText(_translate("Form", "Leave Game"))
 
+        self.bet_label.setText(_translate("Dialog", "Bet amount: "))
+        self.amount_label.setText(_translate("Dialog", f"Amount: {GameInfo.bet}"))
+        self.bet_button.setText(_translate("Dialog", "Bet"))
+
+    def add_bet_stack(self):
+        self.bet_screen = QtWidgets.QWidget()
+        self.bet_vert_layout = QtWidgets.QVBoxLayout(self.bet_screen)
+        self.bet_vert_layout.setObjectName("verticalLayout_2")
+        self.bet_vert_layout0 = QtWidgets.QVBoxLayout()
+        self.bet_vert_layout0.setObjectName("verticalLayout")
+        self.bet_label = QtWidgets.QLabel(self.bet_screen)
+        self.bet_label.setMaximumSize(QtCore.QSize(400, 50))
+        font = QtGui.QFont()
+        font.setFamily("MS Shell Dlg 2")
+        font.setPointSize(-1)
+        self.bet_label.setFont(font)
+        self.bet_label_style = '''font-family: MS Shell Dlg 2;\n
+                                         font-size: 30px;'''
+        self.bet_label.setStyleSheet(self.bet_label_style)
+        self.bet_label.setObjectName("label")
+        self.bet_vert_layout0.addWidget(self.bet_label, 0, QtCore.Qt.AlignHCenter)
+        self.bet_form_layout = QtWidgets.QFormLayout()
+        self.bet_form_layout.setObjectName("formLayout")
+        self.amount_label = QtWidgets.QLabel(self.bet_screen)
+        self.amount_label.setStyleSheet(self.bet_label_style)
+        self.amount_label.setObjectName("label_3")
+        self.bet_form_layout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.amount_label)
+        self.bet_edit = QtWidgets.QLineEdit(self.bet_screen)
+        self.bet_edit.setStyleSheet(self.bet_label_style)
+        self.bet_edit.setMinimumSize(QtCore.QSize(0, 50))
+        self.bet_edit.setText("")
+        self.bet_edit.setClearButtonEnabled(False)
+        self.bet_edit.setObjectName("lineEdit_2")
+        self.bet_form_layout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.bet_edit)
+        self.bet_vert_layout0.addLayout(self.bet_form_layout)
+        self.bet_vert_layout.addLayout(self.bet_vert_layout0)
+        self.bet_button = QtWidgets.QPushButton(self.bet_screen)
+        self.bet_button.setObjectName("pushButton")
+        self.bet_vert_layout.addWidget(self.bet_button)
+
+        self.main_stack.addWidget(self.bet_screen)
+
+
+
     def add_poker_stack(self):
-        self.game_screen = QtWidgets.QWidget()
-        self.verticalLayout_22 = QtWidgets.QVBoxLayout(self.game_screen)
+        self.poker_screen = QtWidgets.QWidget()
+        self.verticalLayout_22 = QtWidgets.QVBoxLayout(self.poker_screen)
         self.verticalLayout_22.setObjectName("verticalLayout_2")
         self.verticalLayout23 = QtWidgets.QVBoxLayout()
         self.verticalLayout23.setObjectName("verticalLayout")
-        self.EMPTY = QtWidgets.QLabel(self.game_screen)
+        self.EMPTY = QtWidgets.QLabel(self.poker_screen)
         self.EMPTY.setAlignment(QtCore.Qt.AlignCenter)
         self.EMPTY.setObjectName("label")
         self.verticalLayout23.addWidget(self.EMPTY)
         self.horizontalLayout22 = QtWidgets.QHBoxLayout()
         self.horizontalLayout22.setObjectName("horizontalLayout")
-        self.card1 = ExtendedCard(self.game_screen, self.card_clicked)
+        self.card1 = ExtendedCard(self.poker_screen, self.card_clicked)
         self.card1.setMinimumSize(QtCore.QSize(200, 100))
         self.card1.setMaximumSize(QtCore.QSize(200, 300))
         self.card1.setText("")
@@ -258,28 +305,28 @@ class Menu(object):
         self.card1.setScaledContents(True)
         self.card1.setObjectName("label_4")
         self.horizontalLayout22.addWidget(self.card1, 0, QtCore.Qt.AlignVCenter)
-        self.card2 = ExtendedCard(self.game_screen, self.card_clicked)
+        self.card2 = ExtendedCard(self.poker_screen, self.card_clicked)
         self.card2.setMaximumSize(QtCore.QSize(200, 300))
         self.card2.setText("")
         self.card2.setPixmap(QtGui.QPixmap(self.back_card))
         self.card2.setScaledContents(True)
         self.card2.setObjectName("label_3")
         self.horizontalLayout22.addWidget(self.card2, 0, QtCore.Qt.AlignVCenter)
-        self.card3 = ExtendedCard(self.game_screen, self.card_clicked)
+        self.card3 = ExtendedCard(self.poker_screen, self.card_clicked)
         self.card3.setMaximumSize(QtCore.QSize(200, 300))
         self.card3.setText("")
         self.card3.setPixmap(QtGui.QPixmap(self.back_card))
         self.card3.setScaledContents(True)
         self.card3.setObjectName("label_6")
         self.horizontalLayout22.addWidget(self.card3, 0, QtCore.Qt.AlignVCenter)
-        self.card4 = ExtendedCard(self.game_screen, self.card_clicked)
+        self.card4 = ExtendedCard(self.poker_screen, self.card_clicked)
         self.card4.setMaximumSize(QtCore.QSize(200, 300))
         self.card4.setText("")
         self.card4.setPixmap(QtGui.QPixmap(self.back_card))
         self.card4.setScaledContents(True)
         self.card4.setObjectName("label_5")
         self.horizontalLayout22.addWidget(self.card4, 0, QtCore.Qt.AlignVCenter)
-        self.card5 = ExtendedCard(self.game_screen, self.card_clicked)
+        self.card5 = ExtendedCard(self.poker_screen, self.card_clicked)
         self.card5.setMaximumSize(QtCore.QSize(200, 300))
         self.card5.setText("")
         self.card5.setPixmap(QtGui.QPixmap(self.back_card))
@@ -287,18 +334,22 @@ class Menu(object):
         self.card5.setObjectName("label_2")
         self.horizontalLayout22.addWidget(self.card5, 0, QtCore.Qt.AlignVCenter)
         self.verticalLayout23.addLayout(self.horizontalLayout22)
-        self.replace_button = QtWidgets.QPushButton(self.game_screen)
+        '''
+        self.make_bet_button = QtWidgets.QPushButton(self.game_screen)
+        self.verticalLayout23.addWidget(self.make_bet_button)
+        '''
+        self.replace_button = QtWidgets.QPushButton(self.poker_screen)
         self.replace_button.setObjectName("pushButton_3")
         self.verticalLayout23.addWidget(self.replace_button)
-        self.fold_button = QtWidgets.QPushButton(self.game_screen)
+        self.fold_button = QtWidgets.QPushButton(self.poker_screen)
         self.fold_button.setObjectName("pushButton")
         self.verticalLayout23.addWidget(self.fold_button)
-        self.leave_ingame_button = QtWidgets.QPushButton(self.game_screen)
+        self.leave_ingame_button = QtWidgets.QPushButton(self.poker_screen)
         self.leave_ingame_button.setObjectName("pushButton_2")
         self.verticalLayout23.addWidget(self.leave_ingame_button)
         self.verticalLayout_22.addLayout(self.verticalLayout23)
 
-        self.main_stack.addWidget(self.game_screen)
+        self.main_stack.addWidget(self.poker_screen)
 
         self.card_list = [self.card1, self.card2, self.card3, self.card4, self.card5]
         GameInfo.state = form.GameState.BETTING
@@ -306,7 +357,22 @@ class Menu(object):
         # self.replace_button.setDisabled(True)
 
         self.replace_button.clicked.connect(self.replace_button_clicked)
-        # self.test_change_vars()
+
+    def refresh_poker_screen(self):
+        self.card1.setPixmap(QtGui.QPixmap(self.back_card))
+        self.card2.setPixmap(QtGui.QPixmap(self.back_card))
+        self.card3.setPixmap(QtGui.QPixmap(self.back_card))
+        self.card4.setPixmap(QtGui.QPixmap(self.back_card))
+        self.card5.setPixmap(QtGui.QPixmap(self.back_card))
+
+    def add_blackjack_stack(self):
+        self.blackjack_screen = QtWidgets.QWidget()
+
+        self.main_stack.addWidget(self.blackjack_screen)
+
+    def refresh_bj_screen(self):
+        pass
+
     def signal(self):
         ClientInfo.tcpHandler.request_start_signal()
 
@@ -339,7 +405,9 @@ class Menu(object):
         GameInfo.state = form.GameState.CARD_CHANGING
 
     def set_cards(self, cards):
+        ClientInfo.logger.info(cards)
         for i, card in enumerate(cards):
+            ClientInfo.logger.info(card)
             c = form.ExtractCard(card)
             self.card_list[i].set_values(c.suit, c.value)
 
@@ -442,21 +510,59 @@ class Menu(object):
     def start_game_clicked(self):
         ClientInfo.tcpHandler.start_game()
 
-    def setup_game(self):
+    def setup_game(self, gtype):
         ClientInfo.logger.info('Setting up game')
-        self.change_screens(form.MenuScreenEnums.GAME_SCREEN)
+        GameInfo.set_initial_values(gtype)
+        self.refresh_bet_screen()
+        self.change_screens(form.MenuScreenEnums.BET_SCREEN)
+        GameInfo.state = form.GameState.BETTING
         ClientInfo.logger.info('Opening bet screen...')
-        b_window = QtWidgets.QDialog()
-        b_lui = Bet()
-        b_lui.setupUi(b_window)
-        b_window.show()
-        print('this ran correct?')
+
+    def refresh_bet_screen(self):
+        self.bet_edit.setText("")
+        self.amount_label.setText(f'Amount: {GameInfo.bet}')
+
+    def refresh_game_screen(self):
+        pass
+
+    def bet_button_pressed(self):
+        self.bet_button.setDisabled(True)
+        try:
+            self.amount = int(self.bet_edit.text())
+            if 0 <= self.amount < GameInfo.bet:
+                ClientInfo.logger.info('Sending bet amount')
+                ClientInfo.tcpHandler.send_bet(self.amount)
+            else:
+                self.bet_button.setDisabled(False)
+                ClientInfo.logger.error('Invalid amount')
+        except ValueError:
+            self.bet_button.setDisabled(False)
+            ClientInfo.logger.error('Invalid character')
+
+    def bet_success(self):
+        GameInfo.bet -= self.amount
+        ClientInfo.tcpHandler.request_cards()
+        if GameInfo.game_type == form.GameTypeEnum.POKER:
+            self.refresh_poker_screen()
+            self.change_screens(form.MenuScreenEnums.POKER_SCREEN)
+        elif GameInfo.game_type == form.GameTypeEnum.BLACKJACK:
+            self.refresh_bj_screen()
+            self.change_screens(form.MenuScreenEnums.BLACKJACK_SCREEN)
+
+    def all_bets_done(self):
+        # Prompt
         GameInfo.state = form.GameState.CARD_CHANGING
-        
+
+
+    def bet_error(self):
+        ClientInfo.logger.info('Bet error')
+        self.bet_button.setDisabled(False)
+
 
     def closed_event(self, event):
         ClientInfo.tcpHandler.lose_connection()
         raise RuntimeError
+
 
 
 class ExtendedCard(QtWidgets.QLabel):

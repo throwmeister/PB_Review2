@@ -348,4 +348,6 @@ class MenuScreenEnums(IntEnum):
     START = 0
     GAME_LIST = 1
     WAITING_ROOM = 2
-    GAME_SCREEN = 3
+    BET_SCREEN = 3
+    POKER_SCREEN = 4
+    BLACKJACK_SCREEN = 5

@@ -182,7 +182,7 @@ class MainClient(Protocol):
             self.game_mq = MessageQueue(queue_name=f'gameserver.{ClientInfo.username}.playing.game.{response_data.game_id}',
                                          exchange=form.game_exchange_name(), routing_key=response_data.game_id)
             self.game_mq.set_consume()
-            reactor.callInThread(reactor, self.game_mq.start_consumption)
+            reactor.callInThread(self.game_mq.start_consumption)
             ClientInfo.logger.info(f'Listening to Game Queue with Queue Name {self.game_mq.queue_name}')
             ClientInfo.create_game_gui.create_response_success()
             ClientInfo.main_gui.change_screens(form.MenuScreenEnums.WAITING_ROOM)
@@ -245,12 +245,13 @@ class MainClient(Protocol):
         match response_data.response_code:
             case form.GeneralEnum.SUCCESS:
                 ClientInfo.logger.info('Bet success')
+                ClientInfo.main_gui.bet_success()
             case form.GeneralEnum.ERROR:
                 ClientInfo.logger.info('Bait failure')
                 ClientInfo.bet_gui.bet_failure()
 
     @staticmethod
-    def handle_cards(self, data):
+    def handle_cards(data):
         response_data = form.ServerGetCards(data)
         if response_data.response_code == form.GeneralEnum.SUCCESS:
             ClientInfo.logger.info('Card request successful')
@@ -343,6 +344,7 @@ def state_handler(data):
     match data:
         case form.GameState.CARD_CHANGING:
             ClientInfo.logger.info('Betting section complete')
+            ClientInfo.main_gui.all_bets_done()
             GameInfo.state = form.GameState.CARD_CHANGING
             # ClientInfo.tcpHandler.request_cards()
 
@@ -353,7 +355,7 @@ def start_game_response(data):
         ClientInfo.logger.info('Starting game...')
         if ClientInfo.playing:
             ClientInfo.logger.info('Game started. Loading assets...')
-            ClientInfo.main_gui.signal()
+            ClientInfo.main_gui.setup_game(sent_data.game_type)
         else:
             ClientInfo.logger.info('Game started. Not playing')
     elif sent_data.response_code == form.GeneralEnum.ERROR:

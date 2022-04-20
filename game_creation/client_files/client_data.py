@@ -28,10 +28,12 @@ class ClientInfo:
 class GameInfo:
     bet = 100
     state = form.GameState.SETUP
+    game_type = form.GameTypeEnum.UNKNOWN
     replace_list = []
 
     @classmethod
-    def set_initial_values(cls):
-        cls.bet = 100
+    def set_initial_values(cls, gtype, bet=100):
+        cls.bet = bet
         cls.state = form.GameState.BETTING
         cls.replace_list = []
+        cls.game_type = gtype
