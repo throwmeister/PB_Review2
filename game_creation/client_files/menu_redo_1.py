@@ -2,7 +2,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from create_game_screen import CreateGame
 from login_screen import Login
 from join_game_screen import JoinGame
-from poker_game_screen import Game
 from client_data import ClientInfo, GameInfo
 from bet_screen import Bet
 from game_creation.shared_directory import data_format as form
@@ -341,6 +340,9 @@ class Menu(object):
         self.replace_button = QtWidgets.QPushButton(self.poker_screen)
         self.replace_button.setObjectName("pushButton_3")
         self.verticalLayout23.addWidget(self.replace_button)
+        self.bet_again_button = QtWidgets.QPushButton(self.poker_screen)
+        self.verticalLayout23.addWidget(self.bet_again_button)
+
         self.fold_button = QtWidgets.QPushButton(self.poker_screen)
         self.fold_button.setObjectName("pushButton")
         self.verticalLayout23.addWidget(self.fold_button)
@@ -373,23 +375,23 @@ class Menu(object):
     def refresh_bj_screen(self):
         pass
 
+    def add_winner_screen(self):
+        self.winner_screen = QtWidgets.QWidget()
+
     def signal(self):
         ClientInfo.tcpHandler.request_start_signal()
 
     def card_clicked(self, event, card_obj):
         button = event.button()
         modifiers = event.modifiers()
-        print('ran')
         if modifiers == QtCore.Qt.NoModifier and button == QtCore.Qt.LeftButton:
-            print('ran 2')
             card_obj: ExtendedCard
             if GameInfo.state == form.GameState.CARD_CHANGING:
-                print('ice')
                 if card_obj.selected:
-                    # ClientInfo.logger.info('Deselecting')
+                    ClientInfo.logger.info('Deselecting')
                     card_obj.deselect_card()
                 else:
-                    # ClientInfo.logger.info('Selecting')
+                    ClientInfo.logger.info('Selecting')
                     card_obj.select_card()
                     if len(GameInfo.replace_list) == 4:
                         removed_card = GameInfo.replace_list[0]
@@ -414,12 +416,16 @@ class Menu(object):
     def replace_button_clicked(self):
         self.replace_button.setDisabled(True)
         cards = []
+        ClientInfo.logger.info(f'Current replace list: {GameInfo.replace_list}')
         for card in GameInfo.replace_list:
+            card.setStyleSheet('')
             card: ExtendedCard
             d = form.ExtractCard()
             d.suit = card.suit
             d.value = card.value
-            print(d.__dict__)
+            cards.append(d.__dict__)
+        GameInfo.state = form.GameState.CALCULATING
+        ClientInfo.logger.info(f'Cards being replaced: {cards}')
         ClientInfo.tcpHandler.send_replace_cards(cards)
 
     def tester_button(self):
@@ -558,6 +564,9 @@ class Menu(object):
         ClientInfo.logger.info('Bet error')
         self.bet_button.setDisabled(False)
 
+    def handle_won(self, amount):
+        pass
+
 
     def closed_event(self, event):
         ClientInfo.tcpHandler.lose_connection()
@@ -591,9 +600,11 @@ class ExtendedCard(QtWidgets.QLabel):
 
     def deselect_card(self):
         self.selected = False
-        GameInfo.replace_list.remove(self)
         self.setStyleSheet('')
-
+        try:
+            GameInfo.replace_list.remove(self)
+        except ValueError:
+            pass
 
 
 if __name__ == '__main__':

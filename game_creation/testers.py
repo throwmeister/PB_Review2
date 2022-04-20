@@ -104,7 +104,6 @@ if isinstance('????', Enum):
 for c in []:
     print('teegee')
 
-import numpy as np
 dictionary = {'suit': 'Spades', 'value': 4}
 sped = [{'value': 4, 'suit': 'Spades'}, {'suit': 'Spades', 'value': 7}]
 
@@ -115,3 +114,5 @@ if dictionary in sped:
 
 
 
+tester_list = ['bob']
+tester_list.remove('anne')

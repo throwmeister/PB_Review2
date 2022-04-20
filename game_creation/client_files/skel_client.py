@@ -1,9 +1,10 @@
 import builtins, logging, json, pika
 '''
-from twisted.internet.defer import Deferred'''
+from twisted.internet.defer import Deferred
 from twisted.internet.threads import deferToThread
+'''
 
-from twisted.internet import reactor, task
+from twisted.internet import reactor
 from twisted.internet.protocol import Protocol, ClientFactory
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet.task import LoopingCall
@@ -247,7 +248,7 @@ class MainClient(Protocol):
                 ClientInfo.logger.info('Bet success')
                 ClientInfo.main_gui.bet_success()
             case form.GeneralEnum.ERROR:
-                ClientInfo.logger.info('Bait failure')
+                ClientInfo.logger.info('Bet failure')
                 ClientInfo.bet_gui.bet_failure()
 
     @staticmethod
@@ -338,6 +339,8 @@ def mq_data_received(ch, method, properties, body):
             start_game_response(message.data)
         case form.ServerRequestTypeEnum.STATE_CHANGE:
             state_handler(message.data)
+        case form.ServerRequestTypeEnum.GAME_WINNERS:
+            winner_calculation_response(message.data)
 
 
 def state_handler(data):
@@ -364,6 +367,17 @@ def start_game_response(data):
         ClientInfo.logger.info('Unknown error has occurred')
         raise RuntimeError
     ClientInfo.logger.info('This function has been completed')
+
+
+def winner_calculation_response(winners):
+
+    for d in winners:
+        player = form.GameWinnerVars(d)
+        ClientInfo.logger.info(f'Winner: {player.name}')
+        if player.session == ClientInfo.session_id:
+            ClientInfo.main_gui.handle_won(player.winnings)
+
+
 '''
 
 if __name__ == '__main__':

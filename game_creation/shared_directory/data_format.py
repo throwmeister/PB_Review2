@@ -52,6 +52,8 @@ class ServerRequestTypeEnum(str, Enum):
     CARDS = 11
     REPLACED_CARDS = 12
     SIGNAL_START = 13
+    GAME_WINNERS = 14
+
 
 class GameTypeEnum(str, Enum):
     UNKNOWN = 0
@@ -323,6 +325,17 @@ class ClientSendCards:
             self.game_id = ''
             self.cards = None
 
+
+class GameWinnerVars:
+    def __init__(self, data=None):
+        if data:
+            self.session = data['session']
+            self.winnings = data['winnings']
+            self.name = data['name']
+        else:
+            self.session = ''
+            self.winnings = 0
+            self.name = ''
 
 def version_number():
     return '1.0'

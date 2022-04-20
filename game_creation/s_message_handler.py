@@ -116,12 +116,10 @@ def handle_ready_game(data, session_id):
     return [send_data.__dict__, client_data.game_id]
 
 
-def game_request_validation(session_id, game_id, state):
+def game_request_validation(session_id, game_id):
     try:
         game = Game.Games[game_id]
         player = Participant.Participants[session_id]
-        if state != game.game_logic.state:
-            return False
         if player in game.players:
             return [game, player]
         else:
@@ -161,7 +159,7 @@ def handle_input_bet(data, session_id):
     client_data = form.ClientSendBet(data)
     send_data = form.ServerBetResponse()
     complete = False
-    pv_checker = game_request_validation(session_id, client_data.game_id, form.GameState.BETTING)
+    pv_checker = game_request_validation(session_id, client_data.game_id)
     if pv_checker:
         game, player = pv_checker
         player: Participant
@@ -181,7 +179,7 @@ def handle_input_bet(data, session_id):
 
 def get_cards(game_id, session_id):
     send_data = form.ServerGetCards()
-    pv_checker = game_request_validation(session_id, game_id, form.GameState.CARD_CHANGING)
+    pv_checker = game_request_validation(session_id, game_id)
     if pv_checker:
         game, player = pv_checker
         player: Participant
@@ -200,7 +198,7 @@ def replace_cards(data, session_id):
     # Poker only command
     client_data = form.ClientSendCards(data)
     send_data = form.ServerGetCards()
-    pv_checker = game_request_validation(session_id, client_data.game_id, form.GameState.CARD_CHANGING)
+    pv_checker = game_request_validation(session_id, client_data.game_id)
     complete = False
     if pv_checker:
         game, player = pv_checker
@@ -210,7 +208,8 @@ def replace_cards(data, session_id):
         cards = player.vars.get_cards_format()
         send_data.cards = cards
         send_data.response_code = form.GeneralEnum.SUCCESS
-        if game.game_logic.check_all_replaced(game.players):
+        if game.game_logic.check_all_replaced():
+            ServerData.logger.info('All players have replaced')
             complete = True
 
     else:
@@ -220,7 +219,11 @@ def replace_cards(data, session_id):
 
 
 def calculate_game_score(game_id):
-    pass
+    game = Game.Games[game_id]
+    game.game_logic.calculate_scores()
+    winners = game.game_logic.calculate_winner()
+
+    return winners
 
 
 def aggregate_lobby_list():

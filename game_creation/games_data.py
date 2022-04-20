@@ -2,6 +2,7 @@ import shared_directory.data_format as form
 import session
 import random
 from uuid import uuid4
+import pokerScoreCalculator as p_scoreCalc
 
 
 class Card:
@@ -97,6 +98,9 @@ class ParticipantVariables:
             cards.append(card.__dict__)
         return cards
 
+    def add_money(self, amount):
+        self.money += amount
+
     def draw(self):
         self.hand.append(self.deck.draw())
 
@@ -115,12 +119,46 @@ class PokerPlayerVariables(ParticipantVariables):
             self.draw()
 
     def replace_cards(self, cards):
-        for card in cards:
-            card: Card
-            index = self.get_cards_format().index(card)
-            self.hand.pop(index)
-            self.draw()
-        self.has_replaced = True
+        try:
+            for card in cards:
+                card: Card
+                index = self.get_cards_format().index(card)
+                self.hand.pop(index)
+                self.draw()
+            self.has_replaced = True
+        except ValueError:
+            print('Error with cards')
+
+    def calculate_player_score(self):
+        # Calculates the score of all players
+
+        card_access = {
+            '3': 3,
+            '2': 2,
+            '4': 4,
+            '5': 5,
+            '6': 6,
+            '7': 7,
+            '8': 8,
+            '9': 9,
+            '10': 10,
+            'Jack': 11,
+            'Queen': 12,
+            'King': 13,
+            'Ace': 14
+        }
+        cards = p_scoreCalc.list_of_values(self.hand, card_access)
+        num_score = p_scoreCalc.value_calc(cards)
+        if num_score == 0:
+            flush = p_scoreCalc.suit_calc(self.hand)
+            num_score = p_scoreCalc.straight_calc(cards, flush)
+            if num_score == 0:
+                num_score = p_scoreCalc.high_calc(cards)
+
+        else:
+            pass
+        print(num_score)
+        return num_score
 
 
 class BlackjackPlayerVariables(ParticipantVariables):
@@ -160,10 +198,10 @@ class Game:
     def initialise_game(self):
         match self.game_type:
             case form.GameTypeEnum.POKER:
-                self.game_logic = Poker()
+                self.game_logic = Poker(self)
                 self.game_logic: Poker
             case form.GameTypeEnum.BLACKJACK:
-                self.game_logic = Blackjack()
+                self.game_logic = Blackjack(self)
                 self.game_logic: Blackjack
         for player in self.players:
             player: Participant
@@ -228,12 +266,13 @@ class Game:
 
 
 class GameVariables:
-    def __init__(self, num_of_decks):
+    def __init__(self, num_of_decks, game_cls):
         self.pot = 0
         self.deck = Deck(num_of_decks)
         self.player_scores = []
         self.state = form.GameState.SETUP
         self.has_bet = 0
+        self.parent: Game = game_cls
 
     def set_state(self, state):
         self.state = state
@@ -241,23 +280,58 @@ class GameVariables:
     def add_to_pot(self, amount):
         self.pot += amount
 
+    def calculate_scores(self):
+        pass
+
+    def calculate_winner(self):
+        winners = []
+        duple = 0
+        # A counter for if there is more than one winner
+        new = sorted(self.player_scores, key=lambda x: x[1], reverse=True)
+        while True:
+            # Logic to check for multiple winners
+            try:
+                if new[duple][1] == new[duple + 1][1]:
+                    duple += 1
+                else:
+                    break
+            except IndexError:
+                break
+        for i in range(duple + 1):
+            # Calculates all the winners and gives them their money
+            winner = new[i][0]
+            print(winner)
+            earnt_money = self.pot / (duple + 1)
+            winner.vars.add_money(earnt_money)
+            d = form.GameWinnerVars()
+            d.winnings = earnt_money
+            d.session = winner.session_id
+            d.name = winner.username
+
+            winners.append(d.__dict__)
+        return winners
+
 
 class Poker(GameVariables):
-    def __init__(self):
-        super(Poker, self).__init__(1)
+    def __init__(self, game_cls):
+        super(Poker, self).__init__(1, game_cls)
 
-    def check_all_replaced(self, players):
-        for player in players:
+    def check_all_replaced(self):
+        for player in self.parent.players:
             player: Participant
             if not player.vars.has_replaced:
                 return False
         return True
 
+    def calculate_scores(self):
+        for this_player in self.parent.players:
+            score = this_player.vars.calculate_player_score()
+            self.player_scores.append([this_player, score])
+
 
 class Blackjack(GameVariables):
-    def __init__(self):
-        super().__init__(5)
-
+    def __init__(self, game_cls):
+        super().__init__(5, game_cls)
 
 
 '''

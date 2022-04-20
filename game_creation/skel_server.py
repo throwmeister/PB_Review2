@@ -77,6 +77,10 @@ class MainServer(Protocol):
         d = self.format_send_data(form.ServerRequestTypeEnum.STATE_CHANGE, state)
         self.queue_message(form.game_exchange_name(), game_id, d)
 
+    def send_winners(self, winners, game_id):
+        d = self.format_send_data(form.ServerRequestTypeEnum.GAME_WINNERS, winners)
+        self.queue_message(form.game_exchange_name(), game_id, d)
+
     @staticmethod
     def format_send_data(request_type, data=None):
         req = form.ServerRequestHeader()
@@ -156,7 +160,8 @@ f'message: {message}')
                         server_data, game_id, complete = handler.replace_cards(messages.data, messages.session_id)
                         self.send_new_cards(server_data)
                         if complete:
-                            handler.calculate_game_score(game_id)
+                            winners = handler.calculate_game_score(game_id)
+                            self.send_winners(winners, game_id)
                     case form.ClientRequestTypeEnum.SIGNAL_START:
                         ServerData.logger.info('Received signal start')
                         self.send_signal_start()
