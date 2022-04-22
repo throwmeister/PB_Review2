@@ -3,7 +3,6 @@ from create_game_screen import CreateGame
 from login_screen import Login
 from join_game_screen import JoinGame
 from client_data import ClientInfo, GameInfo
-from bet_screen import Bet
 from game_creation.shared_directory import data_format as form
 
 
@@ -401,13 +400,6 @@ class Menu(object):
                         removed_card.deselect_card()
                 self.replace_button.setText(f'Replace: {len(GameInfo.replace_list)}')
 
-    def open_bet_screen(self):
-        self.lwindow = QtWidgets.QDialog()
-        self.lui = Bet()
-        self.lui.setupUi(self.lwindow)
-        self.lwindow.show()
-        GameInfo.state = form.GameState.CARD_CHANGING
-
     def set_cards(self, cards):
         ClientInfo.logger.info(cards)
         for i, card in enumerate(cards):
@@ -573,11 +565,9 @@ class Menu(object):
     def handle_won(self, amount):
         pass
 
-
     def closed_event(self, event):
         ClientInfo.tcpHandler.lose_connection()
         raise RuntimeError
-
 
 
 class ExtendedCard(QtWidgets.QLabel):

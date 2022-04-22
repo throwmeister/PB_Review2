@@ -216,3 +216,4 @@ class Ui_Dialog(object):
         self.label_14.setText(_translate("Dialog", "0"))
         self.bet_fold_button.setText(_translate("Dialog", "Fold"))
         self.bet_button.setText(_translate("Dialog", "Bet"))
+
