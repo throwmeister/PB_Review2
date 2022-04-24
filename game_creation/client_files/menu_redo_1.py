@@ -193,6 +193,7 @@ class Menu(object):
         self.main_stack.addWidget(self.player_list_screen)
         self.verticalLayout.addWidget(self.main_stack)
         self.gridLayout.addLayout(self.verticalLayout, 1, 0, 1, 1)
+        # self.add_bet_stack()
         self.add_bet_stack()
         self.add_poker_stack()
         self.retranslateUi(Form)
@@ -201,6 +202,8 @@ class Menu(object):
         QtCore.QMetaObject.connectSlotsByName(Form)
         self.play_button.clicked.connect(self.open_login_window)
         ClientInfo.main_gui = self
+
+        self.refresh_bet_game()
         self.settings_button.clicked.connect(self.tester_button)
         self.games_list.itemClicked.connect(self.game_clicked)
         self.join_game_button.clicked.connect(self.join_game_pressed)
@@ -210,7 +213,7 @@ class Menu(object):
         self.start_game_button.clicked.connect(self.start_game_clicked)
         self.bet_button.clicked.connect(self.bet_button_pressed)
         self.bet_again_button.clicked.connect(self.bet_again_button_clicked)
-        # self.tester_button()
+        self.tester_button()
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
@@ -238,51 +241,283 @@ class Menu(object):
         self.replace_button.setText(_translate("Form", "Replace: 0"))
         self.fold_button.setText(_translate("Form", "Fold"))
         self.leave_ingame_button.setText(_translate("Form", "Leave Game"))
-
-        self.bet_label.setText(_translate("Dialog", "Bet amount: "))
-        self.amount_label.setText(_translate("Dialog", f"Amount: {GameInfo.bet}"))
+        self.bank_balance.setText(_translate("Dialog", "Balance: 75"))
+        self.bank_counter_red.setText(_translate("Dialog", "b_r"))
+        self.bank_counter_blue.setText(_translate("Dialog", "b_blu"))
+        self.bank_counter_brown.setText(_translate("Dialog", "b_br"))
+        self.bank_counter_black.setText(_translate("Dialog", "b_bla"))
+        self.bet_balance.setText(_translate("Dialog", "Betting: 0"))
+        self.bet_counter_red.setText(_translate("Dialog", "b_r"))
+        self.bet_counter_blue.setText(_translate("Dialog", "b_blu"))
+        self.bet_counter_brown.setText(_translate("Dialog", "b_br"))
+        self.bet_counter_black.setText(_translate("Dialog", "b_bla"))
+        self.bet_fold_button.setText(_translate("Dialog", "Fold"))
         self.bet_button.setText(_translate("Dialog", "Bet"))
-        self.bet_again_button.setText(_translate('Dialog', 'Second Bet'))
 
     def add_bet_stack(self):
-        self.bet_screen = QtWidgets.QWidget()
-        self.bet_vert_layout = QtWidgets.QVBoxLayout(self.bet_screen)
+        self.bet_stack = QtWidgets.QWidget()
+        self.red_chip_icon = "images/chips/red_chip.png"
+        self.blue_chip_icon = "images/chips/blue_chip.png"
+        self.brown_chip_icon = "images/chips/brown_chip.png"
+        self.black_chip_icon = "images/chips/black_chip"
+        self.bet_vert_layout = QtWidgets.QVBoxLayout(self.bet_stack)
         self.bet_vert_layout.setObjectName("verticalLayout_2")
-        self.bet_vert_layout0 = QtWidgets.QVBoxLayout()
-        self.bet_vert_layout0.setObjectName("verticalLayout")
-        self.bet_label = QtWidgets.QLabel(self.bet_screen)
-        self.bet_label.setMaximumSize(QtCore.QSize(400, 50))
+        self.bet_vert_layout2 = QtWidgets.QVBoxLayout()
+        self.bet_vert_layout2.setObjectName("verticalLayout")
+        self.bank_balance = QtWidgets.QLabel(self.bet_stack)
+        self.bank_balance.setMaximumSize(QtCore.QSize(400, 50))
         font = QtGui.QFont()
         font.setFamily("MS Shell Dlg 2")
         font.setPointSize(-1)
-        self.bet_label.setFont(font)
-        self.bet_label_style = '''font-family: MS Shell Dlg 2;\n
-                                         font-size: 30px;'''
-        self.bet_label.setStyleSheet(self.bet_label_style)
-        self.bet_label.setObjectName("label")
-        self.bet_vert_layout0.addWidget(self.bet_label, 0, QtCore.Qt.AlignHCenter)
-        self.bet_form_layout = QtWidgets.QFormLayout()
-        self.bet_form_layout.setObjectName("formLayout")
-        self.amount_label = QtWidgets.QLabel(self.bet_screen)
-        self.amount_label.setStyleSheet(self.bet_label_style)
-        self.amount_label.setObjectName("label_3")
-        self.bet_form_layout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.amount_label)
-        self.bet_edit = QtWidgets.QLineEdit(self.bet_screen)
-        self.bet_edit.setStyleSheet(self.bet_label_style)
-        self.bet_edit.setMinimumSize(QtCore.QSize(0, 50))
-        self.bet_edit.setText("")
-        self.bet_edit.setClearButtonEnabled(False)
-        self.bet_edit.setObjectName("lineEdit_2")
-        self.bet_form_layout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.bet_edit)
-        self.bet_vert_layout0.addLayout(self.bet_form_layout)
-        self.bet_vert_layout.addLayout(self.bet_vert_layout0)
-        self.bet_button = QtWidgets.QPushButton(self.bet_screen)
-        self.bet_button.setObjectName("pushButton")
-        self.bet_vert_layout.addWidget(self.bet_button)
+        self.bank_balance.setFont(font)
+        self.bank_balance.setStyleSheet("font-family: MS Shell Dlg 2;\n"
+                                        "    font-size: 30px;\n"
+                                        "")
+        self.bank_balance.setObjectName("label")
+        self.bet_vert_layout2.addWidget(self.bank_balance, 0, QtCore.Qt.AlignHCenter)
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.bank_counter_red = QtWidgets.QLabel(self.bet_stack)
+        self.bank_counter_red.setMaximumSize(QtCore.QSize(100, 100))
+        self.bank_counter_red.setAlignment(QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
+        self.bank_counter_red.setObjectName("label_7")
+        self.horizontalLayout_3.addWidget(self.bank_counter_red)
+        self.bank_counter_blue = QtWidgets.QLabel(self.bet_stack)
+        self.bank_counter_blue.setMaximumSize(QtCore.QSize(100, 100))
+        self.bank_counter_blue.setAlignment(QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
+        self.bank_counter_blue.setObjectName("label_6")
+        self.horizontalLayout_3.addWidget(self.bank_counter_blue)
+        self.bank_counter_brown = QtWidgets.QLabel(self.bet_stack)
+        self.bank_counter_brown.setMaximumSize(QtCore.QSize(100, 100))
+        self.bank_counter_brown.setScaledContents(False)
+        self.bank_counter_brown.setAlignment(QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
+        self.bank_counter_brown.setWordWrap(False)
+        self.bank_counter_brown.setObjectName("label_8")
+        self.horizontalLayout_3.addWidget(self.bank_counter_brown)
+        self.bank_counter_black = QtWidgets.QLabel(self.bet_stack)
+        self.bank_counter_black.setMaximumSize(QtCore.QSize(100, 100))
+        self.bank_counter_black.setAlignment(QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
+        self.bank_counter_black.setObjectName("label_9")
+        self.horizontalLayout_3.addWidget(self.bank_counter_black)
+        self.bet_vert_layout2.addLayout(self.horizontalLayout_3)
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.bank_red_chip = Chips(self.bet_stack, self.chip_clicked, form.ChipType.RED)
+        self.bank_red_chip.setMinimumSize(QtCore.QSize(100, 100))
+        self.bank_red_chip.setMaximumSize(QtCore.QSize(100, 100))
+        self.bank_red_chip.setText("")
+        self.bank_red_chip.setPixmap(QtGui.QPixmap(self.red_chip_icon))
+        self.bank_red_chip.setScaledContents(True)
+        self.bank_red_chip.setObjectName("bank_red_chip")
+        self.horizontalLayout_2.addWidget(self.bank_red_chip)
+        self.bank_blue_chip = Chips(self.bet_stack, self.chip_clicked, form.ChipType.BLUE)
+        self.bank_blue_chip.setMaximumSize(QtCore.QSize(100, 100))
+        self.bank_blue_chip.setText("")
+        self.bank_blue_chip.setPixmap(QtGui.QPixmap(self.blue_chip_icon))
+        self.bank_blue_chip.setScaledContents(True)
+        self.bank_blue_chip.setObjectName("bank_blue_chip")
+        self.horizontalLayout_2.addWidget(self.bank_blue_chip)
+        self.bank_brown_chip = Chips(self.bet_stack, self.chip_clicked, form.ChipType.BROWN)
+        self.bank_brown_chip.setMaximumSize(QtCore.QSize(100, 100))
+        self.bank_brown_chip.setText("")
+        self.bank_brown_chip.setPixmap(QtGui.QPixmap(self.brown_chip_icon))
+        self.bank_brown_chip.setScaledContents(True)
+        self.bank_brown_chip.setObjectName("bank_brown_chip")
+        self.horizontalLayout_2.addWidget(self.bank_brown_chip)
+        self.bank_black_chip = Chips(self.bet_stack, self.chip_clicked, form.ChipType.BLACK)
+        self.bank_black_chip.setMaximumSize(QtCore.QSize(100, 100))
+        self.bank_black_chip.setText("")
+        self.bank_black_chip.setPixmap(QtGui.QPixmap(self.black_chip_icon))
+        self.bank_black_chip.setScaledContents(True)
+        self.bank_black_chip.setObjectName("bank_black_chip")
+        self.horizontalLayout_2.addWidget(self.bank_black_chip)
+        self.bet_vert_layout2.addLayout(self.horizontalLayout_2)
+        self.bet_vert_layout.addLayout(self.bet_vert_layout2)
+        self.bet_hz_layout3 = QtWidgets.QVBoxLayout()
+        self.bet_hz_layout3.setObjectName("verticalLayout_3")
+        self.bet_balance = QtWidgets.QLabel(self.bet_stack)
+        self.bet_balance.setMaximumSize(QtCore.QSize(400, 50))
+        font = QtGui.QFont()
+        font.setFamily("MS Shell Dlg 2")
+        font.setPointSize(-1)
+        self.bet_balance.setFont(font)
+        self.bet_balance.setStyleSheet("font-family: MS Shell Dlg 2;\n"
+                                       "    font-size: 30px;\n"
+                                       "color: rgb(170, 85, 255);\n"
+                                       "                \n"
+                                       "                ")
+        self.bet_balance.setObjectName("label_10")
+        self.bet_hz_layout3.addWidget(self.bet_balance, 0, QtCore.Qt.AlignHCenter)
+        self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.bet_counter_red = QtWidgets.QLabel(self.bet_stack)
+        self.bet_counter_red.setMaximumSize(QtCore.QSize(100, 100))
+        self.bet_counter_red.setAlignment(QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
+        self.bet_counter_red.setObjectName("label_11")
+        self.horizontalLayout_4.addWidget(self.bet_counter_red)
+        self.bet_counter_blue = QtWidgets.QLabel(self.bet_stack)
+        self.bet_counter_blue.setMaximumSize(QtCore.QSize(100, 100))
+        self.bet_counter_blue.setAlignment(QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
+        self.bet_counter_blue.setObjectName("label_12")
+        self.horizontalLayout_4.addWidget(self.bet_counter_blue)
+        self.bet_counter_brown = QtWidgets.QLabel(self.bet_stack)
+        self.bet_counter_brown.setMaximumSize(QtCore.QSize(100, 100))
+        self.bet_counter_brown.setScaledContents(False)
+        self.bet_counter_brown.setAlignment(QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
+        self.bet_counter_brown.setWordWrap(False)
+        self.bet_counter_brown.setObjectName("label_13")
+        self.horizontalLayout_4.addWidget(self.bet_counter_brown)
+        self.bet_counter_black = QtWidgets.QLabel(self.bet_stack)
+        self.bet_counter_black.setMaximumSize(QtCore.QSize(100, 100))
+        self.bet_counter_black.setAlignment(QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter)
+        self.bet_counter_black.setObjectName("label_14")
+        self.horizontalLayout_4.addWidget(self.bet_counter_black)
+        self.bet_hz_layout3.addLayout(self.horizontalLayout_4)
+        self.bet_hz_bet_layout = QtWidgets.QHBoxLayout()
+        self.bet_hz_bet_layout.setObjectName("horizontalLayout_5")
+        self.bet_red_chip = Chips(self.bet_stack, self.chip_clicked, form.ChipType.RED)
+        self.bet_red_chip.setMinimumSize(QtCore.QSize(100, 100))
+        self.bet_red_chip.setMaximumSize(QtCore.QSize(100, 100))
+        self.bet_red_chip.setText("")
+        self.bet_red_chip.setPixmap(QtGui.QPixmap(self.red_chip_icon))
+        self.bet_red_chip.setScaledContents(True)
+        self.bet_red_chip.setObjectName("bet_red_chip")
+        self.bet_hz_bet_layout.addWidget(self.bet_red_chip)
+        self.bet_blue_chip = Chips(self.bet_stack, self.chip_clicked, form.ChipType.BLUE)
+        self.bet_blue_chip.setMaximumSize(QtCore.QSize(100, 100))
+        self.bet_blue_chip.setText("")
+        self.bet_blue_chip.setPixmap(QtGui.QPixmap(self.blue_chip_icon))
+        self.bet_blue_chip.setScaledContents(True)
+        self.bet_blue_chip.setObjectName("bet_blue_chip")
+        self.bet_hz_bet_layout.addWidget(self.bet_blue_chip)
+        self.bet_brown_chip = Chips(self.bet_stack, self.chip_clicked, form.ChipType.BROWN)
+        self.bet_brown_chip.setMaximumSize(QtCore.QSize(100, 100))
+        self.bet_brown_chip.setText("")
+        self.bet_brown_chip.setPixmap(QtGui.QPixmap(self.brown_chip_icon))
+        self.bet_brown_chip.setScaledContents(True)
+        self.bet_brown_chip.setObjectName("bet_brown_chip")
+        self.bet_hz_bet_layout.addWidget(self.bet_brown_chip)
+        self.bet_black_chip = Chips(self.bet_stack, self.chip_clicked, form.ChipType.BLACK)
+        self.bet_black_chip.setMaximumSize(QtCore.QSize(100, 100))
+        self.bet_black_chip.setText("")
+        self.bet_black_chip.setPixmap(QtGui.QPixmap(self.black_chip_icon))
+        self.bet_black_chip.setScaledContents(True)
+        self.bet_black_chip.setObjectName("bet_black_chip")
+        self.bet_hz_bet_layout.addWidget(self.bet_black_chip)
+        self.bet_hz_layout3.addLayout(self.bet_hz_bet_layout)
+        self.bet_vert_layout.addLayout(self.bet_hz_layout3)
+        self.bet_list = QtWidgets.QListWidget(self.bet_stack)
+        self.bet_list.setObjectName("bet_list")
+        self.bet_vert_layout.addWidget(self.bet_list)
+        self.bet_fold_button = QtWidgets.QPushButton(self.bet_stack)
+        self.bet_fold_button.setObjectName("bet_fold_button")
+        self.bet_vert_layout.addWidget(self.bet_fold_button)
+        self.bet_hz_layout = QtWidgets.QHBoxLayout()
+        self.bet_hz_layout.setObjectName("horizontalLayout")
+        self.bet_button = QtWidgets.QPushButton(self.bet_stack)
+        self.bet_button.setObjectName("bet_button")
+        self.bet_hz_layout.addWidget(self.bet_button, 0, QtCore.Qt.AlignBottom)
+        self.bet_vert_layout.addLayout(self.bet_hz_layout)
 
-        self.main_stack.addWidget(self.bet_screen)
+        self.chip_dict = TwoWayDict()
+
+        self.chip_dict[self.bank_red_chip] = self.bet_red_chip
+        self.chip_dict[self.bank_blue_chip] = self.bet_blue_chip
+        self.chip_dict[self.bank_brown_chip] = self.bet_brown_chip
+        self.chip_dict[self.bank_black_chip] = self.bet_black_chip
+
+        # self.refresh_bet_game()
+
+        self.main_stack.addWidget(self.bet_stack)
+
+    def refresh_bet_game(self):
+        self.bank_balance_var = 75
+        self.bet_balance_var = 0
+        _translate = QtCore.QCoreApplication.translate
+        self.bank_balance.setText(_translate("Dialog", f"Balance: {self.bank_balance_var}"))
+        self.bank_counter_red.setText(_translate("Dialog", "5"))
+        self.bank_counter_blue.setText(_translate("Dialog", "5"))
+        self.bank_counter_brown.setText(_translate("Dialog", "5"))
+        self.bank_counter_black.setText(_translate("Dialog", "5"))
+        self.bet_balance.setText(_translate("Dialog", f"Betting: {self.bank_balance_var}"))
+        self.bet_counter_red.setText(_translate("Dialog", "0"))
+        self.bet_counter_blue.setText(_translate("Dialog", "0"))
+        self.bet_counter_brown.setText(_translate("Dialog", "0"))
+        self.bet_counter_black.setText(_translate("Dialog", "0"))
+        self.bank_red_chip.setup_chips(5)
+        self.bank_blue_chip.setup_chips(5)
+        self.bank_brown_chip.setup_chips(5)
+        self.bank_black_chip.setup_chips(5)
+        self.bet_red_chip.setup_chips(0)
+        self.bet_blue_chip.setup_chips(0)
+        self.bet_brown_chip.setup_chips(0)
+        self.bet_black_chip.setup_chips(0)
+
+        self.bank = [self.bank_red_chip, self.bank_blue_chip, self.bank_brown_chip, self.bank_black_chip]
+        self.bet = [self.bet_red_chip, self.bet_blue_chip, self.bet_brown_chip, self.bet_black_chip]
+
+        print('ran refresh')
+        print(self.bank)
+        print(self.bet)
+
+    def chip_clicked(self, event, chip_obj):
+        button = event.button()
+        modifiers = event.modifiers()
+        if modifiers == QtCore.Qt.NoModifier and button == QtCore.Qt.LeftButton:
+            chip_obj: Chips
+            bet_chip = self.chip_dict[chip_obj]
+            print('got here')
+            bet_chip: Chips
+            if chip_obj.chips:
+                chip = chip_obj.chips.pop()
+                print(chip)
+                bet_chip.add_chip(chip)
+                self.update_chip_balance()
+
+        elif modifiers == QtCore.Qt.NoModifier and button == QtCore.Qt.RightButton:
+            print('wtf')
 
 
+    '''
+    def bet_chip_clicked(self, event, chip_obj):
+        button = event.button()
+        modifiers = event.modifiers()
+        if modifiers == QtCore.Qt.NoModifier and button == QtCore.Qt.LeftButton:
+            chip_obj: Chips
+            bet_chip = self.chip_dict[chip_obj]
+            bet_chip: Chips
+            chip = chip_obj.chips.pop()
+            bet_chip.add_chip(chip)
+            self.update_chip_balance()
+            '''
+
+    def update_chip_balance(self):
+
+        self.bank_balance_var = 0
+        self.bet_balance_var = 0
+
+
+        for bank in self.bank:
+            for chip in bank.chips:
+                chip: Chip
+                self.bank_balance_var += chip.monetary_value
+
+        for bet in self.bet:
+            print(f'bet balance: {bet.chips}')
+            for chip in bet.chips:
+                chip: Chip
+                self.bet_balance_var += chip.monetary_value
+
+        self.bank_balance.setText(f"Balance: {self.bank_balance_var}")
+        self.bet_balance.setText(f"Betting: {self.bet_balance_var}")
+        self.bank_counter_red.setText(f'{self.bank[0].num_of_chips}')
+        self.bank_counter_blue.setText(f'{self.bank[1].num_of_chips}')
+        self.bank_counter_brown.setText(f'{self.bank[2].num_of_chips}')
+        self.bank_counter_black.setText(f'{self.bank[3].num_of_chips}')
+        self.bet_counter_red.setText(f'{self.bet[0].num_of_chips}')
+        self.bet_counter_blue.setText(f'{self.bet[1].num_of_chips}')
+        self.bet_counter_brown.setText(f'{self.bet[2].num_of_chips}')
+        self.bet_counter_black.setText(f'{self.bet[3].num_of_chips}')
 
     def add_poker_stack(self):
         self.poker_screen = QtWidgets.QWidget()
@@ -522,6 +757,7 @@ class Menu(object):
         self.amount_label.setText(f'Amount: {GameInfo.bet}')
         self.bet_button.setEnabled(True)
 
+
     def bet_button_pressed(self):
         self.bet_button.setDisabled(True)
         try:
@@ -601,6 +837,43 @@ class ExtendedCard(QtWidgets.QLabel):
             GameInfo.replace_list.remove(self)
         except ValueError:
             pass
+
+
+class Chip:
+    def __init__(self, val):
+        self.monetary_value = val
+
+
+class Chips(QtWidgets.QLabel):
+    def __init__(self, form, clicked_func, chip_type):
+        super(Chips, self).__init__(form)
+        self.chips = []
+        self.chip_type = chip_type
+        self.when_clicked = clicked_func
+
+    def mouseReleaseEvent(self, ev):
+        self.when_clicked(ev, self)
+
+    @property
+    def num_of_chips(self):
+        return len(self.chips)
+
+    def setup_chips(self, num):
+        self.chips = []
+        for _ in range(num):
+            self.chips.append(Chip(self.chip_type))
+
+    def add_chip(self, chip):
+        self.chips.append(chip)
+
+
+class TwoWayDict(dict):
+    def __len__(self):
+        return dict.__len__(self) / 2
+
+    def __setitem__(self, key, value):
+        dict.__setitem__(self, key, value)
+        dict.__setitem__(self, value, key)
 
 
 if __name__ == '__main__':

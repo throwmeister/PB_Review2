@@ -366,3 +366,10 @@ class MenuScreenEnums(IntEnum):
     BET_SCREEN = 3
     POKER_SCREEN = 4
     BLACKJACK_SCREEN = 5
+
+
+class ChipType(IntEnum):
+    RED = 1
+    BLUE = 2
+    BROWN = 4
+    BLACK = 8
