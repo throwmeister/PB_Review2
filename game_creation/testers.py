@@ -116,7 +116,7 @@ if dictionary in sped:
 
 test_dict = [[1, 'p'], [1, 'd'], [3, 'f'], [2, 'g']]
 print(test_dict)
-x =sorted(test_dict, reverse=False)
+x =sorted(test_dict, key=lambda x: x[0], reverse=False)
 print(x)
 f = [g[1] for g in x if g[0] != x[0][0]]
 print(f)

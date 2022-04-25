@@ -97,7 +97,7 @@ class MainServer(Protocol):
                 req.data = data
         else:
             req.data = ''
-        print(request_type.name)
+        ServerData.logger.info(f'Request type: {request_type.name}')
         ServerData.logger.info(req.__dict__)
         s = json.dumps(req.__dict__)
         return s
@@ -107,7 +107,7 @@ class MainServer(Protocol):
 
     @staticmethod
     def queue_message(exchange, routing_key, message):
-        print(f'exchange: {exchange}'
+        ServerData.logger.info(f'exchange: {exchange}'
 f'routing key: {routing_key}'
 f'message: {message}')
         x = MessageQueue(exchange=exchange, routing_key=routing_key)
@@ -118,7 +118,7 @@ f'message: {message}')
         sp_data = data.decode(self.format).split('\r')
         remove = [x for x in sp_data if x]
         for d in remove:
-            print(d)
+            ServerData.logger.info(f'Received data: {d}')
             messages = form.ClientRequestHeader(d)
             if messages.request_type == form.ClientRequestTypeEnum.LOGIN_REQUEST:
                 server_data = handler.handle_login_requests(messages.data)
@@ -128,7 +128,7 @@ f'message: {message}')
             elif session.Session.validate_session(messages.session_id):
                 match messages.request_type:
                     case form.ClientRequestTypeEnum.KEEP_ALIVE:
-                        print(f'keep alive message received from {messages.session_id}: {messages.data}')
+                        ServerData.logger.info(f'keep alive message received from {messages.session_id}: {messages.data}')
                     case form.ClientRequestTypeEnum.LOGOUT_REQUEST:
                         session.Session.delete_session(messages.session_id)
                     case form.ClientRequestTypeEnum.CREATE_GAME:
@@ -144,6 +144,7 @@ f'message: {message}')
                     case form.ClientRequestTypeEnum.LEAVE_GAME:
                         handler.handle_leave_game(messages.data, messages.session_id)
                         self.send_aggregate_player_list(messages.data)
+                        self.send_aggregate_lobby()
                     case form.ClientRequestTypeEnum.READY_GAME:
                         server_data, game_id = handler.handle_ready_game(messages.data, messages.session_id)
                         self.send_ready_game(server_data)
@@ -187,7 +188,7 @@ f'message: {message}')
                         pass
 
             else:
-                print('Invalid session request')
+                ServerData.logger.info('Invalid session request')
                 self.invalid_session()
 
     def handle_fold(self, data, session_id):

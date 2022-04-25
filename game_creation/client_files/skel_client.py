@@ -229,7 +229,6 @@ class MainClient(Protocol):
         elif response_data.response_code == form.JoinGameEnum.JOIN_ITSELF:
             log_join(form.JoinGameEnum.JOIN_ITSELF.name)
         else:
-            print('unhandled')
             raise RuntimeError
 
     @staticmethod
@@ -302,9 +301,8 @@ class ClientCreator(ClientFactory):
 
     @staticmethod
     def stop_reactor():
-        print('reactor stopped')
+        ClientInfo.logger.info('reactor stopped')
         reactor.stop()
-        raise RuntimeError
 
     def buildProtocol(self, addr):
         ClientInfo.tcpHandler = MainClient()
@@ -397,6 +395,8 @@ def winner_calculation_response(winners):
             ClientInfo.logger.info(f'Winner: {player.name}')
             if player.session == ClientInfo.session_id:
                 ClientInfo.main_gui.handle_won(player.winnings)
+        # ClientInfo.main_gui.player_won_popup(winners)
+        ClientInfo.main_gui.reset_game_loop()
 
 
 '''

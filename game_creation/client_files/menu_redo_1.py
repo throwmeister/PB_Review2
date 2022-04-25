@@ -11,46 +11,48 @@ class Menu(object):
         Form.setObjectName("Poker and Blackjack")
         Form.closeEvent = self.closed_event
         Form.resize(1054, 860)
-        Form.setStyleSheet("QWidget{\n"
-"    background-color: rgb(15, 102, 72);\n"
-"    \n"
-"}\n"
-"\n"
-"QLabel{\n"
-"\n"
-"}\n"
-"\n"
-"QPushButton{\n"
-"    font-family: MS Shell Dlg 2;\n"
-"    font-size: 30px;\n"
-"                \n"
-"    color: rgb(0, 85, 0);\n"
-"                \n"
-"    background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 132, 93, 255), stop:1 rgba(97, 192, 164, 255));\n"
-"                border-radius: 3px;\n"
-"                border: 2px groove rgb(0, 0, 0)\n"
-"            }\n"
-"            QPushButton:hover{\n"
-"            background-color: #e3c086;\n"
-"            outline: none\n"
-"            }"
-"QHeaderView::section {\n"
-"    background-color: #ebc17a;\n"
-"    border-style: none;\n"
-"    font-size: 14pt;\n"
-"    border-right: 1px solid #d9a143;\n"
-"border-bottom: 1px solid #d9a143;\n"
-"border-left: 1px solid #d9a143;\n"
-"padding: 6px\n"
-"}\n"
-"QTableCornerButton::section{\n"
-"background-color: #ebc17a;\n"
-"    padding: 4px;\n"
-"    border: 1px solid #ebc17a;\n"
-"    font-size: 14pt;\n"
-"}\n"
-"\n"
-"")
+        self.menu_style_sheet = ("QWidget{\n"
+        "    background-color: rgb(15, 102, 72);\n"
+        "    \n"
+        "}\n"
+        "\n"
+        "QLabel{\n"
+        "\n"
+        "}\n"
+        "\n"
+        "QPushButton{\n"
+        "    font-family: MS Shell Dlg 2;\n"
+        "    font-size: 30px;\n"
+        "                \n"
+        "    color: rgb(0, 85, 0);\n"
+        "                \n"
+        "    background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 132, 93, 255), stop:1 rgba(97, 192, 164, 255));\n"
+        "                border-radius: 3px;\n"
+        "                border: 2px groove rgb(0, 0, 0)\n"
+        "            }\n"
+        "            QPushButton:hover{\n"
+        "            background-color: #e3c086;\n"
+        "            outline: none\n"
+        "            }"
+        "QHeaderView::section {\n"
+        "    background-color: #ebc17a;\n"
+        "    border-style: none;\n"
+        "    font-size: 14pt;\n"
+        "    border-right: 1px solid #d9a143;\n"
+        "border-bottom: 1px solid #d9a143;\n"
+        "border-left: 1px solid #d9a143;\n"
+        "padding: 6px\n"
+        "}\n"
+        "QTableCornerButton::section{\n"
+        "background-color: #ebc17a;\n"
+        "    padding: 4px;\n"
+        "    border: 1px solid #ebc17a;\n"
+        "    font-size: 14pt;\n"
+        "}\n"
+        "\n")
+
+
+        Form.setStyleSheet(self.menu_style_sheet)
         self.gridLayout = QtWidgets.QGridLayout(Form)
         self.gridLayout.setObjectName("gridLayout")
         self.verticalLayout = QtWidgets.QVBoxLayout()
@@ -432,7 +434,6 @@ class Menu(object):
         self.chip_dict[self.bank_black_chip] = self.bet_black_chip
 
         self.refresh_bet_game()
-
         self.main_stack.addWidget(self.bet_stack)
 
     def refresh_bet_game(self):
@@ -463,26 +464,18 @@ class Menu(object):
 
         self.bet_list_vars = []
 
-        print('ran refresh')
-        print(self.bank)
-        print(self.bet)
-
     def chip_clicked(self, event, chip_obj):
         button = event.button()
         modifiers = event.modifiers()
         if modifiers == QtCore.Qt.NoModifier and button == QtCore.Qt.LeftButton:
             chip_obj: Chips
             bet_chip = self.chip_dict[chip_obj]
-            print('got here')
+
             bet_chip: Chips
             if chip_obj.chips:
                 chip = chip_obj.chips.pop()
-                print(chip)
                 bet_chip.add_chip(chip)
                 self.update_chip_balance()
-
-        elif modifiers == QtCore.Qt.NoModifier and button == QtCore.Qt.RightButton:
-            print('wtf')
 
     def update_chip_balance(self):
         self.bank_balance_var = 0
@@ -494,7 +487,6 @@ class Menu(object):
                 self.bank_balance_var += chip.monetary_value
 
         for bet in self.bet:
-            print(f'bet balance: {bet.chips}')
             for chip in bet.chips:
                 chip: Chip
                 self.bet_balance_var += chip.monetary_value
@@ -588,11 +580,9 @@ class Menu(object):
         self.replace_button.clicked.connect(self.replace_button_clicked)
 
     def refresh_poker_screen(self):
-        self.card1.setPixmap(QtGui.QPixmap(self.back_card))
-        self.card2.setPixmap(QtGui.QPixmap(self.back_card))
-        self.card3.setPixmap(QtGui.QPixmap(self.back_card))
-        self.card4.setPixmap(QtGui.QPixmap(self.back_card))
-        self.card5.setPixmap(QtGui.QPixmap(self.back_card))
+        for card in self.card_list:
+            card.refresh_values()
+            card.setPixmap(QtGui.QPixmap(self.back_card))
 
     def add_blackjack_stack(self):
         self.blackjack_screen = QtWidgets.QWidget()
@@ -627,9 +617,10 @@ class Menu(object):
                 self.replace_button.setText(f'Replace: {len(GameInfo.replace_list)}')
 
     def set_cards(self, cards):
+        # self.current_cards = cards
         ClientInfo.logger.info(cards)
         for i, card in enumerate(cards):
-            ClientInfo.logger.info(card)
+            ClientInfo.logger.info(f'Adding: {card}')
             c = form.ExtractCard(card)
             self.card_list[i].set_values(c.suit, c.value)
 
@@ -656,7 +647,6 @@ class Menu(object):
         print(self.games_list.selectedItems()[0])
         print(items.treeWidget().currentIndex().row())'''
         self.selected_game = items.data(5, 0)
-        print(self.selected_game)
 
     def fold_button_pressed(self):
         ClientInfo.playing = False
@@ -667,6 +657,7 @@ class Menu(object):
 
     def leave_game_button_pressed(self):
         ClientInfo.tcpHandler.send_leave_game()
+        ClientInfo.game_id = ''
         self.change_screens(form.MenuScreenEnums.GAME_LIST)
         self.refresh_bet_game()
         self.refresh_bj_screen()
@@ -685,7 +676,6 @@ class Menu(object):
             self.lui.username_line.setText('Alex')
             self.lui.password_line.setText('alex')
             self.lwindow.show()
-            print('This ran!')
 
     def set_game_list(self, data):
         self.games_list.clear()
@@ -719,7 +709,7 @@ class Menu(object):
             self.jui.password_edit.setText('ILOVEPOKER')
             self.jwindow.show()
         else:
-            print('please select a game')
+            pass
 
     def create_game_pressed(self):
         self.create_window = QtWidgets.QDialog()
@@ -752,6 +742,7 @@ class Menu(object):
     def setup_game(self, gtype):
         ClientInfo.logger.info('Setting up game')
         GameInfo.set_initial_values(gtype)
+        self.refresh_poker_screen()
         self.change_screens(form.MenuScreenEnums.BET_SCREEN)
         GameInfo.state = form.GameState.BETTING
         ClientInfo.logger.info('Opening bet screen...')
@@ -774,19 +765,19 @@ class Menu(object):
 
     def bet_success(self):
         self.bet_button.setEnabled(True)
-        ClientInfo.tcpHandler.request_cards()
+        if GameInfo.request == True:
+            ClientInfo.tcpHandler.request_cards()
+            GameInfo.request = False
 
     def all_bets_done(self):
         # Prompt
         for bet in self.bet:
             bet.chips = []
         if GameInfo.game_type == form.GameTypeEnum.POKER:
-            self.refresh_poker_screen()
             self.change_screens(form.MenuScreenEnums.POKER_SCREEN)
         elif GameInfo.game_type == form.GameTypeEnum.BLACKJACK:
-            self.refresh_bj_screen()
             self.change_screens(form.MenuScreenEnums.BLACKJACK_SCREEN)
-        GameInfo.state = form.GameState.CARD_CHANGING
+        self.replace_button.setEnabled(True)
 
 
     def enable_second_bet(self):
@@ -804,7 +795,44 @@ class Menu(object):
     def handle_won(self, amount):
         pass
 
+    def popup_screen(self, title, text):
+        msg = QtWidgets.QMessageBox()
+        msg.setStyleSheet(self.menu_style_sheet)
+        msg.setWindowTitle(title)
+        msg.setText(text)
+        msg.setMinimumSize(400, 200)
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        x = msg.exec_()
+
+    def player_won_popup(self, winners):
+        msg = QtWidgets.QMessageBox()
+        msg.setWindowTitle('Winners')
+        msg.setMinimumSize(400, 200)
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        message = ''
+        for winner in winners:
+            player = form.GameWinnerVars(winner)
+            ClientInfo.logger.info('Player name: '+player.name)
+
+            message += f'{player.name}, '
+        message = f'{message} has won!'
+        ClientInfo.logger.info(message)
+        msg.setText(message)
+        x = msg.exec_()
+
+    def reset_game_loop(self):
+        GameInfo.state = form.GameState.LOOP
+        self.change_screens(form.MenuScreenEnums.WAITING_ROOM)
+        self.refresh_poker_screen()
+        self.refresh_bj_screen()
+        for bet in self.bet:
+            bet.chips = []
+
     def closed_event(self, event):
+        if ClientInfo.playing:
+            ClientInfo.tcpHandler.send_fold()
+        ClientInfo.tcpHandler.send_leave_game()
+        ClientInfo.tcpHandler.send_logout()
         ClientInfo.tcpHandler.lose_connection()
         raise RuntimeError
 
@@ -818,6 +846,11 @@ class ExtendedCard(QtWidgets.QLabel):
         self.suit = ''
         self.value = 0
         self.when_clicked = func
+        self.selected = False
+
+    def refresh_values(self):
+        self.suit = ''
+        self.value = 0
         self.selected = False
 
     def set_values(self, suit, value):
@@ -890,8 +923,6 @@ if __name__ == '__main__':
     ui = Menu()
     ui.setupUi(main)
 
-    # create_login = Login()
-    # create_game = CreateGame()
     import skel_client as tcp_client
 
     main.show()

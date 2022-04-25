@@ -29,7 +29,7 @@ def handle_login_requests(data):
                 response_data.message = 'Your login has been successful'
                 response_data.session_id = str(new_session.ID)
             else:
-                print('It already exists')
+                ServerData.logger.info('Login already exists')
                 response_data.message = 'User session already exists and is valid'
                 response_data.response_code = form.LoginResponseEnum.ERROR
         else:
@@ -44,7 +44,8 @@ def handle_login_requests(data):
 
 
 def handle_logout(session_id):
-    session.Session.delete_session(session_id)
+    if session_id:
+        session.Session.delete_session(session_id)
 
 
 def handle_create_game(data, session_id):
@@ -69,7 +70,6 @@ def handle_create_game(data, session_id):
 
 def handle_join_game(data, session_id):
     client_data = form.ClientJoinGame(data)
-    print(client_data.game_id)
     send_data = form.ServerJoinGame()
     try:
         game = Game.Games[client_data.game_id]
@@ -84,16 +84,22 @@ def handle_join_game(data, session_id):
             send_data.game_id = game.game_id
     except KeyError:
         send_data.response_code = form.JoinGameEnum.NOT_EXIST
-    print(f'game id: {send_data.game_id}, {client_data.game_id}')
+    ServerData.logger.info(f'game id: {send_data.game_id}, {client_data.game_id}')
     return [send_data.__dict__, client_data.game_id]
 
 
 def handle_leave_game(game_id, session_id):
-    game = Game.Games[game_id]
-    participant = Participant.Participants[session_id]
-    if participant in game.players:
-        game.remove_player(participant)
-    game.remove_participant(participant)
+    try:
+        game = Game.Games[game_id]
+        participant = Participant.Participants[session_id]
+        if participant in game.players:
+            game.remove_player(participant)
+        game.remove_participant(participant)
+        if not game.players:
+            ServerData.logger.info('Game deleted')
+            game.delete()
+    except KeyError:
+        pass
 
 
 def handle_ready_game(data, session_id):
@@ -213,7 +219,6 @@ def get_cards(game_id, session_id):
         player: Participant
         game: Game
         cards = player.vars.get_cards_format()
-        print(cards)
         send_data.response_code = form.GeneralEnum.SUCCESS
         send_data.cards = cards
     else:
@@ -270,14 +275,17 @@ def aggregate_lobby_list():
 
 
 def aggregate_player_list(game_id):
-    print(game_id)
-    game = Game.Games[game_id]
-    d = []
-    for player in game.present:
-        player: Participant
-        var = form.UpdatePlayerList()
-        var.player_name = player.username
-        if player in game.players:
-            var.ready = form.PlayerReadyEnum.TRUE
-        d.append(var.__dict__)
-    return d
+    ServerData.logger.info(f'Game: {game_id}')
+    try:
+        game = Game.Games[game_id]
+        d = []
+        for player in game.present:
+            player: Participant
+            var = form.UpdatePlayerList()
+            var.player_name = player.username
+            if player in game.players:
+                var.ready = form.PlayerReadyEnum.TRUE
+            d.append(var.__dict__)
+        return d
+    except KeyError:
+        pass

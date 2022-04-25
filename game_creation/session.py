@@ -72,7 +72,8 @@ class Session:
         this_session.remove_session()
 
     def remove_session(self):
-        del self.sessions[self._session_id]
+        # del self.sessions[self._session_id]
+        self.sessions.pop(self._session_id)
 
 
 def create_session(username):
@@ -87,15 +88,5 @@ def create_session(username):
         else:
             existing_session.remove_session()
     return Session(username)
-
-
-if __name__ == '__main__':
-    x = Session('alex')
-    f = Session('john')
-    getting = x.activity_time
-    time.sleep(3)
-    print(Session.sessions)
-    c = Session.get_session('alex')
-    print(c.activity_time)
 
 

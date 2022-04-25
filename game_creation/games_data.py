@@ -11,9 +11,6 @@ class Card:
         self.suit = suit
         self.value = value
 
-    def display(self):
-        print(f'{self.value} of {self.suit}')
-
     def return_card(self):
         return f'{self.value} of {self.suit}'
 
@@ -42,7 +39,7 @@ class Deck:
                 for i in ['Jack', 'Queen', 'King', 'Ace']:
                     self.cards.append(self.game_type(suit, i))
         random.shuffle(self.cards)
-        print(self.cards)
+        ServerData.logger.info(self.cards)
 
     def display(self):
         # Displays each card individually
@@ -82,13 +79,13 @@ class Participant:
 
 class ParticipantVariables:
     def __init__(self, deck):
-        self.money = 75
         self.hand = []
         self.bet_list = []
         self.deck = deck
         self.current_bet = 0
         self.has_bet = False
         self.all_in = False
+        self.played = True
 
     def make_bet(self, amount_list):
         bet_sum = sum(amount_list)
@@ -102,7 +99,7 @@ class ParticipantVariables:
 
     def get_cards_format(self):
         cards = []
-        print(self.hand)
+        ServerData.logger.info(f'Cards: {self.hand}')
         for card in self.hand:
             cards.append(card.__dict__)
         return cards
@@ -125,7 +122,6 @@ class PokerPlayerVariables(ParticipantVariables):
 
     def draw_cards(self):
         for _ in range(5):
-            print('card has been drawn')
             self.draw()
 
     def replace_cards(self, cards):
@@ -137,7 +133,7 @@ class PokerPlayerVariables(ParticipantVariables):
                 self.draw()
             self.has_replaced = True
         except ValueError:
-            print('Error with cards')
+            ServerData.logger.info('Card error')
 
     def calculate_player_score(self):
         # Calculates the score of all players
@@ -167,7 +163,7 @@ class PokerPlayerVariables(ParticipantVariables):
 
         else:
             pass
-        print(num_score)
+        ServerData.logger.info(f'Player score: {num_score}')
         return num_score
 
 
@@ -204,6 +200,9 @@ class Game:
     @staticmethod
     def create_game_id():
         return str(uuid4())
+
+    def delete(self):
+        self.Games.pop(self.game_id)
 
     def initialise_game(self):
         match self.game_type:
@@ -307,10 +306,10 @@ class GameVariables:
             player: Participant
             # self.bets.append(player.vars.current_bet)
             all_in_list.append([player.vars.current_bet, player.vars])
-        bets = sorted(all_in_list, reverse=True)
+        bets = sorted(all_in_list, key=lambda x: x[0], reverse=True)
         non_high_bets = [x[1] for x in bets if x[0] != bets[0][0]]
         for player in non_high_bets:
-            if not player.vars.all_in:
+            if not player.all_in:
                 return False
         return True
 
@@ -346,7 +345,7 @@ class GameVariables:
         for i in range(duple + 1):
             # Calculates all the winners and gives them their money
             winner = new[i][0]
-            print(winner)
+            ServerData.logger.info(winner)
             earnt_money = sum(self.pot) / (duple + 1)
             ServerData.logger.info(f'Earnt money: {earnt_money}')
             d = form.GameWinnerVars()

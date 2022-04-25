@@ -29,14 +29,3 @@ class DBManager:
         return sqlite3.connect(ServerConfig.db_path())
 
 
-if __name__ == '__main__':
-    x = DBManager()
-    r = x.get_user('Alex')
-    tester_tuple_list = [('john', 'bomb'), ('fomb', 'lomb')]
-    print(r)
-    f, g = zip(*r)
-    print(*f)
-    print(*g)
-    a, b = zip(*tester_tuple_list)
-    print(*a)
-    print(*b)
