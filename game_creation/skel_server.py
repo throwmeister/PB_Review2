@@ -141,6 +141,9 @@ f'message: {message}')
                         server_data, game_id = handler.handle_join_game(messages.data, messages.session_id)
                         self.send_join_game(server_data)
                         self.send_aggregate_player_list(game_id)
+                    case form.ClientRequestTypeEnum.LEAVE_GAME:
+                        handler.handle_leave_game(messages.data, messages.session_id)
+                        self.send_aggregate_player_list(messages.data)
                     case form.ClientRequestTypeEnum.READY_GAME:
                         server_data, game_id = handler.handle_ready_game(messages.data, messages.session_id)
                         self.send_ready_game(server_data)
@@ -179,7 +182,7 @@ f'message: {message}')
                             winners = handler.calculate_game_score(game_id)
                             self.send_winners(winners, game_id)
                     case form.ClientRequestTypeEnum.FOLD:
-                        handler.handle_fold(messages.data, messages.session_id)
+                        self.handle_fold(messages.data, messages.session_id)
                     case _:
                         pass
 
@@ -187,6 +190,30 @@ f'message: {message}')
                 print('Invalid session request')
                 self.invalid_session()
 
+    def handle_fold(self, data, session_id):
+        client_data = form.ClientFold(data)
+        pv_checker = handler.game_request_validation(session_id, client_data.game_id)
+        if pv_checker:
+            game, player = pv_checker
+            player: handler.Participant
+            game: handler.Game
+            game.remove_player(player)
+            match game.game_logic.state:
+                case form.GameState.BETTING:
+                    if handler.check_betting_complete(game):
+                        game.game_logic.state = form.GameState.CARD_CHANGING
+                        self.signal_state_change(game_id=client_data.game_id, state=form.GameState.CARD_CHANGING)
+                case form.GameState.BETTING_TWO:
+                    if handler.check_betting_complete(game):
+                        game.game_logic.state = form.GameState.CALCULATED
+                        winners = handler.calculate_game_score(client_data.game_id)
+                        self.send_winners(winners, client_data.game_id)
+                case form.GameState.CARD_CHANGING:
+                    if game.game_logic.check_all_replaced():
+                        game.game_logic.state = form.GameState.BETTING_TWO
+                        self.signal_state_change(client_data.game_id, form.GameState.BETTING_TWO)
+                case form.GameState.CALCULATED:
+                    ServerData.logger.info('Cannot fold in this state')
 
 class ServerProtocol(ServerFactory):
     def buildProtocol(self, addr):

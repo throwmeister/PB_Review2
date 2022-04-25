@@ -214,6 +214,7 @@ class Menu(object):
         self.bet_button.clicked.connect(self.bet_button_pressed)
         self.bet_again_button.clicked.connect(self.bet_again_button_clicked)
         self.fold_button.clicked.connect(self.fold_button_pressed)
+        self.leave_game_button.clicked.connect(self.leave_game_button_pressed)
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
@@ -664,6 +665,13 @@ class Menu(object):
 
         ClientInfo.tcpHandler.send_fold()
 
+    def leave_game_button_pressed(self):
+        ClientInfo.tcpHandler.send_leave_game()
+        self.change_screens(form.MenuScreenEnums.GAME_LIST)
+        self.refresh_bet_game()
+        self.refresh_bj_screen()
+        self.refresh_poker_screen()
+
     def change_screens(self, num):
         self.main_stack.setCurrentIndex(int(num))
 
@@ -747,11 +755,6 @@ class Menu(object):
         self.change_screens(form.MenuScreenEnums.BET_SCREEN)
         GameInfo.state = form.GameState.BETTING
         ClientInfo.logger.info('Opening bet screen...')
-
-    def refresh_bet_screen(self):
-        self.bet_edit.setText("")
-        self.amount_label.setText(f'Amount: {GameInfo.bet}')
-        self.bet_button.setEnabled(True)
 
     def bet_button_pressed(self):
         self.bet_button.setDisabled(True)

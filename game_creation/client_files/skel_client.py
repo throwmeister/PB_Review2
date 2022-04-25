@@ -101,6 +101,9 @@ class MainClient(Protocol):
         user_data.game_id = ClientInfo.game_id
         self.format_send_data(form.ClientRequestTypeEnum.FOLD, user_data)
 
+    def send_leave_game(self):
+        self.format_send_data(form.ClientRequestTypeEnum.LEAVE_GAME, ClientInfo.game_id)
+
     def format_send_data(self, request_type: form.ClientRequestTypeEnum, data=None):
         req = form.ClientRequestHeader()
         req.request_type = request_type

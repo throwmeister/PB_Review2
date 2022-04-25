@@ -39,6 +39,7 @@ class ClientRequestTypeEnum(str, Enum):
     FOLD = 13
 
 
+
 class ServerRequestTypeEnum(str, Enum):
     UNKNOWN = 0
     LOGIN_RESPONSE = 1
@@ -101,7 +102,7 @@ class GameState(str, Enum):
     BETTING = 1
     CARD_CHANGING = 2
     BETTING_TWO = 3
-    CALCULATING = 4
+    CALCULATED = 4
     LOOP = 5
 
 

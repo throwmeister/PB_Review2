@@ -88,6 +88,14 @@ def handle_join_game(data, session_id):
     return [send_data.__dict__, client_data.game_id]
 
 
+def handle_leave_game(game_id, session_id):
+    game = Game.Games[game_id]
+    participant = Participant.Participants[session_id]
+    if participant in game.players:
+        game.remove_player(participant)
+    game.remove_participant(participant)
+
+
 def handle_ready_game(data, session_id):
     client_data = form.ClientReadyGame(data)
     send_data = form.ServerReadyResponse()
@@ -182,6 +190,7 @@ def handle_input_bet(data, session_id):
 
     return [send_data.__dict__, client_data.game_id, complete]
 
+
 def check_betting_complete(game):
     complete = False
     if game.game_logic.check_all_bet() and game.game_logic.check_all_bets_equal():
@@ -190,10 +199,11 @@ def check_betting_complete(game):
             game.game_logic.add_bets_to_pot()
             game.game_logic.reset_bet_vars()
         elif game.game_logic.state == form.GameState.BETTING_TWO:
-            game.game_logic.set_state(form.GameState.CALCULATING)
+            game.game_logic.set_state(form.GameState.CALCULATED)
             game.game_logic.add_bets_to_pot()
         complete = True
     return complete
+
 
 def get_cards(game_id, session_id):
     send_data = form.ServerGetCards()
@@ -243,18 +253,6 @@ def calculate_game_score(game_id):
     winners = game.game_logic.calculate_winner()
 
     return winners
-
-def handle_fold(data, session_id):
-    client_data = form.ClientFold(data)
-    pv_checker = game_request_validation(session_id, client_data.game_id)
-    if pv_checker:
-        game, player = pv_checker
-        player: Participant
-        game: Game
-        game.remove_player(player)
-        match game.game_logic.state:
-            case form.GameState.BETTING:
-                check_betting_complete(game)
 
 
 def aggregate_lobby_list():
