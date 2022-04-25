@@ -1,6 +1,7 @@
 import shared_directory.data_format as form
 import session
 import random
+from server_info import ServerData
 from uuid import uuid4
 import pokerScoreCalculator as p_scoreCalc
 
@@ -81,15 +82,23 @@ class Participant:
 
 class ParticipantVariables:
     def __init__(self, deck):
-        self.money = 100
+        self.money = 75
         self.hand = []
+        self.bet_list = []
         self.deck = deck
-        self.prev_bets = 0
+        self.current_bet = 0
+        self.has_bet = False
+        self.all_in = False
 
-    def make_bet(self, amount):
-        amount -= self.prev_bets
-        self.money -= amount
-        self.prev_bets = amount
+    def make_bet(self, amount_list):
+        bet_sum = sum(amount_list)
+        if bet_sum < self.current_bet:
+            return False
+        self.bet_list = amount_list
+        self.current_bet = bet_sum
+        ServerData.logger.info(f'Current bet: {self.current_bet}')
+        self.has_bet = True
+        return True
 
     def get_cards_format(self):
         cards = []
@@ -98,8 +107,9 @@ class ParticipantVariables:
             cards.append(card.__dict__)
         return cards
 
-    def add_money(self, amount):
-        self.money += amount
+    def set_all_in(self, all_in):
+        if all_in == form.AllInEnum.YES:
+            self.all_in = True
 
     def draw(self):
         self.hand.append(self.deck.draw())
@@ -267,7 +277,7 @@ class Game:
 
 class GameVariables:
     def __init__(self, num_of_decks, game_cls):
-        self.pot = 0
+        self.pot = []
         self.deck = Deck(num_of_decks)
         self.player_scores = []
         self.state = form.GameState.SETUP
@@ -277,8 +287,44 @@ class GameVariables:
     def set_state(self, state):
         self.state = state
 
-    def add_to_pot(self, amount):
-        self.pot += amount
+    def check_all_bet(self):
+        for player in self.parent.players:
+            player: Participant
+            if not player.vars.has_bet:
+                return False
+        return True
+
+    def reset_bet_vars(self):
+        for player in self.parent.players:
+            player: Participant
+            player.vars.has_bet = False
+            player.vars.current_bet = 0
+
+    def check_all_bets_equal(self):
+        all_in_list = []
+
+        for player in self.parent.players:
+            player: Participant
+            # self.bets.append(player.vars.current_bet)
+            all_in_list.append([player.vars.current_bet, player.vars])
+        bets = sorted(all_in_list, reverse=True)
+        non_high_bets = [x[1] for x in bets if x[0] != bets[0][0]]
+        for player in non_high_bets:
+            if not player.vars.all_in:
+                return False
+        return True
+
+    def add_bets_to_pot(self):
+        for player in self.parent.players:
+            self.pot.extend(player.vars.bet_list)
+
+    def get_bet_values(self):
+        d = []
+        for player in self.parent.players:
+            player: Participant
+            d.append([player.username, player.vars.current_bet])
+        return d
+
 
     def calculate_scores(self):
         pass
@@ -301,10 +347,10 @@ class GameVariables:
             # Calculates all the winners and gives them their money
             winner = new[i][0]
             print(winner)
-            earnt_money = self.pot / (duple + 1)
-            winner.vars.add_money(earnt_money)
+            earnt_money = sum(self.pot) / (duple + 1)
+            ServerData.logger.info(f'Earnt money: {earnt_money}')
             d = form.GameWinnerVars()
-            d.winnings = earnt_money
+            d.winnings = self.pot
             d.session = winner.session_id
             d.name = winner.username
 

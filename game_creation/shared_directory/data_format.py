@@ -36,6 +36,7 @@ class ClientRequestTypeEnum(str, Enum):
     SEND_CARDS = 10
     SIGNAL_START = 11
     SEND_BET_TWO = 12
+    FOLD = 13
 
 
 class ServerRequestTypeEnum(str, Enum):
@@ -54,6 +55,7 @@ class ServerRequestTypeEnum(str, Enum):
     REPLACED_CARDS = 12
     SIGNAL_START = 13
     GAME_WINNERS = 14
+    BET_LIST = 15
 
 
 class GameTypeEnum(str, Enum):
@@ -101,6 +103,12 @@ class GameState(str, Enum):
     BETTING_TWO = 3
     CALCULATING = 4
     LOOP = 5
+
+
+class AllInEnum(str, Enum):
+    UNKNOWN = 0
+    NO = 1
+    YES = 2
 
 
 class ClientRequestHeader:
@@ -284,10 +292,12 @@ class ClientSendBet:
     def __init__(self, data=None):
         if data:
             self.game_id = data['game_id']
+            self.all_in = data['all_in']
             self.bet = data['bet']
         else:
             self.game_id = ''
             self.bet = 0
+            self.all_in = AllInEnum.UNKNOWN
 
 
 class ServerBetResponse:
@@ -338,6 +348,14 @@ class GameWinnerVars:
             self.session = ''
             self.winnings = 0
             self.name = ''
+
+
+class ClientFold:
+    def __init__(self, data=None):
+        if data:
+            self.game_id = data['game_id']
+        else:
+            self.game_id = ''
 
 def version_number():
     return '1.0'

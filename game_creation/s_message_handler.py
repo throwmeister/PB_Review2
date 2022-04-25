@@ -1,6 +1,6 @@
 import builtins
 import session
-from games_data import Game, Participant, ParticipantVariables
+from games_data import Game, Participant
 import shared_directory.data_format as form
 from gamerserver_data import DBManager
 from configuration_protocol import ServerConfig
@@ -155,6 +155,11 @@ def begin_game(game_instance: Game):
     game_instance.game_logic.set_state(form.GameState.BETTING)
 
 
+def get_bets(game_id):
+    game = Game.Games[game_id]
+    return game.game_logic.get_bet_values()
+
+
 def handle_input_bet(data, session_id):
     client_data = form.ClientSendBet(data)
     send_data = form.ServerBetResponse()
@@ -164,22 +169,31 @@ def handle_input_bet(data, session_id):
         game, player = pv_checker
         player: Participant
         game: Game
-        player.vars.make_bet(client_data.bet)
-        # For now not full betting system
-        game.game_logic.has_bet += 1
-        if game.game_logic.has_bet == game.num_playing:
-            if game.game_logic.state == form.GameState.BETTING:
-                game.game_logic.set_state(form.GameState.CARD_CHANGING)
-                game.game_logic.has_bet = 0
-            elif game.game_logic.state == form.GameState.BETTING_TWO:
-                game.game_logic.set_state(form.GameState.CALCULATING)
-            complete = True
-        send_data.response_code = form.GeneralEnum.SUCCESS
+        bet_result = player.vars.make_bet(client_data.bet)
+        if bet_result:
+            player.vars.set_all_in(client_data.all_in)
+            if check_betting_complete(game):
+                complete = True
+            send_data.response_code = form.GeneralEnum.SUCCESS
+        else:
+            send_data.response_code = form.GeneralEnum.ERROR
     else:
         send_data.response_code = form.GeneralEnum.ERROR
 
     return [send_data.__dict__, client_data.game_id, complete]
 
+def check_betting_complete(game):
+    complete = False
+    if game.game_logic.check_all_bet() and game.game_logic.check_all_bets_equal():
+        if game.game_logic.state == form.GameState.BETTING:
+            game.game_logic.set_state(form.GameState.CARD_CHANGING)
+            game.game_logic.add_bets_to_pot()
+            game.game_logic.reset_bet_vars()
+        elif game.game_logic.state == form.GameState.BETTING_TWO:
+            game.game_logic.set_state(form.GameState.CALCULATING)
+            game.game_logic.add_bets_to_pot()
+        complete = True
+    return complete
 
 def get_cards(game_id, session_id):
     send_data = form.ServerGetCards()
@@ -229,6 +243,18 @@ def calculate_game_score(game_id):
     winners = game.game_logic.calculate_winner()
 
     return winners
+
+def handle_fold(data, session_id):
+    client_data = form.ClientFold(data)
+    pv_checker = game_request_validation(session_id, client_data.game_id)
+    if pv_checker:
+        game, player = pv_checker
+        player: Participant
+        game: Game
+        game.remove_player(player)
+        match game.game_logic.state:
+            case form.GameState.BETTING:
+                check_betting_complete(game)
 
 
 def aggregate_lobby_list():

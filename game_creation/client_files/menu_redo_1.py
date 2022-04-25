@@ -213,7 +213,7 @@ class Menu(object):
         self.start_game_button.clicked.connect(self.start_game_clicked)
         self.bet_button.clicked.connect(self.bet_button_pressed)
         self.bet_again_button.clicked.connect(self.bet_again_button_clicked)
-        self.tester_button()
+        self.fold_button.clicked.connect(self.fold_button_pressed)
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
@@ -241,6 +241,7 @@ class Menu(object):
         self.replace_button.setText(_translate("Form", "Replace: 0"))
         self.fold_button.setText(_translate("Form", "Fold"))
         self.leave_ingame_button.setText(_translate("Form", "Leave Game"))
+        self.bet_again_button.setText(_translate("Dialog", "Second Bet"))
         self.bank_balance.setText(_translate("Dialog", "Balance: 75"))
         self.bank_counter_red.setText(_translate("Dialog", "b_r"))
         self.bank_counter_blue.setText(_translate("Dialog", "b_blu"))
@@ -252,6 +253,7 @@ class Menu(object):
         self.bet_counter_brown.setText(_translate("Dialog", "b_br"))
         self.bet_counter_black.setText(_translate("Dialog", "b_bla"))
         self.bet_fold_button.setText(_translate("Dialog", "Fold"))
+        self.change_chips.setText(_translate("Dialog", 'Change Chips'))
         self.bet_button.setText(_translate("Dialog", "Bet"))
 
     def add_bet_stack(self):
@@ -259,7 +261,7 @@ class Menu(object):
         self.red_chip_icon = "images/chips/red_chip.png"
         self.blue_chip_icon = "images/chips/blue_chip.png"
         self.brown_chip_icon = "images/chips/brown_chip.png"
-        self.black_chip_icon = "images/chips/black_chip"
+        self.black_chip_icon = "images/chips/black_chip.png"
         self.bet_vert_layout = QtWidgets.QVBoxLayout(self.bet_stack)
         self.bet_vert_layout.setObjectName("verticalLayout_2")
         self.bet_vert_layout2 = QtWidgets.QVBoxLayout()
@@ -409,6 +411,8 @@ class Menu(object):
         self.bet_list = QtWidgets.QListWidget(self.bet_stack)
         self.bet_list.setObjectName("bet_list")
         self.bet_vert_layout.addWidget(self.bet_list)
+        self.change_chips = QtWidgets.QPushButton(self.bet_stack)
+        self.bet_vert_layout.addWidget(self.change_chips)
         self.bet_fold_button = QtWidgets.QPushButton(self.bet_stack)
         self.bet_fold_button.setObjectName("bet_fold_button")
         self.bet_vert_layout.addWidget(self.bet_fold_button)
@@ -426,7 +430,7 @@ class Menu(object):
         self.chip_dict[self.bank_brown_chip] = self.bet_brown_chip
         self.chip_dict[self.bank_black_chip] = self.bet_black_chip
 
-        # self.refresh_bet_game()
+        self.refresh_bet_game()
 
         self.main_stack.addWidget(self.bet_stack)
 
@@ -439,7 +443,7 @@ class Menu(object):
         self.bank_counter_blue.setText(_translate("Dialog", "5"))
         self.bank_counter_brown.setText(_translate("Dialog", "5"))
         self.bank_counter_black.setText(_translate("Dialog", "5"))
-        self.bet_balance.setText(_translate("Dialog", f"Betting: {self.bank_balance_var}"))
+        self.bet_balance.setText(_translate("Dialog", f"Betting: {self.bet_balance_var}"))
         self.bet_counter_red.setText(_translate("Dialog", "0"))
         self.bet_counter_blue.setText(_translate("Dialog", "0"))
         self.bet_counter_brown.setText(_translate("Dialog", "0"))
@@ -455,6 +459,8 @@ class Menu(object):
 
         self.bank = [self.bank_red_chip, self.bank_blue_chip, self.bank_brown_chip, self.bank_black_chip]
         self.bet = [self.bet_red_chip, self.bet_blue_chip, self.bet_brown_chip, self.bet_black_chip]
+
+        self.bet_list_vars = []
 
         print('ran refresh')
         print(self.bank)
@@ -477,25 +483,9 @@ class Menu(object):
         elif modifiers == QtCore.Qt.NoModifier and button == QtCore.Qt.RightButton:
             print('wtf')
 
-
-    '''
-    def bet_chip_clicked(self, event, chip_obj):
-        button = event.button()
-        modifiers = event.modifiers()
-        if modifiers == QtCore.Qt.NoModifier and button == QtCore.Qt.LeftButton:
-            chip_obj: Chips
-            bet_chip = self.chip_dict[chip_obj]
-            bet_chip: Chips
-            chip = chip_obj.chips.pop()
-            bet_chip.add_chip(chip)
-            self.update_chip_balance()
-            '''
-
     def update_chip_balance(self):
-
         self.bank_balance_var = 0
         self.bet_balance_var = 0
-
 
         for bank in self.bank:
             for chip in bank.chips:
@@ -667,6 +657,13 @@ class Menu(object):
         self.selected_game = items.data(5, 0)
         print(self.selected_game)
 
+    def fold_button_pressed(self):
+        ClientInfo.playing = False
+        self.change_screens(form.MenuScreenEnums.WAITING_ROOM)
+        self.playing_checkbox.setChecked(False)
+
+        ClientInfo.tcpHandler.send_fold()
+
     def change_screens(self, num):
         self.main_stack.setCurrentIndex(int(num))
 
@@ -747,7 +744,6 @@ class Menu(object):
     def setup_game(self, gtype):
         ClientInfo.logger.info('Setting up game')
         GameInfo.set_initial_values(gtype)
-        self.refresh_bet_screen()
         self.change_screens(form.MenuScreenEnums.BET_SCREEN)
         GameInfo.state = form.GameState.BETTING
         ClientInfo.logger.info('Opening bet screen...')
@@ -757,38 +753,41 @@ class Menu(object):
         self.amount_label.setText(f'Amount: {GameInfo.bet}')
         self.bet_button.setEnabled(True)
 
-
     def bet_button_pressed(self):
         self.bet_button.setDisabled(True)
-        try:
-            self.amount = int(self.bet_edit.text())
-            if 0 <= self.amount < GameInfo.bet:
-                ClientInfo.logger.info('Sending bet amount')
-                ClientInfo.tcpHandler.send_bet(self.amount)
-            else:
-                self.bet_button.setDisabled(False)
-                ClientInfo.logger.error('Invalid amount')
-        except ValueError:
-            self.bet_button.setDisabled(False)
-            ClientInfo.logger.error('Invalid character')
+        chips = []
+        all_in = False
+        for bet in self.bet:
+            for chip in bet.chips:
+                chips.append(chip.monetary_value)
+        if self.bank_balance == 0:
+            all_in = True
+        ClientInfo.tcpHandler.send_bet(chips, all_in)
+
+    def set_bet_list(self, data):
+        self.bet_list.clear()
+        for player_vars in data:
+            self.bet_list.addItem(f"{player_vars[0]}'s current bet: {player_vars[1]}")
 
     def bet_success(self):
-        GameInfo.bet -= self.amount
+        self.bet_button.setEnabled(True)
         ClientInfo.tcpHandler.request_cards()
+
+    def all_bets_done(self):
+        # Prompt
+        for bet in self.bet:
+            bet.chips = []
         if GameInfo.game_type == form.GameTypeEnum.POKER:
             self.refresh_poker_screen()
             self.change_screens(form.MenuScreenEnums.POKER_SCREEN)
         elif GameInfo.game_type == form.GameTypeEnum.BLACKJACK:
             self.refresh_bj_screen()
             self.change_screens(form.MenuScreenEnums.BLACKJACK_SCREEN)
-
-    def all_bets_done(self):
-        # Prompt
         GameInfo.state = form.GameState.CARD_CHANGING
+
 
     def enable_second_bet(self):
         self.bet_again_button.setEnabled(True)
-        self.refresh_bet_screen()
 
     def bet_error(self):
         ClientInfo.logger.info('Bet error')
@@ -796,6 +795,7 @@ class Menu(object):
 
     def bet_again_button_clicked(self):
         self.bet_again_button.setDisabled(True)
+        self.update_chip_balance()
         self.change_screens(form.MenuScreenEnums.BET_SCREEN)
 
     def handle_won(self, amount):

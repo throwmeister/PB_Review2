@@ -54,7 +54,9 @@ class MainServer(Protocol):
         self.queue_message(form.game_exchange_name(), game_id, d)
 
     def send_new_bet(self, game_id):
-        pass
+        bets = handler.get_bets(game_id)
+        d = self.format_send_data(form.ServerRequestTypeEnum.BET_LIST, bets)
+        self.queue_message(form.game_exchange_name(), game_id, d)
 
     def send_bet_response(self, data):
         d = self.format_send_data(form.ServerRequestTypeEnum.BET_RESPONSE, data)
@@ -176,6 +178,8 @@ f'message: {message}')
                         if complete:
                             winners = handler.calculate_game_score(game_id)
                             self.send_winners(winners, game_id)
+                    case form.ClientRequestTypeEnum.FOLD:
+                        handler.handle_fold(messages.data, messages.session_id)
                     case _:
                         pass
 

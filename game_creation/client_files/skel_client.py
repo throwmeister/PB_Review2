@@ -75,10 +75,13 @@ class MainClient(Protocol):
     def request_start_signal(self):
         self.format_send_data(form.ClientRequestTypeEnum.SIGNAL_START)
 
-    def send_bet(self, amount):
+    def send_bet(self, amount, all_in):
         user_data = form.ClientSendBet()
         user_data.bet = amount
         user_data.game_id = ClientInfo.game_id
+        user_data.all_in = form.AllInEnum.NO
+        if all_in:
+            user_data.all_in = form.AllInEnum.YES
         if GameInfo.state == form.GameState.BETTING:
             self.format_send_data(form.ClientRequestTypeEnum.SEND_BET, user_data)
         elif GameInfo.state == form.GameState.BETTING_TWO:
@@ -92,6 +95,11 @@ class MainClient(Protocol):
         user_data.game_id = ClientInfo.game_id
         user_data.cards = cards
         self.format_send_data(form.ClientRequestTypeEnum.SEND_CARDS, user_data)
+
+    def send_fold(self):
+        user_data = form.ClientFold()
+        user_data.game_id = ClientInfo.game_id
+        self.format_send_data(form.ClientRequestTypeEnum.FOLD, user_data)
 
     def format_send_data(self, request_type: form.ClientRequestTypeEnum, data=None):
         req = form.ClientRequestHeader()
@@ -344,6 +352,8 @@ def mq_data_received(ch, method, properties, body):
             state_handler(message.data)
         case form.ServerRequestTypeEnum.GAME_WINNERS:
             winner_calculation_response(message.data)
+        case form.ServerRequestTypeEnum.BET_LIST:
+            ClientInfo.main_gui.set_bet_list(message.data)
 
 
 def state_handler(data):

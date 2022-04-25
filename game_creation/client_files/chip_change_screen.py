@@ -1,7 +1,5 @@
-
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+from client_data import ClientInfo, GameInfo
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -85,28 +83,34 @@ class Ui_Dialog(object):
         self.bank_red_chip.setMinimumSize(QtCore.QSize(100, 100))
         self.bank_red_chip.setMaximumSize(QtCore.QSize(100, 100))
         self.bank_red_chip.setText("")
-        self.bank_red_chip.setPixmap(QtGui.QPixmap("C:/Users/alexa/Documents/POKER_BLACKJACK_UIS\\../../Downloads/PngItem_1441202.png"))
+        self.red_chip_icon = "images/chips/red_chip.png"
+        self.blue_chip_icon = "images/chips/blue_chip.png"
+        self.brown_chip_icon = "images/chips/brown_chip.png"
+        self.black_chip_icon = "images/chips/black_chip.png"
+        self.right_arrow_icon = "images/arrow_right.png"
+        self.left_arrow_icon = "images/arrow_left.png"
+        self.bank_red_chip.setPixmap(QtGui.QPixmap(self.red_chip_icon))
         self.bank_red_chip.setScaledContents(True)
         self.bank_red_chip.setObjectName("bank_red_chip")
         self.horizontalLayout_2.addWidget(self.bank_red_chip)
         self.bank_blue_chip = QtWidgets.QLabel(Dialog)
         self.bank_blue_chip.setMaximumSize(QtCore.QSize(100, 100))
         self.bank_blue_chip.setText("")
-        self.bank_blue_chip.setPixmap(QtGui.QPixmap("C:/Users/alexa/Documents/POKER_BLACKJACK_UIS\\../../Downloads/PngItem_292913.png"))
+        self.bank_blue_chip.setPixmap(QtGui.QPixmap(self.blue_chip_icon))
         self.bank_blue_chip.setScaledContents(True)
         self.bank_blue_chip.setObjectName("bank_blue_chip")
         self.horizontalLayout_2.addWidget(self.bank_blue_chip)
         self.bank_brown_chip = QtWidgets.QLabel(Dialog)
         self.bank_brown_chip.setMaximumSize(QtCore.QSize(100, 100))
         self.bank_brown_chip.setText("")
-        self.bank_brown_chip.setPixmap(QtGui.QPixmap("C:/Users/alexa/Documents/POKER_BLACKJACK_UIS\\../../Downloads/brown_chip.png"))
+        self.bank_brown_chip.setPixmap(QtGui.QPixmap(self.brown_chip_icon))
         self.bank_brown_chip.setScaledContents(True)
         self.bank_brown_chip.setObjectName("bank_brown_chip")
         self.horizontalLayout_2.addWidget(self.bank_brown_chip)
         self.bank_black_chip = QtWidgets.QLabel(Dialog)
         self.bank_black_chip.setMaximumSize(QtCore.QSize(100, 100))
         self.bank_black_chip.setText("")
-        self.bank_black_chip.setPixmap(QtGui.QPixmap("C:/Users/alexa/Documents/POKER_BLACKJACK_UIS\\../../Downloads/black_chip.png"))
+        self.bank_black_chip.setPixmap(QtGui.QPixmap(self.black_chip_icon))
         self.bank_black_chip.setScaledContents(True)
         self.bank_black_chip.setObjectName("bank_black_chip")
         self.horizontalLayout_2.addWidget(self.bank_black_chip)
@@ -119,7 +123,7 @@ class Ui_Dialog(object):
         self.label_10 = QtWidgets.QLabel(Dialog)
         self.label_10.setMaximumSize(QtCore.QSize(100, 100))
         self.label_10.setText("")
-        self.label_10.setPixmap(QtGui.QPixmap("C:/Users/alexa/Documents/POKER_BLACKJACK_UIS\\arrow_right.png"))
+        self.label_10.setPixmap(QtGui.QPixmap(self.right_arrow_icon))
         self.label_10.setScaledContents(True)
         self.label_10.setObjectName("label_10")
         self.verticalLayout_3.addWidget(self.label_10, 0, QtCore.Qt.AlignRight)
@@ -136,7 +140,7 @@ class Ui_Dialog(object):
         self.label_3 = QtWidgets.QLabel(Dialog)
         self.label_3.setMaximumSize(QtCore.QSize(100, 100))
         self.label_3.setText("")
-        self.label_3.setPixmap(QtGui.QPixmap("C:/Users/alexa/Documents/POKER_BLACKJACK_UIS\\arrow_right.png"))
+        self.label_3.setPixmap(QtGui.QPixmap(self.right_arrow_icon))
         self.label_3.setScaledContents(True)
         self.label_3.setObjectName("label_3")
         self.verticalLayout_4.addWidget(self.label_3, 0, QtCore.Qt.AlignHCenter)
@@ -153,14 +157,14 @@ class Ui_Dialog(object):
         self.label_2 = QtWidgets.QLabel(Dialog)
         self.label_2.setMaximumSize(QtCore.QSize(100, 100))
         self.label_2.setText("")
-        self.label_2.setPixmap(QtGui.QPixmap("C:/Users/alexa/Documents/POKER_BLACKJACK_UIS\\arrow_right.png"))
+        self.label_2.setPixmap(QtGui.QPixmap(self.right_arrow_icon))
         self.label_2.setScaledContents(True)
         self.label_2.setObjectName("label_2")
         self.verticalLayout_5.addWidget(self.label_2, 0, QtCore.Qt.AlignLeft)
         self.label_13 = QtWidgets.QLabel(Dialog)
         self.label_13.setMaximumSize(QtCore.QSize(100, 100))
         self.label_13.setText("")
-        self.label_13.setPixmap(QtGui.QPixmap("C:/Users/alexa/Documents/POKER_BLACKJACK_UIS\\arrow_left.png"))
+        self.label_13.setPixmap(QtGui.QPixmap(self.right_arrow_icon))
         self.label_13.setScaledContents(True)
         self.label_13.setObjectName("label_13")
         self.verticalLayout_5.addWidget(self.label_13, 0, QtCore.Qt.AlignLeft)
@@ -177,6 +181,7 @@ class Ui_Dialog(object):
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
+
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
         self.label.setText(_translate("Dialog", "Convert"))
