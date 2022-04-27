@@ -228,6 +228,8 @@ class Menu(object):
         self.bj_bet_again_button.clicked.connect(self.bet_again_button_clicked)
         self.bj_hold_button.clicked.connect(self.hold_button_clicked)
         self.bj_hit_button.clicked.connect(self.hit_button_clicked)
+        self.change_chips.clicked.connect(lambda _: self.change_screens(form.MenuScreenEnums.POKER_SCREEN))
+
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
@@ -831,14 +833,19 @@ class Menu(object):
 
     def all_bets_done(self):
         # Prompt
+        ClientInfo.logger.info('Stop 1')
         for bet in self.bet:
             bet.chips = []
+        ClientInfo.logger.info('Stop 2')
+        self.update_chip_balance()
         if GameInfo.game_type == form.GameTypeEnum.POKER:
-            self.change_screens(form.MenuScreenEnums.POKER_SCREEN)
+            ClientInfo.logger.info('Stop 3')
+            self.main_stack.setCurrentIndex(form.MenuScreenEnums.POKER_SCREEN)
+            ClientInfo.logger.info('Stop 4')
         elif GameInfo.game_type == form.GameTypeEnum.BLACKJACK:
             self.change_screens(form.MenuScreenEnums.BLACKJACK_SCREEN)
         self.p_replace_button.setEnabled(True)
-
+        ClientInfo.logger.info('Stop 5')
 
     def enable_second_bet(self):
         self.p_bet_again_button.setEnabled(True)

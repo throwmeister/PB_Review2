@@ -365,8 +365,8 @@ def state_handler(data):
         match data:
             case form.GameState.CARD_CHANGING:
                 ClientInfo.logger.info('Betting section complete')
-                ClientInfo.main_gui.all_bets_done()
                 GameInfo.state = form.GameState.CARD_CHANGING
+                ClientInfo.main_gui.all_bets_done()
                 # ClientInfo.tcpHandler.request_cards()
             case form.GameState.BETTING_TWO:
                 GameInfo.state = form.GameState.BETTING_TWO
