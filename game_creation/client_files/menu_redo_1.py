@@ -228,7 +228,7 @@ class Menu(object):
         self.bj_bet_again_button.clicked.connect(self.bet_again_button_clicked)
         self.bj_hold_button.clicked.connect(self.hold_button_clicked)
         self.bj_hit_button.clicked.connect(self.hit_button_clicked)
-        self.change_chips.clicked.connect(lambda _: self.change_screens(form.MenuScreenEnums.POKER_SCREEN))
+        self.see_hand_button.clicked.connect(lambda _: self.change_screens(form.MenuScreenEnums.POKER_SCREEN))
 
 
     def retranslateUi(self, Form):
@@ -268,7 +268,7 @@ class Menu(object):
         self.bet_counter_brown.setText(_translate("Dialog", "b_br"))
         self.bet_counter_black.setText(_translate("Dialog", "b_bla"))
         self.bet_fold_button.setText(_translate("Dialog", "Fold"))
-        self.change_chips.setText(_translate("Dialog", 'Change Chips'))
+        self.see_hand_button.setText(_translate("Dialog", 'See hand'))
         self.bet_button.setText(_translate("Dialog", "Bet"))
         self.bj_fold_button.setText(_translate('Form', 'Fold'))
         self.bj_hold_button.setText(_translate('Form', 'Hold'))
@@ -426,8 +426,8 @@ class Menu(object):
         self.bet_list = QtWidgets.QListWidget(self.bet_stack)
         self.bet_list.setObjectName("bet_list")
         self.bet_vert_layout.addWidget(self.bet_list)
-        self.change_chips = QtWidgets.QPushButton(self.bet_stack)
-        self.bet_vert_layout.addWidget(self.change_chips)
+        self.see_hand_button = QtWidgets.QPushButton(self.bet_stack)
+        self.bet_vert_layout.addWidget(self.see_hand_button)
         self.bet_fold_button = QtWidgets.QPushButton(self.bet_stack)
         self.bet_fold_button.setObjectName("bet_fold_button")
         self.bet_vert_layout.addWidget(self.bet_fold_button)
@@ -438,6 +438,7 @@ class Menu(object):
         self.bet_hz_layout.addWidget(self.bet_button, 0, QtCore.Qt.AlignBottom)
         self.bet_vert_layout.addLayout(self.bet_hz_layout)
 
+
         self.chip_dict = TwoWayDict()
 
         self.chip_dict[self.bank_red_chip] = self.bet_red_chip
@@ -446,6 +447,7 @@ class Menu(object):
         self.chip_dict[self.bank_black_chip] = self.bet_black_chip
 
         self.refresh_bet_game()
+
         self.main_stack.addWidget(self.bet_stack)
 
     def refresh_bet_game(self):
@@ -470,6 +472,8 @@ class Menu(object):
         self.bet_blue_chip.setup_chips(0)
         self.bet_brown_chip.setup_chips(0)
         self.bet_black_chip.setup_chips(0)
+
+        self.see_hand_button.setDisabled(True)
 
         self.bank = [self.bank_red_chip, self.bank_blue_chip, self.bank_brown_chip, self.bank_black_chip]
         self.bet = [self.bet_red_chip, self.bet_blue_chip, self.bet_brown_chip, self.bet_black_chip]
@@ -840,7 +844,7 @@ class Menu(object):
         self.update_chip_balance()
         if GameInfo.game_type == form.GameTypeEnum.POKER:
             ClientInfo.logger.info('Stop 3')
-            self.main_stack.setCurrentIndex(form.MenuScreenEnums.POKER_SCREEN)
+            self.see_hand_button.setEnabled(True)
             ClientInfo.logger.info('Stop 4')
         elif GameInfo.game_type == form.GameTypeEnum.BLACKJACK:
             self.change_screens(form.MenuScreenEnums.BLACKJACK_SCREEN)
