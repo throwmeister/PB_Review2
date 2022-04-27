@@ -7,15 +7,10 @@ def list_of_hand(hand, card_access):
 
 
 def calculate(hand):
-    score = 0
     score = sum(hand)
 
     if score > 21:
         if 11 in hand:
-            score -= 10
             hand.remove(11)
-            calculate(hand)
-        else:
-            return -1
-    else:
-        return score
+            return calculate(hand)+1
+    return score

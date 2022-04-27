@@ -252,6 +252,22 @@ def replace_cards(data, session_id):
     return [send_data.__dict__, client_data.game_id, complete]
 
 
+def handle_hit_request(session_id, game_id):
+
+    pv_checker = game_request_validation(session_id, game_id)
+
+    if pv_checker:
+        game, player = pv_checker
+        player: Participant
+        game: Game
+        if player.vars.hold:
+            # error
+            pass
+
+        player.vars.hit()
+
+        cards = player.vars.get_cards_format()
+
 def calculate_game_score(game_id):
     game = Game.Games[game_id]
     game.game_logic.calculate_scores()

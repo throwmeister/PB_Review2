@@ -162,7 +162,7 @@ f'message: {message}')
                     case form.ClientRequestTypeEnum.REQUEST_CARDS:
                         server_data = handler.get_cards(messages.data, messages.session_id)
                         self.send_cards(server_data)
-                    case form.ClientRequestTypeEnum.SEND_CARDS:
+                    case form.ClientRequestTypeEnum.POKER_SEND_CARDS:
                         server_data, game_id, complete = handler.replace_cards(messages.data, messages.session_id)
                         self.send_new_cards(server_data)
                         if complete:
@@ -184,6 +184,8 @@ f'message: {message}')
                             self.send_winners(winners, game_id)
                     case form.ClientRequestTypeEnum.FOLD:
                         self.handle_fold(messages.data, messages.session_id)
+                    case form.ClientRequestTypeEnum.BLACKJACK_HIT:
+                        server_data, game_id, complete = handler.handle_hit_request()
                     case _:
                         pass
 

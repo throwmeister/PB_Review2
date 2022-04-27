@@ -1,9 +1,12 @@
+import abc
+
 import shared_directory.data_format as form
 import session
 import random
 from server_info import ServerData
 from uuid import uuid4
 import pokerScoreCalculator as p_scoreCalc
+import blackjackScoreCalculator as b_scoreCalc
 
 
 class Card:
@@ -78,6 +81,7 @@ class Participant:
 
 
 class ParticipantVariables:
+
     def __init__(self, deck):
         self.hand = []
         self.bet_list = []
@@ -114,8 +118,28 @@ class ParticipantVariables:
     def remove(self, card):
         self.hand.remove(card)
 
+    @abc.abstractmethod
+    def calculate_player_score(self):
+        pass
+
 
 class PokerPlayerVariables(ParticipantVariables):
+    card_access = {
+        '3': 3,
+        '2': 2,
+        '4': 4,
+        '5': 5,
+        '6': 6,
+        '7': 7,
+        '8': 8,
+        '9': 9,
+        '10': 10,
+        'Jack': 11,
+        'Queen': 12,
+        'King': 13,
+        'Ace': 14
+    }
+
     def __init__(self, deck):
         self.has_replaced = False
         super().__init__(deck)
@@ -138,22 +162,7 @@ class PokerPlayerVariables(ParticipantVariables):
     def calculate_player_score(self):
         # Calculates the score of all players
 
-        card_access = {
-            '3': 3,
-            '2': 2,
-            '4': 4,
-            '5': 5,
-            '6': 6,
-            '7': 7,
-            '8': 8,
-            '9': 9,
-            '10': 10,
-            'Jack': 11,
-            'Queen': 12,
-            'King': 13,
-            'Ace': 14
-        }
-        cards = p_scoreCalc.list_of_values(self.hand, card_access)
+        cards = p_scoreCalc.list_of_values(self.hand, self.card_access)
         num_score = p_scoreCalc.value_calc(cards)
         if num_score == 0:
             flush = p_scoreCalc.suit_calc(self.hand)
@@ -168,6 +177,22 @@ class PokerPlayerVariables(ParticipantVariables):
 
 
 class BlackjackPlayerVariables(ParticipantVariables):
+    card_access = {
+        '2': 2,
+        '3': 3,
+        '4': 4,
+        '5': 5,
+        '6': 6,
+        '7': 7,
+        '8': 8,
+        '9': 9,
+        '10': 10,
+        'Jack': 10,
+        'Queen': 10,
+        'King': 10,
+        'Ace': 11
+    }
+
     def __init__(self, deck):
         super().__init__(deck)
         self.hold = False
@@ -176,8 +201,17 @@ class BlackjackPlayerVariables(ParticipantVariables):
         for _ in range(2):
             self.draw()
 
-    def add_card(self):
-        pass
+    def hit(self):
+        self.draw()
+
+    def hold(self):
+        self.hold = True
+
+    def calculate_player_score(self):
+        hand = b_scoreCalc.list_of_hand(self.hand, self.card_access)
+        score = b_scoreCalc.calculate(hand)
+        ServerData.logger.info(f'Player score: {score}')
+        return score
 
 
 class Game:
@@ -378,6 +412,12 @@ class Blackjack(GameVariables):
     def __init__(self, game_cls):
         super().__init__(5, game_cls)
 
+    def check_all_hold(self):
+        for player in self.parent.players:
+            player: Participant
+            if not player.vars.hold:
+                return False
+        return True
 
 '''
     def set_logic(self):

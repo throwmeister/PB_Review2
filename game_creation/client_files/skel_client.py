@@ -94,7 +94,7 @@ class MainClient(Protocol):
         user_data = form.ClientSendCards()
         user_data.game_id = ClientInfo.game_id
         user_data.cards = cards
-        self.format_send_data(form.ClientRequestTypeEnum.SEND_CARDS, user_data)
+        self.format_send_data(form.ClientRequestTypeEnum.POKER_SEND_CARDS, user_data)
 
     def send_fold(self):
         user_data = form.ClientFold()
@@ -103,6 +103,9 @@ class MainClient(Protocol):
 
     def send_leave_game(self):
         self.format_send_data(form.ClientRequestTypeEnum.LEAVE_GAME, ClientInfo.game_id)
+
+    def send_hit(self):
+        self.format_send_data(form.ClientRequestTypeEnum.BLACKJACK_HIT, ClientInfo.game_id)
 
     def format_send_data(self, request_type: form.ClientRequestTypeEnum, data=None):
         req = form.ClientRequestHeader()

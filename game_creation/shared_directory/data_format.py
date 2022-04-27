@@ -33,11 +33,12 @@ class ClientRequestTypeEnum(str, Enum):
     START_GAME = 7
     SEND_BET = 8
     REQUEST_CARDS = 9
-    SEND_CARDS = 10
+    POKER_SEND_CARDS = 10
     SIGNAL_START = 11
     SEND_BET_TWO = 12
     FOLD = 13
-
+    BLACKJACK_HIT = 14
+    BLACKJACK_HOLD = 15
 
 
 class ServerRequestTypeEnum(str, Enum):
@@ -57,6 +58,8 @@ class ServerRequestTypeEnum(str, Enum):
     SIGNAL_START = 13
     GAME_WINNERS = 14
     BET_LIST = 15
+    HIT_RESPONSE = 16
+    HOLD_RESPONSE = 17
 
 
 class GameTypeEnum(str, Enum):

@@ -121,3 +121,5 @@ print(x)
 f = [g[1] for g in x if g[0] != x[0][0]]
 print(f)
 
+if -1:
+    print('hehehehehweduiqwfiwnbvjhsfnvsdnvjsncvoasnvjsvbo njf')
