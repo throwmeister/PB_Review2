@@ -531,7 +531,7 @@ class Menu(object):
         self.verticalLayout23.addWidget(self.EMPTY)
         self.horizontalLayout22 = QtWidgets.QHBoxLayout()
         self.horizontalLayout22.setObjectName("horizontalLayout")
-        self.p_card1 = ExtendedCard(self.poker_screen, self.card_clicked)
+        self.p_card1 = ExtendedPokerCard(self.poker_screen, self.card_clicked)
         self.p_card1.setMinimumSize(QtCore.QSize(200, 100))
         self.p_card1.setMaximumSize(QtCore.QSize(200, 300))
         self.p_card1.setText("")
@@ -539,28 +539,28 @@ class Menu(object):
         self.p_card1.setScaledContents(True)
         self.p_card1.setObjectName("label_4")
         self.horizontalLayout22.addWidget(self.p_card1, 0, QtCore.Qt.AlignVCenter)
-        self.p_card2 = ExtendedCard(self.poker_screen, self.card_clicked)
+        self.p_card2 = ExtendedPokerCard(self.poker_screen, self.card_clicked)
         self.p_card2.setMaximumSize(QtCore.QSize(200, 300))
         self.p_card2.setText("")
         self.p_card2.setPixmap(QtGui.QPixmap(self.back_card))
         self.p_card2.setScaledContents(True)
         self.p_card2.setObjectName("label_3")
         self.horizontalLayout22.addWidget(self.p_card2, 0, QtCore.Qt.AlignVCenter)
-        self.p_card3 = ExtendedCard(self.poker_screen, self.card_clicked)
+        self.p_card3 = ExtendedPokerCard(self.poker_screen, self.card_clicked)
         self.p_card3.setMaximumSize(QtCore.QSize(200, 300))
         self.p_card3.setText("")
         self.p_card3.setPixmap(QtGui.QPixmap(self.back_card))
         self.p_card3.setScaledContents(True)
         self.p_card3.setObjectName("label_6")
         self.horizontalLayout22.addWidget(self.p_card3, 0, QtCore.Qt.AlignVCenter)
-        self.p_card4 = ExtendedCard(self.poker_screen, self.card_clicked)
+        self.p_card4 = ExtendedPokerCard(self.poker_screen, self.card_clicked)
         self.p_card4.setMaximumSize(QtCore.QSize(200, 300))
         self.p_card4.setText("")
         self.p_card4.setPixmap(QtGui.QPixmap(self.back_card))
         self.p_card4.setScaledContents(True)
         self.p_card4.setObjectName("label_5")
         self.horizontalLayout22.addWidget(self.p_card4, 0, QtCore.Qt.AlignVCenter)
-        self.p_card5 = ExtendedCard(self.poker_screen, self.card_clicked)
+        self.p_card5 = ExtendedPokerCard(self.poker_screen, self.card_clicked)
         self.p_card5.setMaximumSize(QtCore.QSize(200, 300))
         self.p_card5.setText("")
         self.p_card5.setPixmap(QtGui.QPixmap(self.back_card))
@@ -601,10 +601,32 @@ class Menu(object):
             card.setPixmap(QtGui.QPixmap(self.back_card))
 
     def refresh_blackjack_screen(self):
-        for card in self.bj_card_list:
-            card.refresh_values()
-            card.setPixmap(QtGui.QPixmap(self.back_card))
+        self.clear_layout(self.card_horizontal_layout)
+        self.bj_card1 = ExtendedCard(self.blackjack_screen)
+        self.bj_card1.setMinimumSize(QtCore.QSize(200, 100))
+        self.bj_card1.setMaximumSize(QtCore.QSize(200, 300))
+        self.bj_card1.setText("")
+        self.bj_card1.setPixmap(QtGui.QPixmap(self.back_card))
+        self.bj_card1.setScaledContents(True)
+        self.bj_card1.setObjectName("label_4")
+        self.card_horizontal_layout.addWidget(self.bj_card1, 0, QtCore.Qt.AlignVCenter)
+        self.bj_card2 = ExtendedCard(self.blackjack_screen)
+        self.bj_card2.setMaximumSize(QtCore.QSize(200, 300))
+        self.bj_card2.setText("")
+        self.bj_card2.setPixmap(QtGui.QPixmap(self.back_card))
+        self.bj_card2.setScaledContents(True)
+        self.bj_card2.setObjectName("label_3")
+        self.card_horizontal_layout.addWidget(self.bj_card2, 0, QtCore.Qt.AlignVCenter)
+        self.card_horizontal_layout.addWidget(self.bj_card2)
+        self.bj_card_list = [self.bj_card1, self.bj_card2]
         self.bj_hit_button.setEnabled(True)
+
+    @staticmethod
+    def clear_layout(layout):
+        while layout.count():
+            child = layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
 
     def add_blackjack_stack(self):
         self.blackjack_screen = QtWidgets.QWidget()
@@ -617,24 +639,24 @@ class Menu(object):
         self.EMPTY_2.setAlignment(QtCore.Qt.AlignCenter)
         self.EMPTY_2.setObjectName("label")
         self.bj_vertL_2.addWidget(self.EMPTY_2)
-        self.bj_horL_1 = QtWidgets.QHBoxLayout()
-        self.bj_horL_1.setObjectName("horizontalLayout")
-        self.bj_card1 = ExtendedCard(self.blackjack_screen, self.card_clicked)
+        self.card_horizontal_layout = QtWidgets.QHBoxLayout()
+        self.card_horizontal_layout.setObjectName("horizontalLayout")
+        self.bj_card1 = ExtendedCard(self.blackjack_screen)
         self.bj_card1.setMinimumSize(QtCore.QSize(200, 100))
         self.bj_card1.setMaximumSize(QtCore.QSize(200, 300))
         self.bj_card1.setText("")
         self.bj_card1.setPixmap(QtGui.QPixmap(self.back_card))
         self.bj_card1.setScaledContents(True)
         self.bj_card1.setObjectName("label_4")
-        self.bj_horL_1.addWidget(self.bj_card1, 0, QtCore.Qt.AlignVCenter)
-        self.bj_card2 = ExtendedCard(self.blackjack_screen, self.card_clicked)
+        self.card_horizontal_layout.addWidget(self.bj_card1, 0, QtCore.Qt.AlignVCenter)
+        self.bj_card2 = ExtendedCard(self.blackjack_screen)
         self.bj_card2.setMaximumSize(QtCore.QSize(200, 300))
         self.bj_card2.setText("")
         self.bj_card2.setPixmap(QtGui.QPixmap(self.back_card))
         self.bj_card2.setScaledContents(True)
         self.bj_card2.setObjectName("label_3")
-        self.bj_horL_1.addWidget(self.bj_card2, 0, QtCore.Qt.AlignVCenter)
-        self.bj_vertL_2.addLayout(self.bj_horL_1)
+        self.card_horizontal_layout.addWidget(self.bj_card2, 0, QtCore.Qt.AlignVCenter)
+        self.bj_vertL_2.addLayout(self.card_horizontal_layout)
         '''
         self.make_bet_button = QtWidgets.QPushButton(self.game_screen)
         self.verticalLayout23.addWidget(self.make_bet_button)
@@ -668,7 +690,7 @@ class Menu(object):
         button = event.button()
         modifiers = event.modifiers()
         if modifiers == QtCore.Qt.NoModifier and button == QtCore.Qt.LeftButton:
-            card_obj: ExtendedCard
+            card_obj: ExtendedPokerCard
             if GameInfo.state == form.GameState.CARD_CHANGING:
                 if card_obj.selected:
                     ClientInfo.logger.info('Deselecting')
@@ -678,12 +700,16 @@ class Menu(object):
                     card_obj.select_card()
                     if len(GameInfo.replace_list) == 4:
                         removed_card = GameInfo.replace_list[0]
-                        removed_card: ExtendedCard
+                        removed_card: ExtendedPokerCard
                         removed_card.deselect_card()
                 self.p_replace_button.setText(f'Replace: {len(GameInfo.replace_list)}')
 
     def add_card_to_list(self):
-        self.bj_card_list.append(ExtendedCard())
+        temp_card = ExtendedCard(self.blackjack_screen)
+        temp_card.setMaximumSize(QtCore.QSize(200, 300))
+        temp_card.setScaledContents(True)
+        self.card_horizontal_layout.addWidget(temp_card, 0, QtCore.Qt.AlignVCenter)
+        self.bj_card_list.append(temp_card)
 
     def set_cards(self, cards):
         # self.current_cards = cards
@@ -706,7 +732,7 @@ class Menu(object):
         ClientInfo.logger.info(f'Current replace list: {GameInfo.replace_list}')
         for card in GameInfo.replace_list:
             card.setStyleSheet('')
-            card: ExtendedCard
+            card: ExtendedPokerCard
             d = form.ExtractCard()
             d.suit = card.suit
             d.value = card.value
@@ -886,7 +912,9 @@ class Menu(object):
 
     def player_holding(self):
         self.bj_hit_button.setDisabled(True)
-        self.popup_screen('Hit response', 'You have gone bust')
+
+    def hold_failed(self):
+        self.bj_hold_button.setEnabled(True)
 
     def handle_won(self, amount):
         pass
@@ -909,7 +937,7 @@ class Menu(object):
             player = form.GameWinnerVars(winner)
             ClientInfo.logger.info('Player name: '+player.name)
 
-            message += f'{player.name}, '
+            message += f'{player.name},'
         message = f'{message} has won!'
         ClientInfo.logger.info(message)
         msg.setText(message)
@@ -933,25 +961,31 @@ class Menu(object):
 
 
 class ExtendedCard(QtWidgets.QLabel):
-    selected_style_sheet = '''background-color: #ebc17a;
-                border: 6px groove #d9a143;'''
 
-    def __init__(self, form, func):
+    def __init__(self, form):
         super(ExtendedCard, self).__init__(form)
         self.suit = ''
         self.value = 0
-        self.when_clicked = func
-        self.selected = False
+
+    def set_values(self, suit, value):
+        self.suit = suit
+        self.value = value
+        self.setPixmap(QtGui.QPixmap(f'images/PNG-cards-1.3/{value}_of_{suit.lower()}.png'))
 
     def refresh_values(self):
         self.suit = ''
         self.value = 0
         self.selected = False
 
-    def set_values(self, suit, value):
-        self.suit = suit
-        self.value = value
-        self.setPixmap(QtGui.QPixmap(f'images/PNG-cards-1.3/{value}_of_{suit.lower()}.png'))
+
+class ExtendedPokerCard(ExtendedCard):
+    selected_style_sheet = '''background-color: #ebc17a;
+                border: 6px groove #d9a143;'''
+
+    def __init__(self, form, func):
+        super(ExtendedPokerCard, self).__init__(form)
+        self.when_clicked = func
+        self.selected = False
 
     def mouseReleaseEvent(self, ev):
         self.when_clicked(ev, self)

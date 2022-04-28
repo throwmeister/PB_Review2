@@ -123,3 +123,5 @@ print(f)
 
 if -1:
     print('hehehehehweduiqwfiwnbvjhsfnvsdnvjsncvoasnvjsvbo njf')
+
+json.loads('gggggggg')

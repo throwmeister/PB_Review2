@@ -87,6 +87,10 @@ class MainServer(Protocol):
         d = self.format_send_data(form.ServerRequestTypeEnum.HIT_RESPONSE, data)
         self.tcp_send_data(d)
 
+    def send_hold_response(self, data):
+        d = self.format_send_data(form.ServerRequestTypeEnum.HOLD_RESPONSE, data)
+        self.tcp_send_data(d)
+
     @staticmethod
     def format_send_data(request_type, data=None):
         req = form.ServerRequestHeader()
@@ -123,85 +127,89 @@ f'message: {message}')
         remove = [x for x in sp_data if x]
         for d in remove:
             ServerData.logger.info(f'Received data: {d}')
-            messages = form.ClientRequestHeader(d)
-            if messages.request_type == form.ClientRequestTypeEnum.LOGIN_REQUEST:
-                server_data = handler.handle_login_requests(messages.data)
-                self.login(server_data)
-                self.send_aggregate_lobby()
-            # Validate session updates the activity timer. Therefore, no need to call it for the keep alive
-            elif session.Session.validate_session(messages.session_id):
-                match messages.request_type:
-                    case form.ClientRequestTypeEnum.KEEP_ALIVE:
-                        ServerData.logger.info(f'keep alive message received from {messages.session_id}: {messages.data}')
-                    case form.ClientRequestTypeEnum.LOGOUT_REQUEST:
-                        session.Session.delete_session(messages.session_id)
-                    case form.ClientRequestTypeEnum.CREATE_GAME:
-                        list_d = handler.handle_create_game(messages.data, messages.session_id)
-                        server_data, game_id = list_d
-                        self.send_create_game(server_data)
-                        self.send_aggregate_lobby()
-                        self.send_aggregate_player_list(game_id)
-                    case form.ClientRequestTypeEnum.JOIN_GAME:
-                        server_data, game_id = handler.handle_join_game(messages.data, messages.session_id)
-                        self.send_join_game(server_data)
-                        self.send_aggregate_player_list(game_id)
-                    case form.ClientRequestTypeEnum.LEAVE_GAME:
-                        handler.handle_leave_game(messages.data, messages.session_id)
-                        self.send_aggregate_player_list(messages.data)
-                        self.send_aggregate_lobby()
-                    case form.ClientRequestTypeEnum.READY_GAME:
-                        server_data, game_id = handler.handle_ready_game(messages.data, messages.session_id)
-                        self.send_ready_game(server_data)
-                        self.send_aggregate_player_list(game_id)
-                    case form.ClientRequestTypeEnum.START_GAME:
-                        server_data, game_id = handler.handle_start_game(messages.data, messages.session_id)
-                        self.send_start_game(data=server_data, game_id=game_id)
-                    case form.ClientRequestTypeEnum.SEND_BET:
-                        ServerData.logger.info('Bet received')
-                        server_data, game_id, complete = handler.handle_input_bet(messages.data, messages.session_id)
-                        self.send_bet_response(server_data)
-                        self.send_new_bet(game_id)
-                        if complete:
-                            self.signal_state_change(game_id=game_id, state=form.GameState.CARD_CHANGING)
-                    case form.ClientRequestTypeEnum.REQUEST_CARDS:
-                        server_data = handler.get_cards(messages.data, messages.session_id)
-                        self.send_cards(server_data)
-                    case form.ClientRequestTypeEnum.POKER_SEND_CARDS:
-                        server_data, game_id, complete = handler.replace_cards(messages.data, messages.session_id)
-                        self.send_new_cards(server_data)
-                        if complete:
-                            self.signal_state_change(game_id, form.GameState.BETTING_TWO)
-                    case form.ClientRequestTypeEnum.SIGNAL_START:
-                        ServerData.logger.info('Received signal start')
-                        self.send_signal_start()
-                    case form.ClientRequestTypeEnum.SEND_BET_TWO:
-                        server_data, game_id, complete = handler.handle_input_bet(messages.data, messages.session_id)
-                        self.send_bet_response(server_data)
-                        self.send_new_bet(game_id)
-                        if complete:
-                            winners = handler.calculate_game_score(game_id)
-                            self.send_winners(winners, game_id)
-                    case form.ClientRequestTypeEnum.FOLD:
-                        self.handle_fold(messages.data, messages.session_id)
-                    case form.ClientRequestTypeEnum.BLACKJACK_HIT:
-                        server_data, complete = handler.handle_hit_request(session_id=messages.session_id,
-                                                                           game_id=messages.data)
-                        self.send_hit_response(server_data)
-                        if complete:
-                            self.signal_state_change(messages.data, form.GameState.BETTING_TWO)
-
-                    case form.ClientRequestTypeEnum.BLACKJACK_HOLD:
-                        server_data, complete = handler.handle_hold_request(session_id=messages.session_id,
-                                                                            game_id=messages.data)
-                        self.tcp_send_data(server_data)
-                        if complete:
-                            self.signal_state_change(messages.data, form.GameState.BETTING_TWO)
-                    case _:
-                        pass
-
+            try:
+                messages = form.ClientRequestHeader(d)
+            except json.decoder.JSONDecodeError:
+                ServerData.logger.error('Invalid data sent')
             else:
-                ServerData.logger.info('Invalid session request')
-                self.invalid_session()
+                if messages.request_type == form.ClientRequestTypeEnum.LOGIN_REQUEST:
+                    server_data = handler.handle_login_requests(messages.data)
+                    self.login(server_data)
+                    self.send_aggregate_lobby()
+                # Validate session updates the activity timer. Therefore, no need to call it for the keep alive
+                elif session.Session.validate_session(messages.session_id):
+                    match messages.request_type:
+                        case form.ClientRequestTypeEnum.KEEP_ALIVE:
+                            ServerData.logger.info(f'keep alive message received from {messages.session_id}: {messages.data}')
+                        case form.ClientRequestTypeEnum.LOGOUT_REQUEST:
+                            session.Session.delete_session(messages.session_id)
+                        case form.ClientRequestTypeEnum.CREATE_GAME:
+                            list_d = handler.handle_create_game(messages.data, messages.session_id)
+                            server_data, game_id = list_d
+                            self.send_create_game(server_data)
+                            self.send_aggregate_lobby()
+                            self.send_aggregate_player_list(game_id)
+                        case form.ClientRequestTypeEnum.JOIN_GAME:
+                            server_data, game_id = handler.handle_join_game(messages.data, messages.session_id)
+                            self.send_join_game(server_data)
+                            self.send_aggregate_player_list(game_id)
+                        case form.ClientRequestTypeEnum.LEAVE_GAME:
+                            handler.handle_leave_game(messages.data, messages.session_id)
+                            self.send_aggregate_player_list(messages.data)
+                            self.send_aggregate_lobby()
+                        case form.ClientRequestTypeEnum.READY_GAME:
+                            server_data, game_id = handler.handle_ready_game(messages.data, messages.session_id)
+                            self.send_ready_game(server_data)
+                            self.send_aggregate_player_list(game_id)
+                        case form.ClientRequestTypeEnum.START_GAME:
+                            server_data, game_id = handler.handle_start_game(messages.data, messages.session_id)
+                            self.send_start_game(data=server_data, game_id=game_id)
+                        case form.ClientRequestTypeEnum.SEND_BET:
+                            ServerData.logger.info('Bet received')
+                            server_data, game_id, complete = handler.handle_input_bet(messages.data, messages.session_id)
+                            self.send_bet_response(server_data)
+                            self.send_new_bet(game_id)
+                            if complete:
+                                self.signal_state_change(game_id=game_id, state=form.GameState.CARD_CHANGING)
+                        case form.ClientRequestTypeEnum.REQUEST_CARDS:
+                            server_data = handler.get_cards(messages.data, messages.session_id)
+                            self.send_cards(server_data)
+                        case form.ClientRequestTypeEnum.POKER_SEND_CARDS:
+                            server_data, game_id, complete = handler.replace_cards(messages.data, messages.session_id)
+                            self.send_new_cards(server_data)
+                            if complete:
+                                self.signal_state_change(game_id, form.GameState.BETTING_TWO)
+                        case form.ClientRequestTypeEnum.SIGNAL_START:
+                            ServerData.logger.info('Received signal start')
+                            self.send_signal_start()
+                        case form.ClientRequestTypeEnum.SEND_BET_TWO:
+                            server_data, game_id, complete = handler.handle_input_bet(messages.data, messages.session_id)
+                            self.send_bet_response(server_data)
+                            self.send_new_bet(game_id)
+                            if complete:
+                                winners = handler.calculate_game_score(game_id)
+                                self.send_winners(winners, game_id)
+                        case form.ClientRequestTypeEnum.FOLD:
+                            self.handle_fold(messages.data, messages.session_id)
+                        case form.ClientRequestTypeEnum.BLACKJACK_HIT:
+                            server_data, complete = handler.handle_hit_request(session_id=messages.session_id,
+                                                                               game_id=messages.data)
+                            self.send_hit_response(server_data)
+                            if complete:
+                                self.signal_state_change(messages.data, form.GameState.BETTING_TWO)
+
+                        case form.ClientRequestTypeEnum.BLACKJACK_HOLD:
+                            server_data, complete = handler.handle_hold_request(session_id=messages.session_id,
+                                                                                game_id=messages.data)
+                            self.send_hold_response(server_data)
+                            if complete:
+                                self.signal_state_change(messages.data, form.GameState.BETTING_TWO)
+                        case _:
+                            pass
+
+                else:
+                    ServerData.logger.info('Invalid session request')
+                    self.invalid_session()
 
     def handle_fold(self, data, session_id):
         client_data = form.ClientFold(data)
@@ -222,11 +230,19 @@ f'message: {message}')
                         winners = handler.calculate_game_score(client_data.game_id)
                         self.send_winners(winners, client_data.game_id)
                 case form.GameState.CARD_CHANGING:
-                    if game.game_logic.check_all_replaced():
-                        game.game_logic.state = form.GameState.BETTING_TWO
-                        self.signal_state_change(client_data.game_id, form.GameState.BETTING_TWO)
+                    if game.game_type == form.GameTypeEnum.BLACKJACK:
+                        if game.game_logic.check_all_hold():
+                            ServerData.logger.info('All players have held')
+                            game.game_logic.state = form.GameState.BETTING_TWO
+                            self.signal_state_change(client_data.game_id, form.GameState.BETTING_TWO)
+                    elif game.game_type == form.GameTypeEnum.POKER:
+                        if game.game_logic.check_all_replaced():
+                            ServerData.logger.info('All players have replaced')
+                            game.game_logic.state = form.GameState.BETTING_TWO
+                            self.signal_state_change(client_data.game_id, form.GameState.BETTING_TWO)
                 case form.GameState.CALCULATED:
                     ServerData.logger.info('Cannot fold in this state')
+
 
 class ServerProtocol(ServerFactory):
     def buildProtocol(self, addr):

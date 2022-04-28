@@ -201,10 +201,10 @@ class BlackjackPlayerVariables(ParticipantVariables):
         for _ in range(2):
             self.draw()
 
-    def hit(self):
+    def player_hit(self):
         self.draw()
 
-    def hold(self):
+    def player_hold(self):
         self.hold = True
 
     def calculate_player_score(self):

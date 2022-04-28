@@ -241,10 +241,11 @@ def replace_cards(data, session_id):
         cards = player.vars.get_cards_format()
         send_data.cards = cards
         send_data.response_code = form.GeneralEnum.SUCCESS
-        if game.game_logic.check_all_replaced():
-            ServerData.logger.info('All players have replaced')
-            complete = True
-            game.game_logic.state = form.GameState.BETTING_TWO
+        if game.game_type == form.GameTypeEnum.POKER:
+            if game.game_logic.check_all_replaced():
+                ServerData.logger.info('All players have replaced')
+                complete = True
+                game.game_logic.state = form.GameState.BETTING_TWO
 
     else:
         send_data.response_code = form.GeneralEnum.ERROR
@@ -262,11 +263,11 @@ def handle_hit_request(session_id, game_id):
         player: Participant
         game: Game
         if not player.vars.hold:
-            player.vars.hit()
+            player.vars.player_hit()
             score = player.vars.calculate_player_score()
             if score > 21:
                 send_data.response_code = form.HitEnum.BUST
-                player.vars.hold()
+                player.vars.player_hold()
             else:
                 send_data.response_code = form.HitEnum.HIT_SUCCESS
             send_data.cards = player.vars.get_cards_format()
@@ -278,17 +279,18 @@ def handle_hit_request(session_id, game_id):
     return [send_data.__dict__, complete]
 
 
-def handle_hold_response(session_id, game_id):
+def handle_hold_request(session_id, game_id):
     pv_checker = game_request_validation(session_id, game_id)
     complete = False
-    send_data = form.GeneralEnum.ERROR
+    send_data = form.ServerHoldResponse()
+    send_data.response_code = form.GeneralEnum.ERROR
     if pv_checker:
         game, player = pv_checker
         player: Participant
         game: Game
         if not player.vars.hold:
-            player.vars.hold()
-            send_data = form.GeneralEnum.SUCCESS
+            player.vars.player_hold()
+            send_data.response_code = form.GeneralEnum.SUCCESS
 
         if game.game_logic.check_all_hold():
             ServerData.logger.info('All players done')

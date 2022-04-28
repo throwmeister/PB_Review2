@@ -379,6 +379,14 @@ class ServerHitResponse:
             self.cards = None
 
 
+class ServerHoldResponse:
+    def __init__(self, data=None):
+        if data:
+            self.response_code = data['response_code']
+        else:
+            self.response_code = GeneralEnum.UNKNOWN_ERROR
+
+
 def version_number():
     return '1.0'
 

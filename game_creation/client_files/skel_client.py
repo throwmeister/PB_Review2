@@ -158,6 +158,8 @@ class MainClient(Protocol):
                     ClientInfo.main_gui.setup_game()
                 case form.ServerRequestTypeEnum.HIT_RESPONSE:
                     self.handle_hit_response(message.data)
+                case form.ServerRequestTypeEnum.HOLD_RESPONSE:
+                    self.handle_hold_response(message.data)
                 case _:
                     # Invalid command
                     pass
@@ -283,7 +285,8 @@ class MainClient(Protocol):
         else:
             ClientInfo.logger.info('UNKNOWN ERROR')
 
-    def handle_replaced_cards(self, data):
+    @staticmethod
+    def handle_replaced_cards(data):
         response_data = form.ServerGetCards(data)
         if response_data.response_code == form.GeneralEnum.SUCCESS:
             ClientInfo.logger.info('Cards replaced successfully')
@@ -291,19 +294,34 @@ class MainClient(Protocol):
         elif response_data.response_code == form.GeneralEnum.ERROR:
             ClientInfo.logger.info('Error with card request')
 
-    def handle_hit_response(self, data):
+    @staticmethod
+    def handle_hit_response(data):
         response_data = form.ServerHitResponse(data)
         if response_data.response_code == form.HitEnum.HIT_SUCCESS:
             ClientInfo.logger.info('Hit - no bust')
+            ClientInfo.main_gui.add_card_to_list()
             ClientInfo.main_gui.set_cards(response_data.cards)
-            ClientInfo.main_gui.hit_received()
+            ClientInfo.main_gui.hit_response()
+            ClientInfo.main_gui.popup_screen('Hit response', 'Success')
         elif response_data.response_code == form.HitEnum.BUST:
             ClientInfo.logger.info('Hit - bust!')
+            ClientInfo.main_gui.add_card_to_list()
             ClientInfo.main_gui.set_cards(response_data.cards)
             ClientInfo.main_gui.player_holding()
+            ClientInfo.main_gui.popup_screen('Hit response', 'You have gone bust')
         else:
             ClientInfo.logger.error('Error with hit')
             ClientInfo.main_gui.hit_received()
+
+    @staticmethod
+    def handle_hold_response(data):
+        data = form.ServerHoldResponse(data)
+        match data.response_code:
+            case form.GeneralEnum.SUCCESS:
+                ClientInfo.main_gui.player_holding()
+            case form.GeneralEnum.ERROR:
+                ClientInfo.logger.error('An has occurred holding')
+                ClientInfo.main_gui.hold_failed()
 
     def stop_reactor(self):
         self.loop.stop()
@@ -422,7 +440,7 @@ def winner_calculation_response(winners):
             ClientInfo.logger.info(f'Winner: {player.name}')
             if player.session == ClientInfo.session_id:
                 ClientInfo.main_gui.handle_won(player.winnings)
-        # ClientInfo.main_gui.player_won_popup(winners)
+        ClientInfo.main_gui.player_won_popup(winners)
         ClientInfo.main_gui.reset_game_loop()
 
 
