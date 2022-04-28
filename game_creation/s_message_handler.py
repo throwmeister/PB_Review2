@@ -253,20 +253,49 @@ def replace_cards(data, session_id):
 
 
 def handle_hit_request(session_id, game_id):
-
     pv_checker = game_request_validation(session_id, game_id)
-
+    complete = False
+    send_data = form.ServerHitResponse()
+    send_data.response_code = form.HitEnum.INVALID_REQUEST
     if pv_checker:
         game, player = pv_checker
         player: Participant
         game: Game
-        if player.vars.hold:
-            # error
-            pass
+        if not player.vars.hold:
+            player.vars.hit()
+            score = player.vars.calculate_player_score()
+            if score > 21:
+                send_data.response_code = form.HitEnum.BUST
+                player.vars.hold()
+            else:
+                send_data.response_code = form.HitEnum.HIT_SUCCESS
+            send_data.cards = player.vars.get_cards_format()
 
-        player.vars.hit()
+            if game.game_logic.check_all_hold():
+                ServerData.logger.info('All players are done')
+                complete = True
 
-        cards = player.vars.get_cards_format()
+    return [send_data.__dict__, complete]
+
+
+def handle_hold_response(session_id, game_id):
+    pv_checker = game_request_validation(session_id, game_id)
+    complete = False
+    send_data = form.GeneralEnum.ERROR
+    if pv_checker:
+        game, player = pv_checker
+        player: Participant
+        game: Game
+        if not player.vars.hold:
+            player.vars.hold()
+            send_data = form.GeneralEnum.SUCCESS
+
+        if game.game_logic.check_all_hold():
+            ServerData.logger.info('All players done')
+            complete = True
+
+    return [send_data.__dict__, complete]
+
 
 def calculate_game_score(game_id):
     game = Game.Games[game_id]

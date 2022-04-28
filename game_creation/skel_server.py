@@ -83,6 +83,10 @@ class MainServer(Protocol):
         d = self.format_send_data(form.ServerRequestTypeEnum.GAME_WINNERS, winners)
         self.queue_message(form.game_exchange_name(), game_id, d)
 
+    def send_hit_response(self, data):
+        d = self.format_send_data(form.ServerRequestTypeEnum.HIT_RESPONSE, data)
+        self.tcp_send_data(d)
+
     @staticmethod
     def format_send_data(request_type, data=None):
         req = form.ServerRequestHeader()
@@ -167,11 +171,6 @@ f'message: {message}')
                         self.send_new_cards(server_data)
                         if complete:
                             self.signal_state_change(game_id, form.GameState.BETTING_TWO)
-                        '''
-                        if complete:
-                            winners = handler.calculate_game_score(game_id)
-                            self.send_winners(winners, game_id)
-                            '''
                     case form.ClientRequestTypeEnum.SIGNAL_START:
                         ServerData.logger.info('Received signal start')
                         self.send_signal_start()
@@ -185,7 +184,18 @@ f'message: {message}')
                     case form.ClientRequestTypeEnum.FOLD:
                         self.handle_fold(messages.data, messages.session_id)
                     case form.ClientRequestTypeEnum.BLACKJACK_HIT:
-                        server_data, game_id, complete = handler.handle_hit_request()
+                        server_data, complete = handler.handle_hit_request(session_id=messages.session_id,
+                                                                           game_id=messages.data)
+                        self.send_hit_response(server_data)
+                        if complete:
+                            self.signal_state_change(messages.data, form.GameState.BETTING_TWO)
+
+                    case form.ClientRequestTypeEnum.BLACKJACK_HOLD:
+                        server_data, complete = handler.handle_hold_request(session_id=messages.session_id,
+                                                                            game_id=messages.data)
+                        self.tcp_send_data(server_data)
+                        if complete:
+                            self.signal_state_change(messages.data, form.GameState.BETTING_TWO)
                     case _:
                         pass
 

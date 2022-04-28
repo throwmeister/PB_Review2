@@ -107,6 +107,9 @@ class MainClient(Protocol):
     def send_hit(self):
         self.format_send_data(form.ClientRequestTypeEnum.BLACKJACK_HIT, ClientInfo.game_id)
 
+    def send_hold(self):
+        self.format_send_data(form.ClientRequestTypeEnum.BLACKJACK_HOLD, ClientInfo.game_id)
+
     def format_send_data(self, request_type: form.ClientRequestTypeEnum, data=None):
         req = form.ClientRequestHeader()
         req.request_type = request_type
@@ -153,6 +156,8 @@ class MainClient(Protocol):
                     self.handle_replaced_cards(message.data)
                 case form.ServerRequestTypeEnum.SIGNAL_START:
                     ClientInfo.main_gui.setup_game()
+                case form.ServerRequestTypeEnum.HIT_RESPONSE:
+                    self.handle_hit_response(message.data)
                 case _:
                     # Invalid command
                     pass
@@ -285,6 +290,25 @@ class MainClient(Protocol):
             ClientInfo.main_gui.set_cards(response_data.cards)
         elif response_data.response_code == form.GeneralEnum.ERROR:
             ClientInfo.logger.info('Error with card request')
+
+    def handle_hit_response(self, data):
+        response_data = form.ServerHitResponse(data)
+        if response_data.response_code == form.HitEnum.HIT_SUCCESS:
+            ClientInfo.logger.info('Hit - no bust')
+            ClientInfo.main_gui.set_cards(response_data.cards)
+            ClientInfo.main_gui.hit_received()
+        elif response_data.response_code == form.HitEnum.BUST:
+            ClientInfo.logger.info('Hit - bust!')
+            ClientInfo.main_gui.set_cards(response_data.cards)
+            ClientInfo.main_gui.player_holding()
+        else:
+            ClientInfo.logger.error('Error with hit')
+            ClientInfo.main_gui.hit_received()
+
+    def stop_reactor(self):
+        self.loop.stop()
+        ClientInfo.logger.info('reactor stopped')
+        reactor.stop()
 
     def lose_connection(self):
         self.transport.loseConnection()

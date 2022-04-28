@@ -274,6 +274,7 @@ class Menu(object):
         self.bj_hold_button.setText(_translate('Form', 'Hold'))
         self.bj_hit_button.setText(_translate('Form', 'Hit'))
         self.bj_leave_ingame_button.setText(_translate('Form', 'Leave Game'))
+        self.bj_bet_again_button.setText(_translate('Form', 'Second bet'))
 
     def add_bet_stack(self):
         self.bet_stack = QtWidgets.QWidget()
@@ -599,6 +600,12 @@ class Menu(object):
             card.refresh_values()
             card.setPixmap(QtGui.QPixmap(self.back_card))
 
+    def refresh_blackjack_screen(self):
+        for card in self.bj_card_list:
+            card.refresh_values()
+            card.setPixmap(QtGui.QPixmap(self.back_card))
+        self.bj_hit_button.setEnabled(True)
+
     def add_blackjack_stack(self):
         self.blackjack_screen = QtWidgets.QWidget()
 
@@ -654,15 +661,8 @@ class Menu(object):
         self.bj_card_list = [self.bj_card1, self.bj_card2]
         GameInfo.state = form.GameState.BETTING
 
-
-    def refresh_bj_screen(self):
-        pass
-
     def add_winner_screen(self):
         self.winner_screen = QtWidgets.QWidget()
-
-    def signal(self):
-        ClientInfo.tcpHandler.request_start_signal()
 
     def card_clicked(self, event, card_obj):
         button = event.button()
@@ -682,13 +682,23 @@ class Menu(object):
                         removed_card.deselect_card()
                 self.p_replace_button.setText(f'Replace: {len(GameInfo.replace_list)}')
 
+    def add_card_to_list(self):
+        self.bj_card_list.append(ExtendedCard())
+
     def set_cards(self, cards):
         # self.current_cards = cards
         ClientInfo.logger.info(cards)
         for i, card in enumerate(cards):
             ClientInfo.logger.info(f'Adding: {card}')
             c = form.ExtractCard(card)
-            self.p_card_list[i].set_values(c.suit, c.value)
+            if GameInfo.game_type == form.GameTypeEnum.POKER:
+                self.p_card_list[i].set_values(c.suit, c.value)
+            elif GameInfo.game_type == form.GameTypeEnum.BLACKJACK:
+                self.bj_card_list[i].set_values(c.suit, c.value)
+
+    def hold_success(self):
+        ClientInfo.logger.info('Holding')
+        self.bj_hit_button.setEnabled(False)
 
     def replace_button_clicked(self):
         self.p_replace_button.setDisabled(True)
@@ -726,7 +736,7 @@ class Menu(object):
         ClientInfo.game_id = ''
         self.change_screens(form.MenuScreenEnums.GAME_LIST)
         self.refresh_bet_game()
-        self.refresh_bj_screen()
+        self.refresh_blackjack_screen()
         self.refresh_poker_screen()
 
     def change_screens(self, num):
@@ -864,11 +874,20 @@ class Menu(object):
         self.change_screens(form.MenuScreenEnums.BET_SCREEN)
 
     def hold_button_clicked(self):
-        pass
+        self.bj_hold_button.setDisabled(True)
+        ClientInfo.tcpHandler.send_hold()
 
     def hit_button_clicked(self):
-        pass
-    
+        self.bj_hit_button.setDisabled(True)
+        ClientInfo.tcpHandler.send_hit()
+
+    def hit_response(self):
+        self.bj_hit_button.setEnabled(True)
+
+    def player_holding(self):
+        self.bj_hit_button.setDisabled(True)
+        self.popup_screen('Hit response', 'You have gone bust')
+
     def handle_won(self, amount):
         pass
 
@@ -900,7 +919,7 @@ class Menu(object):
         GameInfo.state = form.GameState.LOOP
         self.change_screens(form.MenuScreenEnums.WAITING_ROOM)
         self.refresh_poker_screen()
-        self.refresh_bj_screen()
+        self.refresh_blackjack_screen()
         for bet in self.bet:
             bet.chips = []
 
@@ -910,6 +929,7 @@ class Menu(object):
         ClientInfo.tcpHandler.send_leave_game()
         ClientInfo.tcpHandler.send_logout()
         ClientInfo.tcpHandler.lose_connection()
+        ClientInfo.tcpHandler.stop_reactor()
 
 
 class ExtendedCard(QtWidgets.QLabel):

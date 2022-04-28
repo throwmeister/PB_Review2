@@ -115,6 +115,13 @@ class AllInEnum(str, Enum):
     YES = 2
 
 
+class HitEnum(str, Enum):
+    UNKNOWN = 0
+    INVALID_REQUEST = 1
+    HIT_SUCCESS = 2
+    BUST = 3
+
+
 class ClientRequestHeader:
     def __init__(self, instructions=None):
         if instructions:
@@ -360,6 +367,17 @@ class ClientFold:
             self.game_id = data['game_id']
         else:
             self.game_id = ''
+
+
+class ServerHitResponse:
+    def __init__(self, data=None):
+        if data:
+            self.response_code = data['response_code']
+            self.cards = data['cards']
+        else:
+            self.response_code = HitEnum.UNKNOWN
+            self.cards = None
+
 
 def version_number():
     return '1.0'

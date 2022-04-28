@@ -343,7 +343,7 @@ class GameVariables:
         bets = sorted(all_in_list, key=lambda x: x[0], reverse=True)
         non_high_bets = [x[1] for x in bets if x[0] != bets[0][0]]
         for player in non_high_bets:
-            if not player.all_in:
+            if not player.vars.all_in:
                 return False
         return True
 
@@ -358,9 +358,10 @@ class GameVariables:
             d.append([player.username, player.vars.current_bet])
         return d
 
-
     def calculate_scores(self):
-        pass
+        for this_player in self.parent.players:
+            score = this_player.vars.calculate_player_score()
+            self.player_scores.append([this_player, score])
 
     def calculate_winner(self):
         winners = []
@@ -402,11 +403,6 @@ class Poker(GameVariables):
                 return False
         return True
 
-    def calculate_scores(self):
-        for this_player in self.parent.players:
-            score = this_player.vars.calculate_player_score()
-            self.player_scores.append([this_player, score])
-
 
 class Blackjack(GameVariables):
     def __init__(self, game_cls):
@@ -418,6 +414,7 @@ class Blackjack(GameVariables):
             if not player.vars.hold:
                 return False
         return True
+
 
 '''
     def set_logic(self):
