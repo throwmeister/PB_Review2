@@ -7,7 +7,7 @@ from client_data import ClientInfo, GameInfo
 from game_creation.shared_directory import data_format as form
 
 
-class Menu(object):
+class Menu:
     # Setup main menu
     def setupUi(self, Form):
         Form.setObjectName("Poker and Blackjack")

@@ -2,7 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from client_data import ClientInfo
 
 
-class JoinGame(object):
+class JoinGame:
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.setMinimumSize(QtCore.QSize(480, 307))

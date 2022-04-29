@@ -2,7 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from client_data import ClientInfo
 import game_creation.shared_directory.data_format as form
 
-class CreateGame(object):
+class CreateGame:
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.resize(509, 378)

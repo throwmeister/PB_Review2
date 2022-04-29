@@ -1,7 +1,9 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from client_data import ClientInfo, GameInfo
 
-class Ui_Dialog(object):
+# Won't be able to implement this :(
+
+class Ui_Dialog:
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.resize(1015, 849)
