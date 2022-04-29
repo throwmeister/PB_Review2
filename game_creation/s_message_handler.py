@@ -336,3 +336,16 @@ def aggregate_player_list(game_id):
         return d
     except KeyError:
         pass
+
+
+def aggregate_blackjack_list(game_id):
+    game = Game.Games[game_id]
+    # Player - card
+    d = []
+    for player in game.players:
+        player_data = form.BlackjackCardPlayerVars()
+        player_data.player_name = player.username
+        player_data.card = player.vars.hand[0].__dict__
+        d.append(player_data.__dict__)
+
+    return d

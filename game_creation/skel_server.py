@@ -91,6 +91,11 @@ class MainServer(Protocol):
         d = self.format_send_data(form.ServerRequestTypeEnum.HOLD_RESPONSE, data)
         self.tcp_send_data(d)
 
+    def send_bj_players_list(self, game_id):
+        data = handler.aggregate_blackjack_list(game_id)
+        d = self.format_send_data(form.ServerRequestTypeEnum.BLACKJACK_CARD_PLAYER, data)
+        self.queue_message(form.game_exchange_name(), game_id, d)
+
     @staticmethod
     def format_send_data(request_type, data=None):
         req = form.ServerRequestHeader()
@@ -171,6 +176,7 @@ f'message: {message}')
                             self.send_new_bet(game_id)
                             if complete:
                                 self.signal_state_change(game_id=game_id, state=form.GameState.CARD_CHANGING)
+                                self.send_bj_players_list(game_id)
                         case form.ClientRequestTypeEnum.REQUEST_CARDS:
                             server_data = handler.get_cards(messages.data, messages.session_id)
                             self.send_cards(server_data)

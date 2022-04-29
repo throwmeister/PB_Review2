@@ -1,3 +1,4 @@
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 from create_game_screen import CreateGame
 from login_screen import Login
@@ -118,6 +119,19 @@ class Menu(object):
         self.verticalLayout_5 = QtWidgets.QVBoxLayout()
         self.verticalLayout_5.setObjectName("verticalLayout_5")
         self.games_list = QtWidgets.QTreeWidget(self.lobby)
+        self.table_style_sheet =(
+        "background-color: #ebc17a;\n"
+        "                border: 6px groove #d9a143;\n"
+        "font-size: 22px;\n"
+        "QHeaderView::section\n"
+        "{\n"
+        "    border-top: 1px solid #fffff8;\n"
+        "}\n"
+        "\n"
+        "QHeaderView::vertical\n"
+        "{\n"
+        "    border-left: 1px solid #fffff8;\n"
+        "}")
         self.games_list.setStyleSheet("background-color: #ebc17a;\n"
                                       "                border: 6px groove #d9a143;\n"
                                       "font-size: 22px;\n"
@@ -212,7 +226,7 @@ class Menu(object):
         ClientInfo.main_gui = self
 
         self.refresh_bet_game()
-        self.settings_button.clicked.connect(self.tester_button)
+        self.settings_button.clicked.connect(lambda __: self.main_stack.setCurrentIndex(form.MenuScreenEnums.BLACKJACK_SCREEN))
         self.games_list.itemClicked.connect(self.game_clicked)
         self.join_game_button.clicked.connect(self.join_game_pressed)
         self.create_game_button.clicked.connect(self.create_game_pressed)
@@ -228,7 +242,7 @@ class Menu(object):
         self.bj_bet_again_button.clicked.connect(self.bet_again_button_clicked)
         self.bj_hold_button.clicked.connect(self.hold_button_clicked)
         self.bj_hit_button.clicked.connect(self.hit_button_clicked)
-        self.see_hand_button.clicked.connect(lambda _: self.change_screens(form.MenuScreenEnums.POKER_SCREEN))
+        self.see_hand_button.clicked.connect(self.see_hand_button_pressed)
 
 
     def retranslateUi(self, Form):
@@ -273,7 +287,6 @@ class Menu(object):
         self.bj_fold_button.setText(_translate('Form', 'Fold'))
         self.bj_hold_button.setText(_translate('Form', 'Hold'))
         self.bj_hit_button.setText(_translate('Form', 'Hit'))
-        self.bj_leave_ingame_button.setText(_translate('Form', 'Leave Game'))
         self.bj_bet_again_button.setText(_translate('Form', 'Second bet'))
 
     def add_bet_stack(self):
@@ -438,6 +451,7 @@ class Menu(object):
         self.bet_button.setObjectName("bet_button")
         self.bet_hz_layout.addWidget(self.bet_button, 0, QtCore.Qt.AlignBottom)
         self.bet_vert_layout.addLayout(self.bet_hz_layout)
+        self.bet_list.setStyleSheet(self.table_style_sheet)
 
 
         self.chip_dict = TwoWayDict()
@@ -636,9 +650,9 @@ class Menu(object):
         self.bj_vertL_2 = QtWidgets.QVBoxLayout()
         self.bj_vertL_2.setObjectName("verticalLayout")
         self.EMPTY_2 = QtWidgets.QLabel(self.blackjack_screen)
-        self.EMPTY_2.setAlignment(QtCore.Qt.AlignCenter)
-        self.EMPTY_2.setObjectName("label")
-        self.bj_vertL_2.addWidget(self.EMPTY_2)
+        self.bj_player_table = QtWidgets.QListWidget(self.blackjack_screen)
+        self.bj_player_table.setStyleSheet(self.table_style_sheet)
+        self.bj_vertL_2.addWidget(self.bj_player_table)
         self.card_horizontal_layout = QtWidgets.QHBoxLayout()
         self.card_horizontal_layout.setObjectName("horizontalLayout")
         self.bj_card1 = ExtendedCard(self.blackjack_screen)
@@ -673,9 +687,6 @@ class Menu(object):
         self.bj_hold_button = QtWidgets.QPushButton(self.blackjack_screen)
         self.bj_hold_button.setObjectName('hold_button')
         self.bj_vertL_2.addWidget(self.bj_hold_button)
-        self.bj_leave_ingame_button = QtWidgets.QPushButton(self.blackjack_screen)
-        self.bj_leave_ingame_button.setObjectName("pushButton_2")
-        self.bj_vertL_2.addWidget(self.bj_leave_ingame_button)
         self.bj_vertL_1.addLayout(self.bj_vertL_2)
 
         self.main_stack.addWidget(self.blackjack_screen)
@@ -802,6 +813,14 @@ class Menu(object):
                 ready = '❌'
             self.player_list.addItem(f'{d.player_name} {ready}')
 
+    def set_blackjack_table(self, data):
+        self.bj_player_table.clear()
+        ClientInfo.logger.info('Setting blackjack player list')
+        for p in data:
+            player_data = form.BlackjackCardPlayerVars(p)
+            card = form.ExtractCard(player_data.card)
+            self.bj_player_table.addItem(f"{player_data.player_name}: {card.value} of {card.suit.lower()}")
+
     def join_game_pressed(self):
         if self.selected_game:
             self.jwindow = QtWidgets.QDialog()
@@ -860,6 +879,12 @@ class Menu(object):
             all_in = True
         ClientInfo.tcpHandler.send_bet(chips, all_in)
 
+    def see_hand_button_pressed(self):
+        if GameInfo.game_type == form.GameTypeEnum.POKER:
+            self.change_screens(form.MenuScreenEnums.POKER_SCREEN)
+        elif GameInfo.game_type == form.GameTypeEnum.BLACKJACK:
+            self.change_screens(form.MenuScreenEnums.BLACKJACK_SCREEN)
+
     def set_bet_list(self, data):
         self.bet_list.clear()
         for player_vars in data:
@@ -883,7 +908,7 @@ class Menu(object):
             self.see_hand_button.setEnabled(True)
             ClientInfo.logger.info('Stop 4')
         elif GameInfo.game_type == form.GameTypeEnum.BLACKJACK:
-            self.change_screens(form.MenuScreenEnums.BLACKJACK_SCREEN)
+            self.see_hand_button.setEnabled(True)
         self.p_replace_button.setEnabled(True)
         ClientInfo.logger.info('Stop 5')
 

@@ -178,6 +178,8 @@ class MainClient(Protocol):
             self.loop.start(response_data.keep_alive)
             # reactor.callFromThread(self.start_keep_alive, response_data.keep_alive)
             ClientInfo.logger.info('Running message queue')
+            if self.lobby_mq:
+                self.lobby_mq.stop_consumption()
             self.lobby_mq = MessageQueue(queue_name=f'gameserver.{response_data.username}.{response_data.session_id}',
                                          exchange=form.exchange_name())
             self.lobby_mq.set_consume()
@@ -204,6 +206,8 @@ class MainClient(Protocol):
             ClientInfo.game_id = response_data.game_id
             ClientInfo.game_owner = True
             # Creator listens in on Game Queue
+            if self.game_mq:
+                self.game_mq.stop_consumption()
             self.game_mq = MessageQueue(queue_name=f'gameserver.{ClientInfo.username}.playing.game.{response_data.game_id}',
                                          exchange=form.game_exchange_name(), routing_key=response_data.game_id)
             self.game_mq.set_consume()
@@ -226,6 +230,8 @@ class MainClient(Protocol):
             log_join(form.JoinGameEnum.SUCCESS.name)
             ClientInfo.game_id = response_data.game_id
             # Joiner listens in on Game Queue
+            if self.game_mq:
+                self.game_mq.stop_consumption()
             ClientInfo.message_queue = MessageQueue(queue_name=f'gameserver.{ClientInfo.username}.playing.game.{response_data.game_id}',
                                          exchange=form.game_exchange_name(), routing_key=response_data.game_id)
             self.game_mq = ClientInfo.message_queue
@@ -328,6 +334,12 @@ class MainClient(Protocol):
         ClientInfo.logger.info('reactor stopped')
         reactor.stop()
 
+    def stop_message_queue(self):
+        if self.lobby_mq:
+            self.lobby_mq.stop_consumption()
+        if self.game_mq:
+            self.game_mq.stop_consumption()
+
     def lose_connection(self):
         self.transport.loseConnection()
 
@@ -343,11 +355,7 @@ class ClientCreator(ClientFactory):
         endpoint = TCP4ClientEndpoint(reactor, 'localhost', 8007)
         endpoint.connect(ClientCreator())
         reactor.run()
-
-    @staticmethod
-    def stop_reactor():
-        ClientInfo.logger.info('reactor stopped')
-        reactor.stop()
+        quit()
 
     def buildProtocol(self, addr):
         ClientInfo.tcpHandler = MainClient()
@@ -400,6 +408,8 @@ def mq_data_received(ch, method, properties, body):
             winner_calculation_response(message.data)
         case form.ServerRequestTypeEnum.BET_LIST:
             ClientInfo.main_gui.set_bet_list(message.data)
+        case form.ServerRequestTypeEnum.BLACKJACK_CARD_PLAYER:
+            ClientInfo.main_gui.set_blackjack_table(message.data)
 
 
 def state_handler(data):

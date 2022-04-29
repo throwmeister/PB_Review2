@@ -60,6 +60,7 @@ class ServerRequestTypeEnum(str, Enum):
     BET_LIST = 15
     HIT_RESPONSE = 16
     HOLD_RESPONSE = 17
+    BLACKJACK_CARD_PLAYER = 18
 
 
 class GameTypeEnum(str, Enum):
@@ -386,6 +387,15 @@ class ServerHoldResponse:
         else:
             self.response_code = GeneralEnum.UNKNOWN_ERROR
 
+
+class BlackjackCardPlayerVars:
+    def __init__(self, data=None):
+        if data:
+            self.card = data['card']
+            self.player_name = data['player_name']
+        else:
+            self.card = None
+            self.player_name = ''
 
 def version_number():
     return '1.0'

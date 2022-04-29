@@ -81,7 +81,6 @@ class Participant:
 
 
 class ParticipantVariables:
-
     def __init__(self, deck):
         self.hand = []
         self.bet_list = []
