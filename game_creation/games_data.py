@@ -241,10 +241,8 @@ class Game:
         match self.game_type:
             case form.GameTypeEnum.POKER:
                 self.game_logic = Poker(self)
-                self.game_logic: Poker
             case form.GameTypeEnum.BLACKJACK:
                 self.game_logic = Blackjack(self)
-                self.game_logic: Blackjack
         for player in self.players:
             player: Participant
             player.setup_game_vars(self.game_type, self.game_logic.deck)
@@ -253,11 +251,12 @@ class Game:
         self.Games[self.game_id] = self
 
     @classmethod
-    def lobby_name_exists(cls, session_id):
-        if session_id in cls.Games:
-            return True
-        else:
-            return False
+    def lobby_name_exists(cls, game_name):
+        for game in cls.Games.values():
+            game: Game
+            if game_name == game.game_name:
+                return True
+        return False
 
     @classmethod
     def game_name_exists(cls, name):

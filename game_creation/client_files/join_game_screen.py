@@ -91,8 +91,19 @@ class JoinGame:
     def join_button_pressed(self):
         ClientInfo.tcpHandler.join_game(password=self.password_edit.text(), game_id=self.game_id)
 
+    def popup_screen(self, text):
+        msg = QtWidgets.QMessageBox()
+        msg.setWindowTitle('Join Game failure')
+        msg.setText(text)
+        msg.setMinimumSize(400, 200)
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        x = msg.exec_()
+
     def join_game_success(self):
         ClientInfo.game_owner = False
         ClientInfo.logger.info('Closing join game screen')
         ClientInfo.join_gui = None
         self.dialog.close()
+
+    def join_game_wrong_password(self):
+        self.popup_screen('Wrong password')

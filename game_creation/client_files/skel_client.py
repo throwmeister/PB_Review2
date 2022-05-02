@@ -246,6 +246,7 @@ class MainClient(Protocol):
             ClientInfo.main_gui.change_screens(form.MenuScreenEnums.WAITING_ROOM)
         elif response_data.response_code == form.JoinGameEnum.WRONG_PASSWORD:
             log_join(form.JoinGameEnum.WRONG_PASSWORD.name)
+            ClientInfo.join_gui.join_game_wrong_password()
         elif response_data.response_code == form.JoinGameEnum.JOIN_ITSELF:
             log_join(form.JoinGameEnum.JOIN_ITSELF.name)
         else:

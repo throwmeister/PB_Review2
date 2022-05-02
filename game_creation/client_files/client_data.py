@@ -1,5 +1,6 @@
 from game_creation.shared_directory import data_format as form
 
+
 class ClientInfo:
     username = ''
     keep_alive = 0
