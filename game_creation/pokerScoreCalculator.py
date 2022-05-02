@@ -26,16 +26,15 @@ def value_calc(cards):
             tri_val = card
         elif num == 4:
             score = 105 + card
-            return score
         else:
             single.append(card)
     values = sorted(pair_values, reverse=True) + sorted(single, reverse=True)
     seq = geometric_sequence()
     if triple == 1:
         if pair == 1:
-            score = 90 + (tri_val / 100)
+            score = 90 + tri_val
         else:
-            score = 45 + (tri_val / 100)
+            score = 45 + tri_val
     elif pair == 1:
         score = 15
         for i in range(0, 4):
@@ -63,12 +62,22 @@ def high_calc(cards):
     return score
 
 
+def check_reverse_order(sorted_cards):
+    if sorted_cards[4] == 14 and sorted_cards[3] == 5:
+        return True
+    return False
+
+
 def straight_calc(cards, flush):
     # Calculates whether the deck contains a straight
     score = 0
 
     sorted_cards = sorted(cards)
-    if sorted_cards[4] - sorted_cards[0] == 4 or (sorted_cards[4] == 14 and sorted_cards[3] == 5):
+    if check_reverse_order(sorted_cards):
+        sorted_cards[4] = 1
+        sorted_cards = sorted(sorted_cards)
+
+    if sorted_cards[4] - sorted_cards[0] == 4:
         if flush:
             score = 120 + sorted_cards[4]
         else:

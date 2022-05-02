@@ -1,6 +1,7 @@
 import json
 from enum import Enum
 import shared_directory.data_format as form
+import socket
 
 x = hash('3')
 print(x)
@@ -124,4 +125,10 @@ print(f)
 if -1:
     print('hehehehehweduiqwfiwnbvjhsfnvsdnvjsncvoasnvjsvbo njf')
 
-json.loads('gggggggg')
+print(socket.gethostbyname(socket.gethostname()))
+print(hash('alex'))
+print(hash('grant'))
+
+import hashlib
+
+print(hashlib.sha1(b'great_password').hexdigest())

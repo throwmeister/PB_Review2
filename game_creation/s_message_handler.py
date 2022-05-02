@@ -5,6 +5,7 @@ import shared_directory.data_format as form
 from gamerserver_data import DBManager
 from configuration_protocol import ServerConfig
 from server_info import ServerData
+import hashlib
 
 
 def handle_login_requests(data):
@@ -14,14 +15,13 @@ def handle_login_requests(data):
     response_data = form.ServerLoginResponse()
     response_data.username = login_data.username
     response_data.keep_alive = ServerConfig.keep_alive()
-    # sent_password = hash(login_data.password) for when we hash passwords
     if login_data.version == form.version_number():
         try:
             username_db, password_db = zip(*user_info)
             username_db, password_db = *username_db, *password_db
         except builtins.ValueError:
             username_db, password_db = None, None
-        if login_data.username == username_db and login_data.password == password_db:
+        if login_data.username == username_db and hashlib.sha1(login_data.password.encode()).hexdigest() == password_db:
             # Create session
             new_session = session.create_session(login_data.username)
             if new_session:
@@ -52,12 +52,17 @@ def handle_create_game(data, session_id):
     client_data = form.ClientCreateGame(data)
     send_data = form.ServerCreateGame()
 
+    ServerData.logger.info(f'Client password: {client_data.password}')
+    ServerData.logger.info(f'Client game_name: {client_data.game_name}')
+
     if Game.game_owner_exists(session_id):
         send_data.response_code = form.CreateGameEnum.ALREADY_CREATED_GAME
 
     elif Game.lobby_name_exists(client_data.game_name):
         # raise error
         send_data.response_code = form.CreateGameEnum.NAME_ERROR
+    elif client_data.password == '' or client_data.game_name == '':
+        send_data.response_code = form.CreateGameEnum.INVALID_CREDENTIALS
     else:
         my_game = Game(name=client_data.game_name, password=client_data.password, game_type=client_data.game_type,
                        owner_id=session_id)
@@ -65,6 +70,7 @@ def handle_create_game(data, session_id):
         send_data.response_code = form.CreateGameEnum.SUCCESS
         send_data.game_id = my_game.game_id
 
+    ServerData.logger.info(f'Create game response_code: {send_data.response_code.name}')
     return [send_data.__dict__, send_data.game_id]
 
 

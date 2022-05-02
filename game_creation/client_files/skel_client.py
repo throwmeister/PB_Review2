@@ -194,6 +194,7 @@ class MainClient(Protocol):
             ClientInfo.login_gui.login_response_failed()
             pass
         else:
+            ClientInfo.logger.info('UNKNOWN ERROR')
             raise RuntimeError
 
     def send_keep_alive(self):
@@ -216,10 +217,13 @@ class MainClient(Protocol):
             ClientInfo.create_game_gui.create_response_success()
             ClientInfo.main_gui.change_screens(form.MenuScreenEnums.WAITING_ROOM)
         elif response_data.response_code == form.CreateGameEnum.NAME_ERROR:
-            # Popup
+            ClientInfo.create_game_gui.create_game_name_exists()
             ClientInfo.logger.info(f'Game creation: {form.CreateGameEnum.NAME_ERROR.name}')
         elif response_data.response_code == form.CreateGameEnum.ALREADY_CREATED_GAME:
             ClientInfo.logger.info(f'Game creation: {form.CreateGameEnum.ALREADY_CREATED_GAME.name}')
+        elif response_data.response_code == form.CreateGameEnum.INVALID_CREDENTIALS:
+            ClientInfo.create_game_gui.create_game_invalid_credentials()
+            ClientInfo.logger.info(f'Game creation: {form.CreateGameEnum.INVALID_CREDENTIALS.name}')
         else:
             raise RuntimeError
 
@@ -352,7 +356,7 @@ class ClientCreator(ClientFactory):
         colouredlogs.format('[%(hostname)s] %(asctime)s %(message)s')
 
         colouredlogs.install(logger=ClientInfo.logger)
-        endpoint = TCP4ClientEndpoint(reactor, 'localhost', 8007)
+        endpoint = TCP4ClientEndpoint(reactor, form.server_ip(), 8007)
         endpoint.connect(ClientCreator())
         reactor.run()
         quit()

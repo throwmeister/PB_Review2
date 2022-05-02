@@ -124,8 +124,16 @@ class CreateGame:
     def create_game_button_pressed(self):
         game_type = self.type_box_dict[self.type_box.currentData(0)]
         name = self.game_name_edit.text()
-        password = self.game_name_edit.text()
+        password = self.password_edit.text()
         ClientInfo.tcpHandler.create_game(name=name, game_type=game_type, password=password)
+
+    def popup_screen(self, text):
+        msg = QtWidgets.QMessageBox()
+        msg.setWindowTitle('Create Game failure')
+        msg.setText(text)
+        msg.setMinimumSize(400, 200)
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        x = msg.exec_()
 
     def create_response_success(self):
         ClientInfo.game_owner = True
@@ -134,5 +142,8 @@ class CreateGame:
         ClientInfo.main_gui.set_owner_command()
         self.dialog.close()
 
-    def create_response_failure(self):
-        pass
+    def create_game_name_exists(self):
+        self.popup_screen('Game name exists')
+
+    def create_game_invalid_credentials(self):
+        self.popup_screen('Empty game name or password')

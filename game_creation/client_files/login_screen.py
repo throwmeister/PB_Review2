@@ -107,10 +107,18 @@ class Login:
     def login_button_clicked(self):
         ClientInfo.tcpHandler.send_login(self.username_line.text(), self.password_line.text())
 
+    def popup_screen(self, title, text):
+        msg = QtWidgets.QMessageBox()
+        msg.setWindowTitle(title)
+        msg.setText(text)
+        msg.setMinimumSize(400, 200)
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        x = msg.exec_()
+
     def login_response_success(self):
         ClientInfo.logger.info('Closing login window')
         ClientInfo.login_gui = None
         self.dialog.close()
 
     def login_response_failed(self):
-        pass
+        self.popup_screen('Login error', 'Wrong username or password')

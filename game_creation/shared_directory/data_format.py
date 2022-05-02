@@ -74,6 +74,7 @@ class CreateGameEnum(str, Enum):
     SUCCESS = 1
     NAME_ERROR = 2
     ALREADY_CREATED_GAME = 3
+    INVALID_CREDENTIALS = 4
 
 
 class JoinGameEnum(str, Enum):
@@ -396,6 +397,11 @@ class BlackjackCardPlayerVars:
         else:
             self.card = None
             self.player_name = ''
+
+
+def server_ip():
+    return '192.168.0.45'
+
 
 def version_number():
     return '1.0'
