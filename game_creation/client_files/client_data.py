@@ -1,6 +1,6 @@
 from game_creation.shared_directory import data_format as form
 
-
+# Contains all the client information
 class ClientInfo:
     username = ''
     keep_alive = 0
@@ -25,7 +25,7 @@ class ClientInfo:
         cls.keep_alive = keepalive
         cls.session_id = session_id
 
-
+# Contains important game data
 class GameInfo:
     bet = 100
     request = True

@@ -457,18 +457,3 @@ def winner_calculation_response(winners):
                 ClientInfo.main_gui.handle_won(player.winnings)
         ClientInfo.main_gui.player_won_popup(winners)
         ClientInfo.main_gui.reset_game_loop()
-
-
-'''
-
-if __name__ == '__main__':
-    logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
-                        datefmt='%d-%m-%Y:%H:%M:%S',
-                        level=logging.INFO)
-
-    logger = logging.getLogger('Main')
-    endpoint = TCP4ClientEndpoint(reactor, 'localhost', 8007)
-    endpoint.connect(ClientCreator())
-    reactor.run()
-
-'''

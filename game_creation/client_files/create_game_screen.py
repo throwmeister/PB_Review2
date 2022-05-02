@@ -121,11 +121,13 @@ class CreateGame:
         self.dialog = Dialog
         ClientInfo.create_game_gui = self
 
+    # Sends create game
     def create_game_button_pressed(self):
         game_type = self.type_box_dict[self.type_box.currentData(0)]
         name = self.game_name_edit.text()
         password = self.password_edit.text()
         ClientInfo.tcpHandler.create_game(name=name, game_type=game_type, password=password)
+
 
     def popup_screen(self, text):
         msg = QtWidgets.QMessageBox()

@@ -93,6 +93,7 @@ class ParticipantVariables:
     def make_bet(self, amount_list):
         bet_sum = sum(amount_list)
         if bet_sum < self.current_bet:
+            # Checks if the previous bet was higher (Poker only)
             return False
         self.bet_list = amount_list
         self.current_bet = bet_sum
@@ -111,6 +112,7 @@ class ParticipantVariables:
         if all_in == form.AllInEnum.YES:
             self.all_in = True
 
+    # Draw from the deck
     def draw(self):
         self.hand.append(self.deck.draw())
 
@@ -151,6 +153,7 @@ class PokerPlayerVariables(ParticipantVariables):
         try:
             for card in cards:
                 card: Card
+                # Gets the index of the card that should be replaced
                 index = self.get_cards_format().index(card)
                 self.hand.pop(index)
                 self.draw()
@@ -339,7 +342,9 @@ class GameVariables:
             # self.bets.append(player.vars.current_bet)
             all_in_list.append([player.vars.current_bet, player.vars])
         bets = sorted(all_in_list, key=lambda x: x[0], reverse=True)
+        # Gets all bets in order
         non_high_bets = [x[1] for x in bets if x[0] != bets[0][0]]
+        # List comprehension - extract the players whose bets are not equal to the highest bet
         for player in non_high_bets:
             if not player.vars.all_in:
                 return False

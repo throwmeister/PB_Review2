@@ -1,4 +1,3 @@
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 from create_game_screen import CreateGame
 from login_screen import Login
@@ -14,44 +13,44 @@ class Menu:
         Form.closeEvent = self.closed_event
         Form.resize(1054, 860)
         self.menu_style_sheet = ("QWidget{\n"
-        "    background-color: rgb(15, 102, 72);\n"
-        "    \n"
-        "}\n"
-        "\n"
-        "QLabel{\n"
-        "\n"
-        "}\n"
-        "\n"
-        "QPushButton{\n"
-        "    font-family: MS Shell Dlg 2;\n"
-        "    font-size: 30px;\n"
-        "                \n"
-        "    color: rgb(0, 85, 0);\n"
-        "                \n"
-        "    background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 132, 93, 255), stop:1 rgba(97, 192, 164, 255));\n"
-        "                border-radius: 3px;\n"
-        "                border: 2px groove rgb(0, 0, 0)\n"
-        "            }\n"
-        "            QPushButton:hover{\n"
-        "            background-color: #e3c086;\n"
-        "            outline: none\n"
-        "            }"
-        "QHeaderView::section {\n"
-        "    background-color: #ebc17a;\n"
-        "    border-style: none;\n"
-        "    font-size: 14pt;\n"
-        "    border-right: 1px solid #d9a143;\n"
-        "border-bottom: 1px solid #d9a143;\n"
-        "border-left: 1px solid #d9a143;\n"
-        "padding: 6px\n"
-        "}\n"
-        "QTableCornerButton::section{\n"
-        "background-color: #ebc17a;\n"
-        "    padding: 4px;\n"
-        "    border: 1px solid #ebc17a;\n"
-        "    font-size: 14pt;\n"
-        "}\n"
-        "\n")
+                                 "    background-color: rgb(15, 102, 72);\n"
+                                 "    \n"
+                                 "}\n"
+                                 "\n"
+                                 "QLabel{\n"
+                                 "\n"
+                                 "}\n"
+                                 "\n"
+                                 "QPushButton{\n"
+                                 "    font-family: MS Shell Dlg 2;\n"
+                                 "    font-size: 30px;\n"
+                                 "                \n"
+                                 "    color: rgb(0, 85, 0);\n"
+                                 "                \n"
+                                 "    background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 132, 93, 255), stop:1 rgba(97, 192, 164, 255));\n"
+                                 "                border-radius: 3px;\n"
+                                 "                border: 2px groove rgb(0, 0, 0)\n"
+                                 "            }\n"
+                                 "            QPushButton:hover{\n"
+                                 "            background-color: #e3c086;\n"
+                                 "            outline: none\n"
+                                 "            }"
+                                 "QHeaderView::section {\n"
+                                 "    background-color: #ebc17a;\n"
+                                 "    border-style: none;\n"
+                                 "    font-size: 14pt;\n"
+                                 "    border-right: 1px solid #d9a143;\n"
+                                 "border-bottom: 1px solid #d9a143;\n"
+                                 "border-left: 1px solid #d9a143;\n"
+                                 "padding: 6px\n"
+                                 "}\n"
+                                 "QTableCornerButton::section{\n"
+                                 "background-color: #ebc17a;\n"
+                                 "    padding: 4px;\n"
+                                 "    border: 1px solid #ebc17a;\n"
+                                 "    font-size: 14pt;\n"
+                                 "}\n"
+                                 "\n")
 
         self.back_card = "images/back_card.png"
         self.red_chip_icon = "images/chips/red_chip.png"
@@ -119,19 +118,19 @@ class Menu:
         self.verticalLayout_5 = QtWidgets.QVBoxLayout()
         self.verticalLayout_5.setObjectName("verticalLayout_5")
         self.games_list = QtWidgets.QTreeWidget(self.lobby)
-        self.table_style_sheet =(
-        "background-color: #ebc17a;\n"
-        "                border: 6px groove #d9a143;\n"
-        "font-size: 22px;\n"
-        "QHeaderView::section\n"
-        "{\n"
-        "    border-top: 1px solid #fffff8;\n"
-        "}\n"
-        "\n"
-        "QHeaderView::vertical\n"
-        "{\n"
-        "    border-left: 1px solid #fffff8;\n"
-        "}")
+        self.table_style_sheet = (
+            "background-color: #ebc17a;\n"
+            "                border: 6px groove #d9a143;\n"
+            "font-size: 22px;\n"
+            "QHeaderView::section\n"
+            "{\n"
+            "    border-top: 1px solid #fffff8;\n"
+            "}\n"
+            "\n"
+            "QHeaderView::vertical\n"
+            "{\n"
+            "    border-left: 1px solid #fffff8;\n"
+            "}")
         self.games_list.setStyleSheet("background-color: #ebc17a;\n"
                                       "                border: 6px groove #d9a143;\n"
                                       "font-size: 22px;\n"
@@ -220,13 +219,14 @@ class Menu:
         self.add_blackjack_stack()
         self.retranslateUi(Form)
         self.main_stack.setCurrentIndex(0)
-        self.exit_button.clicked.connect(Form.close) # type: ignore
+        self.exit_button.clicked.connect(Form.close)  # type: ignore
         QtCore.QMetaObject.connectSlotsByName(Form)
         self.play_button.clicked.connect(self.open_login_window)
         ClientInfo.main_gui = self
 
         self.refresh_bet_game()
-        self.settings_button.clicked.connect(lambda __: self.main_stack.setCurrentIndex(form.MenuScreenEnums.BLACKJACK_SCREEN))
+        self.settings_button.clicked.connect(
+            lambda __: self.main_stack.setCurrentIndex(form.MenuScreenEnums.BLACKJACK_SCREEN))
         self.games_list.itemClicked.connect(self.game_clicked)
         self.join_game_button.clicked.connect(self.join_game_pressed)
         self.create_game_button.clicked.connect(self.create_game_pressed)
@@ -243,7 +243,6 @@ class Menu:
         self.bj_hold_button.clicked.connect(self.hold_button_clicked)
         self.bj_hit_button.clicked.connect(self.hit_button_clicked)
         self.see_hand_button.clicked.connect(self.see_hand_button_pressed)
-
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
@@ -289,6 +288,7 @@ class Menu:
         self.bj_hit_button.setText(_translate('Form', 'Hit'))
         self.bj_bet_again_button.setText(_translate('Form', 'Second bet'))
 
+    # Adds the betting screen to the stacked widget
     def add_bet_stack(self):
         self.bet_stack = QtWidgets.QWidget()
         self.bet_vert_layout = QtWidgets.QVBoxLayout(self.bet_stack)
@@ -453,7 +453,6 @@ class Menu:
         self.bet_vert_layout.addLayout(self.bet_hz_layout)
         self.bet_list.setStyleSheet(self.table_style_sheet)
 
-
         self.chip_dict = TwoWayDict()
 
         self.chip_dict[self.bank_red_chip] = self.bet_red_chip
@@ -465,6 +464,7 @@ class Menu:
 
         self.main_stack.addWidget(self.bet_stack)
 
+    # Whenever a client joins a new game, their betting chips are refreshed to a constant value
     def refresh_bet_game(self):
         self.bank_balance_var = 75
         self.bet_balance_var = 0
@@ -495,6 +495,7 @@ class Menu:
 
         self.bet_list_vars = []
 
+    # The function ran when a chip label is clicked
     def chip_clicked(self, event, chip_obj):
         button = event.button()
         modifiers = event.modifiers()
@@ -508,6 +509,7 @@ class Menu:
                 bet_chip.add_chip(chip)
                 self.update_chip_balance()
 
+    # This refreshes the betting screen to display the correct number of chips in the bank and bet pots
     def update_chip_balance(self):
         self.bank_balance_var = 0
         self.bet_balance_var = 0
@@ -533,6 +535,7 @@ class Menu:
         self.bet_counter_brown.setText(f'{self.bet[2].num_of_chips}')
         self.bet_counter_black.setText(f'{self.bet[3].num_of_chips}')
 
+    # Adds poker to the stacked widget
     def add_poker_stack(self):
         self.poker_screen = QtWidgets.QWidget()
         self.verticalLayout_22 = QtWidgets.QVBoxLayout(self.poker_screen)
@@ -609,11 +612,13 @@ class Menu:
 
         self.p_replace_button.clicked.connect(self.replace_button_clicked)
 
+    # This function is ran every new game loop
     def refresh_poker_screen(self):
         for card in self.p_card_list:
             card.refresh_values()
             card.setPixmap(QtGui.QPixmap(self.back_card))
 
+    # This function is ran every new game loop
     def refresh_blackjack_screen(self):
         self.clear_layout(self.card_horizontal_layout)
         self.bj_card1 = ExtendedCard(self.blackjack_screen)
@@ -635,6 +640,7 @@ class Menu:
         self.bj_card_list = [self.bj_card1, self.bj_card2]
         self.bj_hit_button.setEnabled(True)
 
+    # This takes in a layout and removes all the widgets inside it.
     @staticmethod
     def clear_layout(layout):
         while layout.count():
@@ -642,6 +648,7 @@ class Menu:
             if child.widget():
                 child.widget().deleteLater()
 
+    # This adds the blackjack screen to the main stacked widget
     def add_blackjack_stack(self):
         self.blackjack_screen = QtWidgets.QWidget()
 
@@ -694,9 +701,7 @@ class Menu:
         self.bj_card_list = [self.bj_card1, self.bj_card2]
         GameInfo.state = form.GameState.BETTING
 
-    def add_winner_screen(self):
-        self.winner_screen = QtWidgets.QWidget()
-
+    # This function is ran whenever a poker card is clicked
     def card_clicked(self, event, card_obj):
         button = event.button()
         modifiers = event.modifiers()
@@ -715,6 +720,7 @@ class Menu:
                         removed_card.deselect_card()
                 self.p_replace_button.setText(f'Replace: {len(GameInfo.replace_list)}')
 
+    # Adds another card to layout. This is for a new card being added when the client requests a hit
     def add_card_to_list(self):
         temp_card = ExtendedCard(self.blackjack_screen)
         temp_card.setMaximumSize(QtCore.QSize(200, 300))
@@ -722,6 +728,7 @@ class Menu:
         self.card_horizontal_layout.addWidget(temp_card, 0, QtCore.Qt.AlignVCenter)
         self.bj_card_list.append(temp_card)
 
+    # This sets the values for each card in the hand
     def set_cards(self, cards):
         # self.current_cards = cards
         ClientInfo.logger.info(cards)
@@ -754,11 +761,8 @@ class Menu:
     def tester_button(self):
         self.main_stack.setCurrentIndex(3)
 
+    # This grabs the game id of any game clicked in the list
     def game_clicked(self, items):
-        '''
-        print(self.games_list.topLevelItem(0).data(5, 0))
-        print(self.games_list.selectedItems()[0])
-        print(items.treeWidget().currentIndex().row())'''
         self.selected_game = items.data(5, 0)
 
     def fold_button_pressed(self):
@@ -798,6 +802,7 @@ class Menu:
                 ClientInfo.logger.info(f'Game from game_id: {game_id} and values: {game_vars}')
                 d = form.UpdateGameListVariables(game_vars)
                 items = [d.game_name, d.game_type, d.owner, str(d.num_players), str(d.in_progress), game_id]
+                # The final item (game_id) is not shown to the user
                 QtWidgets.QTreeWidgetItem(self.games_list, items)
         except AttributeError:
             pass
@@ -854,12 +859,14 @@ class Menu:
 
     def ready_error(self, reverse_action: bool):
         self.playing_checkbox.setEnabled(True)
+        # This reverses the check if the action failed
         self.playing_checkbox.setChecked(reverse_action)
         ClientInfo.logger.info('Ready failed')
 
     def start_game_clicked(self):
         ClientInfo.tcpHandler.start_game()
 
+    # Called when the game has begun
     def setup_game(self, gtype):
         ClientInfo.logger.info('Setting up game')
         GameInfo.set_initial_values(gtype)
@@ -898,19 +905,14 @@ class Menu:
 
     def all_bets_done(self):
         # Prompt
-        ClientInfo.logger.info('Stop 1')
         for bet in self.bet:
             bet.chips = []
-        ClientInfo.logger.info('Stop 2')
         self.update_chip_balance()
         if GameInfo.game_type == form.GameTypeEnum.POKER:
-            ClientInfo.logger.info('Stop 3')
             self.see_hand_button.setEnabled(True)
-            ClientInfo.logger.info('Stop 4')
         elif GameInfo.game_type == form.GameTypeEnum.BLACKJACK:
             self.see_hand_button.setEnabled(True)
         self.p_replace_button.setEnabled(True)
-        ClientInfo.logger.info('Stop 5')
 
     def enable_second_bet(self):
         self.p_bet_again_button.setEnabled(True)
@@ -960,7 +962,7 @@ class Menu:
         message = ''
         for winner in winners:
             player = form.GameWinnerVars(winner)
-            ClientInfo.logger.info('Player name: '+player.name)
+            ClientInfo.logger.info('Player name: ' + player.name)
 
             message += f'{player.name},'
         message = f'{message} has won!'
@@ -976,6 +978,7 @@ class Menu:
         for bet in self.bet:
             bet.chips = []
 
+    # Called when closing the UX
     def closed_event(self, event):
         if ClientInfo.playing:
             ClientInfo.tcpHandler.send_fold()
@@ -985,6 +988,7 @@ class Menu:
         ClientInfo.tcpHandler.stop_reactor()
 
 
+# Card class to display and store card values
 class ExtendedCard(QtWidgets.QLabel):
 
     def __init__(self, form):
@@ -1003,6 +1007,7 @@ class ExtendedCard(QtWidgets.QLabel):
         self.selected = False
 
 
+# Poker card class to handle click events
 class ExtendedPokerCard(ExtendedCard):
     selected_style_sheet = '''background-color: #ebc17a;
                 border: 6px groove #d9a143;'''
@@ -1012,14 +1017,17 @@ class ExtendedPokerCard(ExtendedCard):
         self.when_clicked = func
         self.selected = False
 
+    # Over ride click event
     def mouseReleaseEvent(self, ev):
         self.when_clicked(ev, self)
 
+    # Adds card to replace list and changes style sheet
     def select_card(self):
         self.selected = True
         self.setStyleSheet(self.selected_style_sheet)
         GameInfo.replace_list.append(self)
 
+    # Remove card from replace list and reset style sheet
     def deselect_card(self):
         self.selected = False
         self.setStyleSheet('')
@@ -1034,6 +1042,7 @@ class Chip:
         self.monetary_value = val
 
 
+# A container for multiple Chip classes
 class Chips(QtWidgets.QLabel):
     def __init__(self, form, clicked_func, chip_type):
         super(Chips, self).__init__(form)
@@ -1069,6 +1078,7 @@ class TwoWayDict(dict):
 if __name__ == '__main__':
     import sys
     import qt5reactor
+
     app = QtWidgets.QApplication(sys.argv)
 
     qt5reactor.install()
@@ -1080,7 +1090,6 @@ if __name__ == '__main__':
     import skel_client as tcp_client
 
     main.show()
-
 
     # Start TCP Client
     tcp_client.ClientCreator.start_connection()

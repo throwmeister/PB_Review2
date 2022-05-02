@@ -16,6 +16,7 @@ class DBManager:
         connection.close()
         '''
 
+    # SQL query: Get username and password
     def get_user(self, username):
         connection = self.get_connection()
         cursor = connection.cursor()
