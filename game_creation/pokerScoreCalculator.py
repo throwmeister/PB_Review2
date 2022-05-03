@@ -77,15 +77,16 @@ def straight_calc(cards, flush):
         sorted_cards[4] = 1
         sorted_cards = sorted(sorted_cards)
 
-    if sorted_cards[4] - sorted_cards[0] == 4:
+    high_card = sorted_cards[4]
+    if high_card - sorted_cards[0] == 4:
         if flush:
-            score = 120 + sorted_cards[4]
+            score = 120 + high_card
         else:
-            score = 60 + sorted_cards[4]
+            score = 60 + high_card
         return score
 
     elif flush:
-        score = 75 + sorted_cards[4]
+        score = 75 + high_card
 
     else:
         pass
