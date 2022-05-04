@@ -493,20 +493,18 @@ class Menu:
         self.bank = [self.bank_red_chip, self.bank_blue_chip, self.bank_brown_chip, self.bank_black_chip]
         self.bet = [self.bet_red_chip, self.bet_blue_chip, self.bet_brown_chip, self.bet_black_chip]
 
-        self.bet_list_vars = []
-
     # The function ran when a chip label is clicked
     def chip_clicked(self, event, chip_obj):
         button = event.button()
         modifiers = event.modifiers()
         if modifiers == QtCore.Qt.NoModifier and button == QtCore.Qt.LeftButton:
             chip_obj: Chips
-            bet_chip = self.chip_dict[chip_obj]
+            other_chip = self.chip_dict[chip_obj]
 
-            bet_chip: Chips
+            other_chip: Chips
             if chip_obj.chips:
                 chip = chip_obj.chips.pop()
-                bet_chip.add_chip(chip)
+                other_chip.add_chip(chip)
                 self.update_chip_balance()
 
     # This refreshes the betting screen to display the correct number of chips in the bank and bet pots
@@ -1004,7 +1002,6 @@ class ExtendedCard(QtWidgets.QLabel):
     def refresh_values(self):
         self.suit = ''
         self.value = 0
-        self.selected = False
 
 
 # Poker card class to handle click events
@@ -1035,6 +1032,10 @@ class ExtendedPokerCard(ExtendedCard):
             GameInfo.replace_list.remove(self)
         except ValueError:
             pass
+
+    def refresh_values(self):
+        super(ExtendedPokerCard, self).refresh_values()
+        self.selected = False
 
 
 class Chip:
