@@ -239,7 +239,7 @@ class Menu:
         self.bet_fold_button.clicked.connect(self.fold_button_pressed)
         self.leave_game_button.clicked.connect(self.leave_game_button_pressed)
         self.bj_fold_button.clicked.connect(self.fold_button_pressed)
-        self.bj_bet_again_button.clicked.connect(self.bet_again_button_clicked)
+        self.bj_double_button.clicked.connect(self.bet_again_button_clicked)
         self.bj_hold_button.clicked.connect(self.hold_button_clicked)
         self.bj_hit_button.clicked.connect(self.hit_button_clicked)
         self.see_hand_button.clicked.connect(self.see_hand_button_pressed)
@@ -265,10 +265,8 @@ class Menu:
         self.start_game_button.setText(_translate("Form", "Start"))
         self.playing_checkbox.setText(_translate("Form", "Playing"))
         self.leave_game_button.setText(_translate("Form", "Leave"))
-        self.EMPTY.setText(_translate("Form", "EMPTY SPACE"))
         self.p_replace_button.setText(_translate("Form", "Replace: 0"))
         self.p_fold_button.setText(_translate("Form", "Fold"))
-        self.p_leave_ingame_button.setText(_translate("Form", "Leave Game"))
         self.p_bet_again_button.setText(_translate("Dialog", "Second Bet"))
         self.bank_balance.setText(_translate("Dialog", "Balance: 75"))
         self.bank_counter_red.setText(_translate("Dialog", "b_r"))
@@ -286,7 +284,7 @@ class Menu:
         self.bj_fold_button.setText(_translate('Form', 'Fold'))
         self.bj_hold_button.setText(_translate('Form', 'Hold'))
         self.bj_hit_button.setText(_translate('Form', 'Hit'))
-        self.bj_bet_again_button.setText(_translate('Form', 'Second bet'))
+        self.bj_double_button.setText(_translate('Form', 'Double'))
 
     # Adds the betting screen to the stacked widget
     def add_bet_stack(self):
@@ -333,7 +331,7 @@ class Menu:
         self.bet_vert_layout2.addLayout(self.horizontalLayout_3)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.bank_red_chip = Chips(self.bet_stack, self.chip_clicked, form.ChipType.RED)
+        self.bank_red_chip = ChipsContainer(self.bet_stack, self.chip_clicked, form.ChipType.RED)
         self.bank_red_chip.setMinimumSize(QtCore.QSize(100, 100))
         self.bank_red_chip.setMaximumSize(QtCore.QSize(100, 100))
         self.bank_red_chip.setText("")
@@ -341,21 +339,21 @@ class Menu:
         self.bank_red_chip.setScaledContents(True)
         self.bank_red_chip.setObjectName("bank_red_chip")
         self.horizontalLayout_2.addWidget(self.bank_red_chip)
-        self.bank_blue_chip = Chips(self.bet_stack, self.chip_clicked, form.ChipType.BLUE)
+        self.bank_blue_chip = ChipsContainer(self.bet_stack, self.chip_clicked, form.ChipType.BLUE)
         self.bank_blue_chip.setMaximumSize(QtCore.QSize(100, 100))
         self.bank_blue_chip.setText("")
         self.bank_blue_chip.setPixmap(QtGui.QPixmap(self.blue_chip_icon))
         self.bank_blue_chip.setScaledContents(True)
         self.bank_blue_chip.setObjectName("bank_blue_chip")
         self.horizontalLayout_2.addWidget(self.bank_blue_chip)
-        self.bank_brown_chip = Chips(self.bet_stack, self.chip_clicked, form.ChipType.BROWN)
+        self.bank_brown_chip = ChipsContainer(self.bet_stack, self.chip_clicked, form.ChipType.BROWN)
         self.bank_brown_chip.setMaximumSize(QtCore.QSize(100, 100))
         self.bank_brown_chip.setText("")
         self.bank_brown_chip.setPixmap(QtGui.QPixmap(self.brown_chip_icon))
         self.bank_brown_chip.setScaledContents(True)
         self.bank_brown_chip.setObjectName("bank_brown_chip")
         self.horizontalLayout_2.addWidget(self.bank_brown_chip)
-        self.bank_black_chip = Chips(self.bet_stack, self.chip_clicked, form.ChipType.BLACK)
+        self.bank_black_chip = ChipsContainer(self.bet_stack, self.chip_clicked, form.ChipType.BLACK)
         self.bank_black_chip.setMaximumSize(QtCore.QSize(100, 100))
         self.bank_black_chip.setText("")
         self.bank_black_chip.setPixmap(QtGui.QPixmap(self.black_chip_icon))
@@ -406,7 +404,7 @@ class Menu:
         self.bet_hz_layout3.addLayout(self.horizontalLayout_4)
         self.bet_hz_bet_layout = QtWidgets.QHBoxLayout()
         self.bet_hz_bet_layout.setObjectName("horizontalLayout_5")
-        self.bet_red_chip = Chips(self.bet_stack, self.chip_clicked, form.ChipType.RED)
+        self.bet_red_chip = ChipsContainer(self.bet_stack, self.chip_clicked, form.ChipType.RED)
         self.bet_red_chip.setMinimumSize(QtCore.QSize(100, 100))
         self.bet_red_chip.setMaximumSize(QtCore.QSize(100, 100))
         self.bet_red_chip.setText("")
@@ -414,21 +412,21 @@ class Menu:
         self.bet_red_chip.setScaledContents(True)
         self.bet_red_chip.setObjectName("bet_red_chip")
         self.bet_hz_bet_layout.addWidget(self.bet_red_chip)
-        self.bet_blue_chip = Chips(self.bet_stack, self.chip_clicked, form.ChipType.BLUE)
+        self.bet_blue_chip = ChipsContainer(self.bet_stack, self.chip_clicked, form.ChipType.BLUE)
         self.bet_blue_chip.setMaximumSize(QtCore.QSize(100, 100))
         self.bet_blue_chip.setText("")
         self.bet_blue_chip.setPixmap(QtGui.QPixmap(self.blue_chip_icon))
         self.bet_blue_chip.setScaledContents(True)
         self.bet_blue_chip.setObjectName("bet_blue_chip")
         self.bet_hz_bet_layout.addWidget(self.bet_blue_chip)
-        self.bet_brown_chip = Chips(self.bet_stack, self.chip_clicked, form.ChipType.BROWN)
+        self.bet_brown_chip = ChipsContainer(self.bet_stack, self.chip_clicked, form.ChipType.BROWN)
         self.bet_brown_chip.setMaximumSize(QtCore.QSize(100, 100))
         self.bet_brown_chip.setText("")
         self.bet_brown_chip.setPixmap(QtGui.QPixmap(self.brown_chip_icon))
         self.bet_brown_chip.setScaledContents(True)
         self.bet_brown_chip.setObjectName("bet_brown_chip")
         self.bet_hz_bet_layout.addWidget(self.bet_brown_chip)
-        self.bet_black_chip = Chips(self.bet_stack, self.chip_clicked, form.ChipType.BLACK)
+        self.bet_black_chip = ChipsContainer(self.bet_stack, self.chip_clicked, form.ChipType.BLACK)
         self.bet_black_chip.setMaximumSize(QtCore.QSize(100, 100))
         self.bet_black_chip.setText("")
         self.bet_black_chip.setPixmap(QtGui.QPixmap(self.black_chip_icon))
@@ -500,10 +498,10 @@ class Menu:
         button = event.button()
         modifiers = event.modifiers()
         if modifiers == QtCore.Qt.NoModifier and button == QtCore.Qt.LeftButton:
-            chip_obj: Chips
+            chip_obj: ChipsContainer
             bet_chip = self.chip_dict[chip_obj]
 
-            bet_chip: Chips
+            bet_chip: ChipsContainer
             if chip_obj.chips:
                 chip = chip_obj.chips.pop()
                 bet_chip.add_chip(chip)
@@ -542,10 +540,6 @@ class Menu:
         self.verticalLayout_22.setObjectName("verticalLayout_2")
         self.verticalLayout23 = QtWidgets.QVBoxLayout()
         self.verticalLayout23.setObjectName("verticalLayout")
-        self.EMPTY = QtWidgets.QLabel(self.poker_screen)
-        self.EMPTY.setAlignment(QtCore.Qt.AlignCenter)
-        self.EMPTY.setObjectName("label")
-        self.verticalLayout23.addWidget(self.EMPTY)
         self.horizontalLayout22 = QtWidgets.QHBoxLayout()
         self.horizontalLayout22.setObjectName("horizontalLayout")
         self.p_card1 = ExtendedPokerCard(self.poker_screen, self.card_clicked)
@@ -598,9 +592,6 @@ class Menu:
         self.p_fold_button = QtWidgets.QPushButton(self.poker_screen)
         self.p_fold_button.setObjectName("pushButton")
         self.verticalLayout23.addWidget(self.p_fold_button)
-        self.p_leave_ingame_button = QtWidgets.QPushButton(self.poker_screen)
-        self.p_leave_ingame_button.setObjectName("pushButton_2")
-        self.verticalLayout23.addWidget(self.p_leave_ingame_button)
         self.verticalLayout_22.addLayout(self.verticalLayout23)
 
         self.main_stack.addWidget(self.poker_screen)
@@ -685,9 +676,9 @@ class Menu:
         self.bj_hit_button = QtWidgets.QPushButton(self.blackjack_screen)
         self.bj_hit_button.setObjectName("pushButton_3")
         self.bj_vertL_2.addWidget(self.bj_hit_button)
-        self.bj_bet_again_button = QtWidgets.QPushButton(self.blackjack_screen)
-        self.bj_bet_again_button.setDisabled(True)
-        self.bj_vertL_2.addWidget(self.bj_bet_again_button)
+        self.bj_double_button = QtWidgets.QPushButton(self.blackjack_screen)
+        self.bj_double_button.setDisabled(True)
+        self.bj_vertL_2.addWidget(self.bj_double_button)
         self.bj_fold_button = QtWidgets.QPushButton(self.blackjack_screen)
         self.bj_fold_button.setObjectName("pushButton")
         self.bj_vertL_2.addWidget(self.bj_fold_button)
@@ -1043,9 +1034,9 @@ class Chip:
 
 
 # A container for multiple Chip classes
-class Chips(QtWidgets.QLabel):
+class ChipsContainer(QtWidgets.QLabel):
     def __init__(self, form, clicked_func, chip_type):
-        super(Chips, self).__init__(form)
+        super(ChipsContainer, self).__init__(form)
         self.chips = []
         self.chip_type = chip_type
         self.when_clicked = clicked_func

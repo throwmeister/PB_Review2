@@ -115,9 +115,9 @@ if dictionary in sped:
 
 
 
-test_dict = [[1, 'p'], [1, 'd'], [3, 'f'], [2, 'g']]
+test_dict = [[1, 'p'], [3, 'd'], [3, 'f'], [2, 'g']]
 print(test_dict)
-x =sorted(test_dict, key=lambda x: x[0], reverse=False)
+x =sorted(test_dict, key=lambda x: x[0], reverse=True)
 print(x)
 f = [g[1] for g in x if g[0] != x[0][0]]
 print(f)
@@ -132,3 +132,6 @@ print(hash('grant'))
 import hashlib
 
 print(hashlib.sha1(b'great_password').hexdigest())
+
+f = [g for g in x if g[0] == x[0][0]]
+print(f)

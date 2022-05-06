@@ -367,24 +367,14 @@ class GameVariables:
             self.player_scores.append([this_player, score])
 
     def calculate_winner(self):
-        winners = []
-        duple = 0
-        # A counter for if there is more than one winner
+        # Sorts by highest score
         new = sorted(self.player_scores, key=lambda x: x[1], reverse=True)
-        while True:
-            # Logic to check for multiple winners
-            try:
-                if new[duple][1] == new[duple + 1][1]:
-                    duple += 1
-                else:
-                    break
-            except IndexError:
-                break
-        for i in range(duple + 1):
+        # List comprehension extracts all the winners
+        winners = [p for p in new if p[1] == new[0][1]]
+        for winner in winners:
             # Calculates all the winners and gives them their money
-            winner = new[i][0]
             ServerData.logger.info(winner)
-            earnt_money = sum(self.pot) / (duple + 1)
+            earnt_money = sum(self.pot) / (len(winners))
             ServerData.logger.info(f'Earnt money: {earnt_money}')
             d = form.GameWinnerVars()
             d.winnings = self.pot
