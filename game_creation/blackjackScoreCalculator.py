@@ -12,5 +12,7 @@ def calculate(hand):
     if score > 21 and 11 in hand:
         hand.remove(11)
         # Recursion
-        return calculate(hand)+1
-    return score
+        hand.append(1)
+        return calculate(hand)
+    else:
+        return score
