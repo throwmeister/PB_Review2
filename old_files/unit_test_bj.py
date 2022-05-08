@@ -44,11 +44,16 @@ class Dealer:
     def __init__(self):
         card1 = Card('Hearts', 2)
         card3 = Card('Spades', 10)
+        self.counter = 0
 
         self.hand = [card3, card1]
 
     def hit(self):
-        self.hand.append(Card('Hearts', 5))
+        if self.counter == 0:
+            self.hand.append(Card('Hearts', 'Ace'))
+        elif self.counter == 1:
+            self.hand.append(Card('Hearts', 5))
+        self.counter += 1
 
     def dealer_deal(self):
         formted_hand = b_calc.list_of_hand(self.hand, bj_card_access)

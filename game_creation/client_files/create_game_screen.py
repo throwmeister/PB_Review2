@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from client_data import ClientInfo
-import game_creation.shared_directory.data_format as form
+import data_format as form
 
 class CreateGame:
     def setupUi(self, Dialog):

@@ -39,6 +39,7 @@ class ClientRequestTypeEnum(str, Enum):
     FOLD = 13
     BLACKJACK_HIT = 14
     BLACKJACK_HOLD = 15
+    DOUBLE = 16
 
 
 class ServerRequestTypeEnum(str, Enum):

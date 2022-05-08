@@ -193,7 +193,7 @@ f'message: {message}')
                             self.send_bet_response(server_data)
                             self.send_new_bet(game_id)
                             if complete:
-                                winners = handler.calculate_game_score(game_id)
+                                winners = handler.calculate_poker_game_score(game_id)
                                 self.send_winners(winners, game_id)
                         case form.ClientRequestTypeEnum.FOLD:
                             self.handle_fold(messages.data, messages.session_id)
@@ -202,14 +202,18 @@ f'message: {message}')
                                                                                game_id=messages.data)
                             self.send_hit_response(server_data)
                             if complete:
-                                self.signal_state_change(messages.data, form.GameState.BETTING_TWO)
+                                winners = handler.calculate_bj_game_score(messages.data)
+                                self.send_winners(winners, messages.data)
 
                         case form.ClientRequestTypeEnum.BLACKJACK_HOLD:
                             server_data, complete = handler.handle_hold_request(session_id=messages.session_id,
                                                                                 game_id=messages.data)
                             self.send_hold_response(server_data)
                             if complete:
-                                self.signal_state_change(messages.data, form.GameState.BETTING_TWO)
+                                winners = handler.calculate_bj_game_score(messages.data)
+                                self.send_winners(winners, messages.data)
+                        case form.ClientRequestTypeEnum.DOUBLE:
+                            handler.handle_double_request()
                         case _:
                             pass
 
@@ -233,7 +237,7 @@ f'message: {message}')
                 case form.GameState.BETTING_TWO:
                     if handler.check_betting_complete(game):
                         game.game_logic.state = form.GameState.CALCULATED
-                        winners = handler.calculate_game_score(client_data.game_id)
+                        winners = handler.calculate_poker_game_score(client_data.game_id)
                         self.send_winners(winners, client_data.game_id)
                 case form.GameState.CARD_CHANGING:
                     if game.game_type == form.GameTypeEnum.BLACKJACK:

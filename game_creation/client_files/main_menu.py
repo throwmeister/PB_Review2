@@ -3,7 +3,7 @@ from create_game_screen import CreateGame
 from login_screen import Login
 from join_game_screen import JoinGame
 from client_data import ClientInfo, GameInfo
-from game_creation.shared_directory import data_format as form
+import data_format as form
 
 
 class Menu:
@@ -240,7 +240,7 @@ class Menu:
         self.bet_fold_button.clicked.connect(self.fold_button_pressed)
         self.leave_game_button.clicked.connect(self.leave_game_button_pressed)
         self.bj_fold_button.clicked.connect(self.fold_button_pressed)
-        self.bj_double_button.clicked.connect(self.bet_again_button_clicked)
+        self.bj_double_button.clicked.connect(self.bj_double_button_clicked)
         self.bj_hold_button.clicked.connect(self.hold_button_clicked)
         self.bj_hit_button.clicked.connect(self.hit_button_clicked)
         self.see_hand_button.clicked.connect(self.see_hand_button_pressed)
@@ -890,13 +890,15 @@ class Menu:
             self.bet_list.addItem(f"{player_vars[0]}'s current bet: {player_vars[1]}")
 
     def bet_success(self):
-        self.bet_button.setEnabled(True)
+        if GameInfo.game_type == form.GameTypeEnum.POKER:
+            self.bet_button.setEnabled(True)
         if GameInfo.request == True:
             ClientInfo.tcpHandler.request_cards()
             GameInfo.request = False
 
     def all_bets_done(self):
         # Prompt
+        self.bet_button.setDisabled(True)
         for bet in self.bet:
             bet.chips = []
         self.update_chip_balance()
@@ -905,6 +907,7 @@ class Menu:
         elif GameInfo.game_type == form.GameTypeEnum.BLACKJACK:
             self.see_hand_button.setEnabled(True)
         self.p_replace_button.setEnabled(True)
+        self.bj_double_button.setEnabled(True)
 
     def enable_second_bet(self):
         self.p_bet_again_button.setEnabled(True)
@@ -920,9 +923,11 @@ class Menu:
 
     def hold_button_clicked(self):
         self.bj_hold_button.setDisabled(True)
+        self.bj_double_button.setDisabled(True)
         ClientInfo.tcpHandler.send_hold()
 
     def hit_button_clicked(self):
+        self.bj_hold_button.setDisabled(True)
         self.bj_hit_button.setDisabled(True)
         ClientInfo.tcpHandler.send_hit()
 
@@ -937,6 +942,9 @@ class Menu:
 
     def handle_won(self, amount):
         pass
+
+    def bj_double_button_clicked(self):
+        ClientInfo.tcpHandler.send_double()
 
     def popup_screen(self, title, text):
         msg = QtWidgets.QMessageBox()

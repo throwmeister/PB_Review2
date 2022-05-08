@@ -8,7 +8,7 @@ from twisted.internet import reactor
 from twisted.internet.protocol import Protocol, ClientFactory
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet.task import LoopingCall
-from game_creation.shared_directory import data_format as form
+import game_creation.shared_directory.data_format as form
 from client_data import ClientInfo, GameInfo
 
 decode_type = form.decode_format()
@@ -109,6 +109,9 @@ class MainClient(Protocol):
 
     def send_hold(self):
         self.format_send_data(form.ClientRequestTypeEnum.BLACKJACK_HOLD, ClientInfo.game_id)
+
+    def send_double(self):
+        self.format_send_data(form.ClientRequestTypeEnum.DOUBLE, ClientInfo.game_id)
 
     def format_send_data(self, request_type: form.ClientRequestTypeEnum, data=None):
         req = form.ClientRequestHeader()

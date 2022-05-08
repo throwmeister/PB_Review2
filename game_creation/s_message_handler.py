@@ -191,10 +191,15 @@ def handle_input_bet(data, session_id):
         game: Game
         bet_result = player.vars.make_bet(client_data.bet)
         if bet_result:
-            player.vars.set_all_in(client_data.all_in)
-            if check_betting_complete(game):
-                complete = True
-            send_data.response_code = form.GeneralEnum.SUCCESS
+            if game.game_type == form.GameTypeEnum.POKER:
+                player.vars.set_all_in(client_data.all_in)
+                if check_p_betting_complete(game):
+                    complete = True
+                send_data.response_code = form.GeneralEnum.SUCCESS
+            elif game.game_type == form.GameTypeEnum.BLACKJACK:
+                if check_bj_betting_complete(game):
+                    complete = True
+
         else:
             send_data.response_code = form.GeneralEnum.ERROR
     else:
@@ -203,7 +208,7 @@ def handle_input_bet(data, session_id):
     return [send_data.__dict__, client_data.game_id, complete]
 
 
-def check_betting_complete(game):
+def check_p_betting_complete(game):
     complete = False
     if game.game_logic.check_all_bet() and game.game_logic.check_all_bets_equal():
         if game.game_logic.state == form.GameState.BETTING:
@@ -213,6 +218,14 @@ def check_betting_complete(game):
         elif game.game_logic.state == form.GameState.BETTING_TWO:
             game.game_logic.set_state(form.GameState.CALCULATED)
             game.game_logic.add_bets_to_pot()
+        complete = True
+    return complete
+
+
+def check_bj_betting_complete(game):
+    complete = False
+    if game.game_logic.check_all_bet():
+        game.game_logic.set_state(form.GameState.CARD_CHANGING)
         complete = True
     return complete
 
@@ -278,9 +291,9 @@ def handle_hit_request(session_id, game_id):
                 send_data.response_code = form.HitEnum.HIT_SUCCESS
             send_data.cards = player.vars.get_cards_format()
 
-            if game.game_logic.check_all_hold():
-                ServerData.logger.info('All players are done')
-                complete = True
+        if game.game_logic.check_all_hold():
+            ServerData.logger.info('All players are done')
+            complete = True
 
     return [send_data.__dict__, complete]
 
@@ -297,7 +310,6 @@ def handle_hold_request(session_id, game_id):
         if not player.vars.hold:
             player.vars.player_hold()
             send_data.response_code = form.GeneralEnum.SUCCESS
-
         if game.game_logic.check_all_hold():
             ServerData.logger.info('All players done')
             complete = True
@@ -305,13 +317,27 @@ def handle_hold_request(session_id, game_id):
     return [send_data.__dict__, complete]
 
 
-def calculate_game_score(game_id):
+def handle_double_request(session_id, game_id):
+    pv_checker = game_request_validation(session_id, game_id)
+    if pv_checker:
+        game, player = pv_checker
+        player: Participant
+        game: Game
+        player.vars.double()
+
+
+def calculate_poker_game_score(game_id):
     game = Game.Games[game_id]
     game.game_logic.calculate_scores()
     winners = game.game_logic.calculate_winner()
     game.reset_game()
     return winners
 
+def calculate_bj_game_score(game_id):
+    game = Game.Games[game_id]
+    game.game_logic.calculate_scores()
+    game.game_logic.dealer.dealer_deal()
+    game.game_logic.calculate_winner()
 
 def aggregate_lobby_list():
     d = {}

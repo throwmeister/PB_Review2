@@ -1,4 +1,4 @@
-from game_creation.shared_directory import data_format as form
+import data_format as form
 
 # Contains all the client information
 class ClientInfo:
