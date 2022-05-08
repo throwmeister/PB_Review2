@@ -815,8 +815,12 @@ class Menu:
         ClientInfo.logger.info('Setting blackjack player list')
         for p in data:
             player_data = form.BlackjackCardPlayerVars(p)
-            card = form.ExtractCard(player_data.card)
-            self.bj_player_table.addItem(f"{player_data.player_name}: {card.value} of {card.suit.lower()}")
+            item_str = f'{player_data.player_name}: '
+            for card in player_data.card:
+                print(card)
+                card = form.ExtractCard(card)
+                item_str += f'{card.value} of {card.suit.lower()}, '
+            self.bj_player_table.addItem(item_str)
 
     def join_game_pressed(self):
         if self.selected_game:
@@ -893,6 +897,7 @@ class Menu:
         if GameInfo.game_type == form.GameTypeEnum.POKER:
             self.bet_button.setEnabled(True)
         if GameInfo.request == True:
+            ClientInfo.logger.info('Client has requested for cards')
             ClientInfo.tcpHandler.request_cards()
             GameInfo.request = False
 
@@ -923,11 +928,12 @@ class Menu:
 
     def hold_button_clicked(self):
         self.bj_hold_button.setDisabled(True)
+        self.bj_hit_button.setDisabled(True)
         self.bj_double_button.setDisabled(True)
         ClientInfo.tcpHandler.send_hold()
 
     def hit_button_clicked(self):
-        self.bj_hold_button.setDisabled(True)
+        self.bj_double_button.setDisabled(True)
         self.bj_hit_button.setDisabled(True)
         ClientInfo.tcpHandler.send_hit()
 
@@ -936,6 +942,7 @@ class Menu:
 
     def player_holding(self):
         self.bj_hit_button.setDisabled(True)
+        self.bj_hold_button.setDisabled(True)
 
     def hold_failed(self):
         self.bj_hold_button.setEnabled(True)
@@ -965,18 +972,33 @@ class Menu:
             ClientInfo.logger.info('Player name: ' + player.name)
 
             message += f'{player.name},'
-        message = f'{message} has won!'
+
+        if message:
+            message = f'{message} has won!'
+        else:
+            message = 'No one has won'
         ClientInfo.logger.info(message)
         msg.setText(message)
-        x = msg.exec_()
+        x = msg.exec()
 
     def reset_game_loop(self):
         GameInfo.state = form.GameState.LOOP
         self.change_screens(form.MenuScreenEnums.WAITING_ROOM)
         self.refresh_poker_screen()
         self.refresh_blackjack_screen()
+        self.refresh_bet_game()
+        self.refresh_buttons()
         for bet in self.bet:
             bet.chips = []
+
+    def refresh_buttons(self):
+        self.bet_button.setEnabled(True)
+        self.see_hand_button.setDisabled(True)
+        self.bj_hit_button.setEnabled(True)
+        self.bj_hold_button.setEnabled(True)
+        self.bj_double_button.setEnabled(True)
+        self.p_replace_button.setEnabled(True)
+        self.p_bet_again_button.setDisabled(True)
 
     # Called when closing the UX
     def closed_event(self, event):

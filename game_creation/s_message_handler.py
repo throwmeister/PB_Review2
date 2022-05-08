@@ -116,6 +116,7 @@ def handle_ready_game(data, session_id):
     try:
         game = Game.Games[client_data.game_id]
         player = Participant.Participants[session_id]
+        ServerData.logger.info(game.game_status.name)
         if game.player_present(player) and game.game_status != form.GameStatus.IN_PROGRESS:
             ServerData.logger.info('Player is present')
             send_data.response_code = form.ReadyResponseEnum.SUCCESS
@@ -197,6 +198,7 @@ def handle_input_bet(data, session_id):
                     complete = True
                 send_data.response_code = form.GeneralEnum.SUCCESS
             elif game.game_type == form.GameTypeEnum.BLACKJACK:
+                send_data.response_code = form.GeneralEnum.SUCCESS
                 if check_bj_betting_complete(game):
                     complete = True
 
@@ -333,11 +335,15 @@ def calculate_poker_game_score(game_id):
     game.reset_game()
     return winners
 
+
 def calculate_bj_game_score(game_id):
     game = Game.Games[game_id]
     game.game_logic.calculate_scores()
     game.game_logic.dealer.dealer_deal()
-    game.game_logic.calculate_winner()
+    winners = game.game_logic.calculate_winner()
+    game.reset_game()
+    return winners
+
 
 def aggregate_lobby_list():
     d = {}
@@ -374,10 +380,18 @@ def aggregate_blackjack_list(game_id):
     game = Game.Games[game_id]
     # Player - card
     d = []
-    for player in game.players:
+    try:
         player_data = form.BlackjackCardPlayerVars()
-        player_data.player_name = player.username
-        player_data.card = player.vars.hand[0].__dict__
+        player_data.player_name = 'DEALER'
+        player_data.card = [game.game_logic.dealer.hand[0].__dict__]
         d.append(player_data.__dict__)
+        for player in game.players:
+            player_data = form.BlackjackCardPlayerVars()
+            player_data.player_name = player.username
+            player_data.card = [x.__dict__ for x in player.vars.hand]
+            d.append(player_data.__dict__)
+        print(d)
+        return d
 
-    return d
+    except AttributeError:
+        return None

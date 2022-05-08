@@ -316,13 +316,11 @@ class MainClient(Protocol):
             ClientInfo.main_gui.add_card_to_list()
             ClientInfo.main_gui.set_cards(response_data.cards)
             ClientInfo.main_gui.hit_response()
-            ClientInfo.main_gui.popup_screen('Hit response', 'Success')
         elif response_data.response_code == form.HitEnum.BUST:
             ClientInfo.logger.info('Hit - bust!')
             ClientInfo.main_gui.add_card_to_list()
             ClientInfo.main_gui.set_cards(response_data.cards)
             ClientInfo.main_gui.player_holding()
-            ClientInfo.main_gui.popup_screen('Hit response', 'You have gone bust')
         else:
             ClientInfo.logger.error('Error with hit')
             ClientInfo.main_gui.hit_received()
@@ -458,5 +456,5 @@ def winner_calculation_response(winners):
             ClientInfo.logger.info(f'Winner: {player.name}')
             if player.session == ClientInfo.session_id:
                 ClientInfo.main_gui.handle_won(player.winnings)
-        ClientInfo.main_gui.player_won_popup(winners)
         ClientInfo.main_gui.reset_game_loop()
+        ClientInfo.main_gui.player_won_popup(winners)

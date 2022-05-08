@@ -450,6 +450,7 @@ class Poker(GameVariables):
         new = sorted(self.player_scores, key=lambda x: x[1], reverse=True)
         # List comprehension extracts all the winners
         winners = [p[0] for p in new if p[1] == new[0][1]]
+        send_winners = []
         for winner in winners:
             # Calculates all the winners and gives them their money
             ServerData.logger.info(winner)
@@ -460,8 +461,8 @@ class Poker(GameVariables):
             d.session = winner.session_id
             d.name = winner.username
 
-            winners.append(d.__dict__)
-        return winners
+            send_winners.append(d.__dict__)
+        return send_winners
 
 
 class Blackjack(GameVariables):
@@ -485,18 +486,27 @@ class Blackjack(GameVariables):
         temp_winners = [p for p in new if p[1] <= 21]
         dealer_score = self.dealer.calculate_player_score()
         if dealer_score <= 21:
-            winners = [p[0] for p in temp_winners if p[1] > dealer_score]
+            winners = [p[0] for p in temp_winners if p[1] >= dealer_score]
             draw = [p[0] for p in temp_winners if p[1] == dealer_score]
         else:
             winners = [p[0] for p in temp_winners]
 
+        send_winners = []
         for winner in winners:
             winner: Participant
-            earnt_money =  winner.vars.current_bet * 2
+            if winner in draw:
+                earnt_money = winner.vars.current_bet
+            else:
+                earnt_money = winner.vars.current_bet * 2
             d = form.GameWinnerVars()
             d.winnings = earnt_money
             d.session = winner.session_id
             d.name = winner.username
+
+            send_winners.append(d.__dict__)
+
+        return send_winners
+
 
 
 

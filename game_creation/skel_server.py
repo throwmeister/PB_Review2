@@ -93,8 +93,9 @@ class MainServer(Protocol):
 
     def send_bj_players_list(self, game_id):
         data = handler.aggregate_blackjack_list(game_id)
-        d = self.format_send_data(form.ServerRequestTypeEnum.BLACKJACK_CARD_PLAYER, data)
-        self.queue_message(form.game_exchange_name(), game_id, d)
+        if data:
+            d = self.format_send_data(form.ServerRequestTypeEnum.BLACKJACK_CARD_PLAYER, data)
+            self.queue_message(form.game_exchange_name(), game_id, d)
 
     @staticmethod
     def format_send_data(request_type, data=None):
@@ -213,7 +214,7 @@ f'message: {message}')
                                 winners = handler.calculate_bj_game_score(messages.data)
                                 self.send_winners(winners, messages.data)
                         case form.ClientRequestTypeEnum.DOUBLE:
-                            handler.handle_double_request()
+                            handler.handle_double_request(session_id=messages.session_id, game_id=messages.data)
                         case _:
                             pass
 
@@ -229,30 +230,32 @@ f'message: {message}')
             player: handler.Participant
             game: handler.Game
             game.remove_player(player)
-            match game.game_logic.state:
-                case form.GameState.BETTING:
-                    if handler.check_betting_complete(game):
-                        game.game_logic.state = form.GameState.CARD_CHANGING
-                        self.signal_state_change(game_id=client_data.game_id, state=form.GameState.CARD_CHANGING)
-                case form.GameState.BETTING_TWO:
-                    if handler.check_betting_complete(game):
-                        game.game_logic.state = form.GameState.CALCULATED
-                        winners = handler.calculate_poker_game_score(client_data.game_id)
-                        self.send_winners(winners, client_data.game_id)
-                case form.GameState.CARD_CHANGING:
-                    if game.game_type == form.GameTypeEnum.BLACKJACK:
-                        if game.game_logic.check_all_hold():
-                            ServerData.logger.info('All players have held')
-                            game.game_logic.state = form.GameState.BETTING_TWO
-                            self.signal_state_change(client_data.game_id, form.GameState.BETTING_TWO)
-                    elif game.game_type == form.GameTypeEnum.POKER:
-                        if game.game_logic.check_all_replaced():
-                            ServerData.logger.info('All players have replaced')
-                            game.game_logic.state = form.GameState.BETTING_TWO
-                            self.signal_state_change(client_data.game_id, form.GameState.BETTING_TWO)
-                case form.GameState.CALCULATED:
-                    ServerData.logger.info('Cannot fold in this state')
-
+            try:
+                match game.game_logic.state:
+                    case form.GameState.BETTING:
+                        if handler.check_betting_complete(game):
+                            game.game_logic.state = form.GameState.CARD_CHANGING
+                            self.signal_state_change(game_id=client_data.game_id, state=form.GameState.CARD_CHANGING)
+                    case form.GameState.BETTING_TWO:
+                        if handler.check_betting_complete(game):
+                            game.game_logic.state = form.GameState.CALCULATED
+                            winners = handler.calculate_poker_game_score(client_data.game_id)
+                            self.send_winners(winners, client_data.game_id)
+                    case form.GameState.CARD_CHANGING:
+                        if game.game_type == form.GameTypeEnum.BLACKJACK:
+                            if game.game_logic.check_all_hold():
+                                ServerData.logger.info('All players have held')
+                                game.game_logic.state = form.GameState.BETTING_TWO
+                                self.signal_state_change(client_data.game_id, form.GameState.BETTING_TWO)
+                        elif game.game_type == form.GameTypeEnum.POKER:
+                            if game.game_logic.check_all_replaced():
+                                ServerData.logger.info('All players have replaced')
+                                game.game_logic.state = form.GameState.BETTING_TWO
+                                self.signal_state_change(client_data.game_id, form.GameState.BETTING_TWO)
+                    case form.GameState.CALCULATED:
+                        ServerData.logger.info('Cannot fold in this state')
+            except AttributeError:
+                pass
 
 class ServerProtocol(ServerFactory):
     def buildProtocol(self, addr):
