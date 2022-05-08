@@ -136,4 +136,18 @@ print(hashlib.sha1(b'great_password').hexdigest())
 f = [g for g in x if g[0] == x[0][0]]
 print(f)
 
-print(self.great)
+amount = 14
+bll = int(amount/8)
+print(bll)
+amount -= bll*8
+print(amount)
+
+bff = int(amount/4)
+print(int(bff))
+amount -= bff*4
+print(amount)
+
+bhh = int(amount/2)
+print(int(bhh))
+amount -= bhh*2
+print(amount)

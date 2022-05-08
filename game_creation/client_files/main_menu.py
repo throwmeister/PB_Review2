@@ -948,7 +948,17 @@ class Menu:
         self.bj_hold_button.setEnabled(True)
 
     def handle_won(self, amount):
-        pass
+        black = int(amount/8)
+        amount -= black*8
+        brown = int(amount/4)
+        amount -= brown*4
+        blue = int(amount/2)
+        amount -= blue*2
+        red = int(amount)
+        self.bank_red_chip.add_new_chips(red)
+        self.bank_blue_chip.add_new_chips(blue)
+        self.bank_brown_chip.add_new_chips(brown)
+        self.bank_black_chip.add_new_chips(black)
 
     def bj_double_button_clicked(self):
         ClientInfo.tcpHandler.send_double()
@@ -965,7 +975,6 @@ class Menu:
         msg = QtWidgets.QMessageBox()
         msg.setWindowTitle('Winners')
         msg.setMinimumSize(400, 200)
-        msg.setIcon(QtWidgets.QMessageBox.Information)
         message = ''
         for winner in winners:
             player = form.GameWinnerVars(winner)
@@ -979,7 +988,6 @@ class Menu:
             message = 'No one has won'
         ClientInfo.logger.info(message)
         msg.setText(message)
-        x = msg.exec()
 
     def reset_game_loop(self):
         GameInfo.state = form.GameState.LOOP
@@ -1087,6 +1095,10 @@ class ChipsContainer(QtWidgets.QLabel):
     def add_chip(self, chip):
         self.chips.append(chip)
 
+    def add_new_chips(self, num):
+        for _ in range(num):
+            self.chips.append(Chip(self.chip_type))
+
 
 class TwoWayDict(dict):
     def __len__(self):
@@ -1110,6 +1122,7 @@ if __name__ == '__main__':
     ui.setupUi(main)
 
     import skel_client as tcp_client
+    from twisted.internet import reactor
 
     main.show()
 
