@@ -40,15 +40,38 @@ bj_card_access = {
         }
 
 
-card2 = Card('Hearts', 'Ace')
-card3 = Card('Spades', 'Ace')
-card4 = Card('Clubs', 'Ace')
-card5 = Card('Diamonds', 4)
+class Dealer:
+    def __init__(self):
+        card1 = Card('Hearts', 2)
+        card3 = Card('Spades', 10)
 
-hand = [card2, card3, card4, card5]
-formted_hand = b_calc.list_of_hand(hand, bj_card_access)
-print(b_calc.calculate(formted_hand))
+        self.hand = [card3, card1]
+
+    def hit(self):
+        self.hand.append(Card('Hearts', 5))
+
+    def dealer_deal(self):
+        formted_hand = b_calc.list_of_hand(self.hand, bj_card_access)
+        score = b_calc.calculate(formted_hand)
+        print(score)
+        if score < 17:
+            self.hit()
+            self.dealer_deal()
 
 
-card3 = Card('Hearts', 10)
-card4 = Card('Hearts', 10)
+
+#card1 = Card('Hearts', 10)
+#card2 = Card('Hearts', 'Ace')
+#card3 = Card('Spades', 10)
+
+dealer = Dealer()
+dealer.dealer_deal()
+print(dealer.hand)
+
+#hand = [card2, card3, card1]
+#formted_hand = b_calc.list_of_hand(hand, bj_card_access)
+#print(b_calc.calculate(formted_hand))
+
+
+#card3 = Card('Hearts', 10)
+#card4 = Card('Hearts', 10)

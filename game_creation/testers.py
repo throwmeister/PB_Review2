@@ -135,3 +135,5 @@ print(hashlib.sha1(b'great_password').hexdigest())
 
 f = [g for g in x if g[0] == x[0][0]]
 print(f)
+
+print(self.great)

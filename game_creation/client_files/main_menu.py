@@ -219,6 +219,7 @@ class Menu:
         self.add_blackjack_stack()
         self.retranslateUi(Form)
         self.main_stack.setCurrentIndex(0)
+        self.selected_game = ''
         self.exit_button.clicked.connect(Form.close)  # type: ignore
         QtCore.QMetaObject.connectSlotsByName(Form)
         self.play_button.clicked.connect(self.open_login_window)

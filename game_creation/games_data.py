@@ -227,7 +227,7 @@ class Game:
         self.game_type = game_type
         self.password = password
         self.in_progress = False
-        self.game_status = form.GameStatus.INVALID
+        self.game_status = form.GameStatus.STARTING
         self.game_id = self.create_game_id()
         self._add_game()
         self.add_participant(Participant(owner_id))
@@ -241,6 +241,7 @@ class Game:
         self.Games.pop(self.game_id)
 
     def initialise_game(self):
+        self.game_status = form.GameStatus.IN_PROGRESS
         match self.game_type:
             case form.GameTypeEnum.POKER:
                 self.game_logic = Poker(self)
@@ -249,6 +250,10 @@ class Game:
         for player in self.players:
             player: Participant
             player.setup_game_vars(self.game_type, self.game_logic.deck)
+
+    def reset_game(self):
+        self.game_status = form.GameStatus.STARTING
+        self.game_logic = None
 
     def _add_game(self):
         self.Games[self.game_id] = self

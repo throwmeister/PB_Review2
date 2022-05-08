@@ -116,7 +116,7 @@ def handle_ready_game(data, session_id):
     try:
         game = Game.Games[client_data.game_id]
         player = Participant.Participants[session_id]
-        if game.player_present(player):
+        if game.player_present(player) and game.game_status != form.GameStatus.IN_PROGRESS:
             ServerData.logger.info('Player is present')
             send_data.response_code = form.ReadyResponseEnum.SUCCESS
             if client_data.request == form.ReadyTypeEnum.READY:
@@ -309,7 +309,7 @@ def calculate_game_score(game_id):
     game = Game.Games[game_id]
     game.game_logic.calculate_scores()
     winners = game.game_logic.calculate_winner()
-
+    game.reset_game()
     return winners
 
 
